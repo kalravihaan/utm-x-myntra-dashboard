@@ -92,7 +92,7 @@ body{font-family:'DM Sans',sans-serif;background:#f1f5f9;color:#111;font-size:13
 .reset-btn:hover{color:#111;border-color:#aaa;}
 
 /* MAIN TABS */
-.main-tabs{background:#fff;padding:0 32px;display:flex;gap:0;border-bottom:1px solid #e5e7eb;overflow-x:auto;position:sticky;top:51px;z-index:950;}
+.main-tabs{background:#fff;padding:0 32px;display:flex;gap:0;border-bottom:1px solid #e5e7eb;overflow-x:auto;}
 .mtab{padding:13px 18px;font-size:11px;font-weight:600;color:#aaa;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:color 0.2s,border-color 0.2s;}
 .mtab:hover{color:#555;}
 .mtab.active{color:#4f46e5;border-bottom-color:#4f46e5;}
@@ -128,7 +128,7 @@ body{font-family:'DM Sans',sans-serif;background:#f1f5f9;color:#111;font-size:13
 .boc-val{font-family:'DM Mono',monospace;font-size:11px;color:#111;font-weight:500;}
 
 /* FILTER BAR */
-.filter-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 32px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;position:sticky;top:95px;z-index:900;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+.filter-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 32px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .filter-label{font-size:10px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;margin-right:2px;white-space:nowrap;}
 .brand-pill{padding:5px 12px;border-radius:20px;border:1px solid #e5e7eb;background:#fff;font-size:11px;font-weight:500;color:#777;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
 .brand-pill:hover{border-color:#818cf8;color:#4f46e5;}
@@ -216,8 +216,9 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 .size-badge{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:6px;}
 
 /* ── DB SCREEN ─────────────────────────────────────────── */
-#dbScreen{display:none;min-height:calc(100vh - 51px);}
-#dbStickyHeader{position:sticky;top:51px;z-index:960;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+#dbScreen{display:none;}
+#dbStickyHeader{background:#fff;}
+#dbContentArea{}
 .db-fy-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:0 28px;display:flex;align-items:center;gap:0;}
 .fy-tab{padding:13px 16px;font-size:11px;font-weight:600;color:#aaa;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:color 0.2s,border-color 0.2s;}
 .fy-tab:hover{color:#555;}
@@ -274,6 +275,10 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 .badge-nosales{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:2px 8px;border-radius:20px;background:#f1f5f9;color:#64748b;}
 
 /* COMPARE */
+.compare-sub-tabs{display:flex;gap:0;padding:0 28px;background:#fafafa;border-bottom:1px solid #e5e7eb;}
+.compare-sub-btn{padding:10px 18px;font-size:11px;font-weight:600;color:#aaa;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color 0.2s,border-color 0.2s;}
+.compare-sub-btn:hover{color:#555;}
+.compare-sub-btn.active{color:#0891b2;border-bottom-color:#0891b2;}
 .compare-header{padding:20px 28px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
 .compare-fy-select{border:1px solid #e5e7eb;border-radius:8px;padding:6px 12px;font-size:12px;font-family:'DM Sans',sans-serif;color:#555;background:#fff;cursor:pointer;outline:none;font-weight:600;}
 .compare-vs{font-size:13px;font-weight:700;color:#aaa;}
@@ -297,15 +302,32 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 .cmt-month{font-weight:600;color:#555;font-family:'DM Sans',sans-serif!important;font-size:11px!important;}
 
 /* DB MANAGE */
-.db-manage-section{padding:20px 28px;}
-.db-manage-title{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;}
-.db-manage-list{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
-.db-manage-item{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;}
+.db-manage-btn{margin-left:8px;padding:7px 14px;background:#f4f4f5;border:1px solid #e5e7eb;border-radius:7px;font-size:11px;font-weight:700;color:#555;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;white-space:nowrap;}
+.db-manage-btn:hover{background:#e5e7eb;color:#111;}
+.db-manage-btn.active{background:#111;color:#fff;border-color:#111;}
+.mgmt-channel-tabs{display:flex;gap:0;border-bottom:1px solid #e5e7eb;background:#fff;padding:0 28px;}
+.mgmt-channel-tab{padding:12px 20px;font-size:11px;font-weight:700;color:#aaa;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color 0.2s,border-color 0.2s;}
+.mgmt-channel-tab:hover{color:#555;}
+.mgmt-channel-tab.active{color:#111;border-bottom-color:#111;}
+.mgmt-body{padding:20px 28px;}
+.mgmt-fy-section{margin-bottom:24px;}
+.mgmt-fy-header{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:8px;border-bottom:1px solid #f3f4f6;margin-bottom:10px;}
+.mgmt-list{display:flex;flex-direction:column;gap:6px;}
+.mgmt-item{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
+.mgmt-item-label{font-size:12px;font-weight:600;color:#111;min-width:110px;}
+.mgmt-item-meta{font-size:11px;color:#999;flex:1;}
+.mgmt-item-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;}
+.badge-frozen{background:#ecfdf5;color:#059669;}
+.badge-pending{background:#fff7ed;color:#d97706;}
+.dmi-del{background:none;border:1px solid #fecaca;color:#dc2626;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.dmi-del:hover{background:#fef2f2;}
+.mgmt-master-section{margin-bottom:24px;}
+.db-manage-title{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
+.db-manage-list{display:flex;flex-direction:column;gap:6px;margin-bottom:0;}
+.db-manage-item{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
 .dmi-label{font-size:12px;font-weight:600;color:#111;flex:1;}
 .dmi-meta{font-size:11px;color:#aaa;}
-.dmi-del{background:none;border:1px solid #fecaca;color:#dc2626;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;transition:all 0.15s;}
-.dmi-del:hover{background:#fef2f2;}
-.db-danger-zone{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:16px 20px;}
+.db-danger-zone{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:16px 20px;margin-top:24px;}
 .db-danger-title{font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;}
 .db-danger-desc{font-size:11px;color:#7f1d1d;margin-bottom:12px;line-height:1.6;}
 .danger-btn{padding:8px 20px;background:#dc2626;color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.04em;}
@@ -386,6 +408,20 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 .dbup-success{text-align:center;padding:24px;display:none;}
 .dbup-success-icon{font-size:40px;margin-bottom:12px;}
 .dbup-success-text{font-size:13px;color:#059669;font-weight:600;}
+.dbup-file-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.dbup-file-card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:11px 14px;transition:border-color 0.2s,background 0.2s;}
+.dbup-file-card.blocked{border-color:#fecaca;background:#fff9f9;}
+.dbup-file-card.saved{border-color:#a7f3d0;background:#f0fdf4;}
+.dbup-file-card.saving{border-color:#bfdbfe;background:#eff6ff;}
+.dbup-fc-header{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.dbup-fc-title{font-size:12px;font-weight:600;color:#111;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dbup-fc-badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;flex-shrink:0;}
+.dbup-fc-badge.ok{background:#dcfce7;color:#15803d;}
+.dbup-fc-badge.warn{background:#fef3c7;color:#b45309;}
+.dbup-fc-badge.err{background:#fee2e2;color:#dc2626;}
+.dbup-fc-badge.saving{background:#dbeafe;color:#2563eb;}
+.dbup-fc-desc{font-size:11px;color:#888;line-height:1.5;}
+.dbup-add-more{font-size:11px;color:#4f46e5;background:none;border:none;cursor:pointer;font-weight:600;padding:0;margin-bottom:14px;display:block;}
 
 @media(max-width:700px){
   .chart-grid.cols2{grid-template-columns:1fr;}
@@ -579,7 +615,10 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <!-- FY tabs bar -->
     <div class="db-fy-bar" id="dbFyBar">
       <div id="dbFyTabs" style="display:flex;gap:0;"></div>
-      <button class="db-add-btn" id="dbAddBtn">+ Add Data</button>
+      <div style="display:flex;align-items:center;gap:6px;margin-left:auto;padding-right:16px;">
+        <button class="db-manage-btn" id="dbManageBtn">Manage DB</button>
+        <button class="db-add-btn" id="dbAddBtn">+ Add Data</button>
+      </div>
     </div>
     <!-- Month timeline -->
     <div class="month-timeline" id="monthTimeline" style="display:none;"></div>
@@ -587,7 +626,6 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <div class="db-tabs" id="dbTabBar" style="display:none;">
       <button class="db-tab active" data-dbtab="db-overview">Overview</button>
       <button class="db-tab" data-dbtab="db-styles">Style Table</button>
-      <button class="db-tab" data-dbtab="db-manage">Manage DB</button>
     </div>
     <!-- DB FILTER BAR -->
     <div class="filter-bar" id="dbFilterBar" style="display:none;">
@@ -613,32 +651,35 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     </div>
     </div><!-- end #dbFilterBar -->
   </div><!-- end #dbStickyHeader -->
-  <!-- DB tab panels -->
-  <div class="db-tab-panel active" id="db-overview"></div>
-  <div class="db-tab-panel" id="db-styles">
-    <div class="search-wrap" style="padding:12px 28px 0;">
-      <input class="search-input" id="dbSearchInput" type="text" placeholder="Search style ID, SKU code, article type…">
+  <!-- Scrollable content area -->
+  <div id="dbContentArea">
+    <!-- DB tab panels -->
+    <div class="db-tab-panel active" id="db-overview"></div>
+    <div class="db-tab-panel" id="db-styles">
+      <div class="search-wrap" style="padding:12px 28px 0;">
+        <input class="search-input" id="dbSearchInput" type="text" placeholder="Search style ID, SKU code, article type…">
+      </div>
+      <div style="padding:6px 28px 0;display:flex;align-items:center;gap:12px;">
+        <div class="row-count" id="dbRowCount"></div>
+      </div>
+      <div class="table-wrap">
+        <div class="tw"><table id="dbMainTable"><thead id="dbTableHead"></thead><tbody id="dbTableBody"></tbody></table></div>
+      </div>
     </div>
-    <div style="padding:6px 28px 0;display:flex;align-items:center;gap:12px;">
-      <div class="row-count" id="dbRowCount"></div>
+    <div class="db-tab-panel" id="db-manage"></div>
+    <!-- Compare panel (separate from tabs) -->
+    <div id="db-compare" style="display:none;"></div>
+    <!-- Loading / empty states -->
+    <div class="db-loading" id="dbLoading">
+      <div class="db-spinner"></div>
+      <div style="font-size:12px;color:#888;" id="dbLoadStatus">Connecting to database…</div>
     </div>
-    <div class="table-wrap">
-      <div class="tw"><table id="dbMainTable"><thead id="dbTableHead"></thead><tbody id="dbTableBody"></tbody></table></div>
+    <div class="db-empty-state" id="dbEmptyState" style="display:none;">
+      <div class="db-empty-icon">📭</div>
+      <div class="db-empty-title">No data yet</div>
+      <div class="db-empty-sub">Click <b>+ Add Data</b> to upload your first month of sales data and start building your database.</div>
     </div>
-  </div>
-  <div class="db-tab-panel" id="db-manage"></div>
-  <!-- Compare panel (separate from tabs) -->
-  <div id="db-compare" style="display:none;"></div>
-  <!-- Loading / empty states -->
-  <div class="db-loading" id="dbLoading">
-    <div class="db-spinner"></div>
-    <div style="font-size:12px;color:#888;" id="dbLoadStatus">Connecting to database…</div>
-  </div>
-  <div class="db-empty-state" id="dbEmptyState" style="display:none;">
-    <div class="db-empty-icon">📭</div>
-    <div class="db-empty-title">No data yet</div>
-    <div class="db-empty-sub">Click <b>+ Add Data</b> to upload your first month of sales data and start building your database.</div>
-  </div>
+  </div><!-- end #dbContentArea -->
 </div>
 
 <!-- SKU MODAL -->
@@ -708,7 +749,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
         <div class="dbup-drop-text">Drop a sales, returns, cost, or listings CSV here<br><span style="font-size:10px;">One file at a time</span></div>
         <label for="dbupFileInput" class="dbup-browse">Browse file</label>
       </div>
-      <div class="dbup-preview" id="dbupPreview">
+      <div class="dbup-preview" id="dbupPreview" style="display:none;">
         <div class="dbup-preview-type" id="dbupPreviewType"></div>
         <div id="dbupPreviewRows"></div>
       </div>
@@ -716,7 +757,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
         <div class="dbup-success-icon">✅</div>
         <div class="dbup-success-text" id="dbupSuccessText">Saved successfully!</div>
       </div>
-      <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px;" id="dbupPwLabel" style="display:none;">Password</div>
+      <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px;display:none;" id="dbupPwLabel">Password</div>
       <div class="dbup-pw-row" id="dbupPwRow" style="display:none;">
         <input class="dbup-pw-input" type="password" id="dbupPwInput" placeholder="Enter write password">
       </div>
@@ -871,6 +912,18 @@ function getTier(ros) {
   if (ros > t.VF) return 'VF'; if (ros >= t.F) return 'F';
   if (ros >= t.M) return 'M';  if (ros >= t.S) return 'S';
   return 'D';
+}
+
+// ─── SELLER / CHANNEL HELPERS ────────────────────────────
+function getSellerFromRows(rows) {
+  const r = rows.find(r => r['seller id'] !== undefined || r['seller_id'] !== undefined);
+  return String(r?.['seller id'] ?? r?.['seller_id'] ?? '').trim();
+}
+function getSellerLabel(id) {
+  if (id==='18724') return 'MDirect';
+  if (id==='30377') return 'SJIT';
+  if (id==='36387') return 'Anouk Rustic';
+  return id ? `Seller ${id}` : 'Unknown';
 }
 
 // ─── FILE DETECTION ──────────────────────────────────────
@@ -1264,11 +1317,22 @@ function renderBrandPills(containerId='brandPills', brands, activeSet, onToggle)
 function renderTierPills(containerId='tierPills', activeTiers, onToggle) {
   const c=document.getElementById(containerId);
   c.innerHTML=`<button class="tier-pill active t-ALL" data-tier="All">All</button>`+TIER_DEFS.map(t=>`<button class="tier-pill t-${t.id} active" data-tier="${t.id}">${t.id}</button>`).join('');
-  c.querySelectorAll('.tier-pill').forEach(btn=>btn.addEventListener('click',()=>{
+  c.querySelectorAll('.tier-pill').forEach(btn=>btn.addEventListener('click',(e)=>{
     const tier=btn.dataset.tier;
-    if(tier==='All'){activeTiers.clear();TIER_DEFS.forEach(t=>activeTiers.add(t.id));c.querySelectorAll('.tier-pill').forEach(p=>p.classList.add('active'));}
-    else{if(activeTiers.has(tier)){activeTiers.delete(tier);btn.classList.remove('active');}else{activeTiers.add(tier);btn.classList.add('active');}
-    c.querySelector('[data-tier="All"]').classList.toggle('active',activeTiers.size===5);}
+    if(tier==='All'){
+      activeTiers.clear();TIER_DEFS.forEach(t=>activeTiers.add(t.id));
+      c.querySelectorAll('.tier-pill').forEach(p=>p.classList.add('active'));
+    } else if(e.ctrlKey||e.metaKey){
+      // Ctrl/Cmd+click: toggle
+      if(activeTiers.has(tier)){activeTiers.delete(tier);btn.classList.remove('active');}
+      else{activeTiers.add(tier);btn.classList.add('active');}
+      c.querySelector('[data-tier="All"]').classList.toggle('active',activeTiers.size===5);
+    } else {
+      // Plain click: select only this tier
+      activeTiers.clear();activeTiers.add(tier);
+      c.querySelectorAll('.tier-pill').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+    }
     onToggle();
   }));
 }
@@ -1372,8 +1436,12 @@ const DB = {
   listingsMaster: {listings:{},uploadedAt:null},
   activeFY: null,
   compareMode: false,
+  compareSubMode: 'fy',
   compareFYA: null,
   compareFYB: null,
+  compareMthA: null,
+  compareMthB: null,
+  manageChannel: '18724',
   selectedMonths: new Set(), // months selected in timeline
   allFYs: [],
   fyMonths: {},       // 'FY27' → ['2026-04','2026-05',...]
@@ -1390,7 +1458,8 @@ async function loadFirestoreData() {
   document.getElementById('dbFyBar').style.display='none';
   document.getElementById('monthTimeline').style.display='none';
   document.getElementById('dbTabBar').style.display='none';
-  ['db-overview','db-styles','db-manage','db-compare'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  ['db-overview','db-styles','db-manage','db-compare'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.display='none';el.classList.remove('active');}});
+  document.getElementById('dbManageBtn').classList.remove('active');
   document.getElementById('dbFilterBar').style.display='none';
   try {
     const [salesSnap, retSnap, costDoc, listDoc] = await Promise.all([
@@ -1399,10 +1468,18 @@ async function loadFirestoreData() {
       getDoc(doc(fsDb,'cost_master','master')),
       getDoc(doc(fsDb,'listings_master','master'))
     ]);
+    function parseDoc(d) {
+      const o=d.data();
+      if(typeof o.styles==='string') o.styles=JSON.parse(o.styles);
+      if(typeof o.sellerStyles==='string') o.sellerStyles=JSON.parse(o.sellerStyles);
+      if(typeof o.skuRets==='string') o.skuRets=JSON.parse(o.skuRets);
+      if(typeof o.sellerReturns==='string') o.sellerReturns=JSON.parse(o.sellerReturns);
+      return o;
+    }
     DB.salesMonths={};
-    salesSnap.forEach(d=>DB.salesMonths[d.id]=d.data());
+    salesSnap.forEach(d=>DB.salesMonths[d.id]=parseDoc(d));
     DB.returnsMonths={};
-    retSnap.forEach(d=>DB.returnsMonths[d.id]=d.data());
+    retSnap.forEach(d=>DB.returnsMonths[d.id]=parseDoc(d));
     DB.costMaster=costDoc.exists()?costDoc.data():{costs:{},uploadedAt:null};
     DB.listingsMaster=listDoc.exists()?listDoc.data():{listings:{},uploadedAt:null};
     DB.loaded=true;
@@ -1415,28 +1492,65 @@ async function loadFirestoreData() {
 }
 
 async function saveSalesMonth(month, rows) {
-  const styleMap={};
+  const newSellerId = getSellerFromRows(rows);
+  // Build new style map from uploaded rows
+  const newStyleMap={};
   rows.forEach(r=>{
     const sid=String(r['style id']||'').trim(); if(!sid) return;
     const sku=(r['seller sku code']||'').trim();
     const price=parseFloat(r['seller price'])||0;
-    if(!styleMap[sid]) styleMap[sid]={brand:(r['brand']||'').trim(),styleName:(r['style name']||'').trim(),articleType:(r['article type']||'').trim(),firstSku:sku,units:0,revenue:0,skus:{}};
-    styleMap[sid].units++; styleMap[sid].revenue+=price;
+    if(!newStyleMap[sid]) newStyleMap[sid]={brand:(r['brand']||'').trim(),styleName:(r['style name']||'').trim(),articleType:(r['article type']||'').trim(),firstSku:sku,units:0,revenue:0,skus:{}};
+    newStyleMap[sid].units++; newStyleMap[sid].revenue+=price;
     if(sku){
-      if(!styleMap[sid].skus[sku]) styleMap[sid].skus[sku]={units:0,revenue:0};
-      styleMap[sid].skus[sku].units++; styleMap[sid].skus[sku].revenue+=price;
+      if(!newStyleMap[sid].skus[sku]) newStyleMap[sid].skus[sku]={units:0,revenue:0};
+      newStyleMap[sid].skus[sku].units++; newStyleMap[sid].skus[sku].revenue+=price;
     }
   });
-  const totalUnits=Object.values(styleMap).reduce((a,s)=>a+s.units,0);
-  const totalRevenue=Object.values(styleMap).reduce((a,s)=>a+s.revenue,0);
+  const existing = DB.salesMonths[month];
+  // Existing docs without 'sellers' field are treated as MDirect (backward compat)
+  const existingSellers = existing?.sellers || (existing ? ['18724'] : []);
+  // Block duplicate upload from same seller
+  if(existing && existingSellers.includes(newSellerId)) {
+    throw new Error(`${getSellerLabel(newSellerId)} data for ${formatMonth(month)} is already in the database. Delete it from Manage DB first if you want to replace it.`);
+  }
+  // Merge if month exists from a different seller, otherwise just save
+  let finalStyleMap, sellers, sellerStyles;
+  if(existing) {
+    finalStyleMap = JSON.parse(JSON.stringify(existing.styles));
+    Object.entries(newStyleMap).forEach(([sid,nd])=>{
+      if(finalStyleMap[sid]){
+        finalStyleMap[sid].units += nd.units;
+        finalStyleMap[sid].revenue += nd.revenue;
+        if(!finalStyleMap[sid].skus) finalStyleMap[sid].skus={};
+        Object.entries(nd.skus||{}).forEach(([sku,sd])=>{
+          if(finalStyleMap[sid].skus[sku]){ finalStyleMap[sid].skus[sku].units+=sd.units; finalStyleMap[sid].skus[sku].revenue+=sd.revenue; }
+          else finalStyleMap[sid].skus[sku]={...sd};
+        });
+      } else {
+        finalStyleMap[sid]={...nd};
+      }
+    });
+    sellers=[...new Set([...existingSellers,newSellerId])];
+    const prevSellerStyles = typeof existing.sellerStyles==='string' ? JSON.parse(existing.sellerStyles) : (existing.sellerStyles||{});
+    sellerStyles={...prevSellerStyles,[newSellerId]:newStyleMap};
+  } else {
+    finalStyleMap=newStyleMap;
+    sellers=[newSellerId];
+    sellerStyles={[newSellerId]:newStyleMap};
+  }
+  const totalUnits=Object.values(finalStyleMap).reduce((a,s)=>a+s.units,0);
+  const totalRevenue=Object.values(finalStyleMap).reduce((a,s)=>a+s.revenue,0);
   const fy=getFY(month);
-  const payload={month,fy,styles:styleMap,totalUnits,totalRevenue,uploadedAt:new Date().toISOString()};
-  await setDoc(doc(fsDb,'sales_monthly',month),payload);
-  DB.salesMonths[month]=payload;
+  // sellerStyles stored as JSON string to avoid Firestore 40k index-entry limit
+  const memPayload={month,fy,styles:finalStyleMap,sellerStyles,totalUnits,totalRevenue,sellers,uploadedAt:new Date().toISOString()};
+  const fsPayload={...memPayload,styles:JSON.stringify(finalStyleMap),sellerStyles:JSON.stringify(sellerStyles)};
+  await setDoc(doc(fsDb,'sales_monthly',month),fsPayload);
+  DB.salesMonths[month]=memPayload;
 }
 
 async function saveReturnsMonths(rows) {
-  // Group by order month — also capture per-SKU returns
+  const newSellerId = getSellerFromRows(rows);
+  // Group by order month
   const byMonth={};
   const byMonthSkuRets={};
   rows.forEach(r=>{
@@ -1455,11 +1569,36 @@ async function saveReturnsMonths(rows) {
     }
   });
   for(const [month,styles] of Object.entries(byMonth)){
+    const existing=DB.returnsMonths[month];
+    const existingSellers=existing?.sellers||(existing?['18724']:[]);
     const fy=getFY(month);
-    const totalRets=Object.values(styles).reduce((a,b)=>a+b,0);
-    const payload={month,fy,styles,skuRets:byMonthSkuRets[month]||{},totalRets,uploadedAt:new Date().toISOString()};
-    await setDoc(doc(fsDb,'returns_monthly',month),payload);
-    DB.returnsMonths[month]=payload;
+    const newSkuRets=byMonthSkuRets[month]||{};
+    let finalStyles, finalSkuRets, sellerReturns;
+    if(existing){
+      // Always accumulate — works for both same-seller new settlement cycles and different sellers
+      finalStyles={...existing.styles};
+      Object.entries(styles).forEach(([sid,count])=>{ finalStyles[sid]=(finalStyles[sid]||0)+count; });
+      finalSkuRets={...(existing.skuRets||{})};
+      Object.entries(newSkuRets).forEach(([sku,count])=>{ finalSkuRets[sku]=(finalSkuRets[sku]||0)+count; });
+      const prevSR = typeof existing.sellerReturns==='string' ? JSON.parse(existing.sellerReturns) : (existing.sellerReturns||{});
+      const prevSlice = prevSR[newSellerId]||{styles:{},skuRets:{}};
+      const accSellerStyles={...prevSlice.styles};
+      Object.entries(styles).forEach(([sid,c])=>{ accSellerStyles[sid]=(accSellerStyles[sid]||0)+c; });
+      const accSellerSkuRets={...(prevSlice.skuRets||{})};
+      Object.entries(newSkuRets).forEach(([sku,c])=>{ accSellerSkuRets[sku]=(accSellerSkuRets[sku]||0)+c; });
+      sellerReturns={...prevSR,[newSellerId]:{styles:accSellerStyles,skuRets:accSellerSkuRets}};
+    } else {
+      // New month entirely
+      finalStyles=styles;
+      finalSkuRets=newSkuRets;
+      sellerReturns={[newSellerId]:{styles,skuRets:newSkuRets}};
+    }
+    const totalRets=Object.values(finalStyles).reduce((a,b)=>a+b,0);
+    const sellers=[...new Set([...existingSellers,newSellerId])];
+    const memPayload={month,fy,styles:finalStyles,skuRets:finalSkuRets,sellerReturns,totalRets,sellers,uploadedAt:new Date().toISOString()};
+    const fsPayload={...memPayload,styles:JSON.stringify(finalStyles),skuRets:JSON.stringify(finalSkuRets),sellerReturns:JSON.stringify(sellerReturns)};
+    await setDoc(doc(fsDb,'returns_monthly',month),fsPayload);
+    DB.returnsMonths[month]=memPayload;
   }
   return Object.keys(byMonth);
 }
@@ -1501,6 +1640,67 @@ async function deleteReturnsMonth(month) {
   delete DB.returnsMonths[month];
   buildDBFYIndex(); renderDBScreen();
 }
+
+// Delete one seller's contribution from a month; removes doc entirely if last seller
+async function deleteSalesSellerMonth(month, sellerId) {
+  const existing = DB.salesMonths[month];
+  if (!existing) return;
+  const remaining = (existing.sellers || []).filter(s => s !== sellerId);
+  if (remaining.length === 0) {
+    await deleteDoc(doc(fsDb,'sales_monthly',month));
+    delete DB.salesMonths[month];
+  } else {
+    const newSellerStyles = {...(existing.sellerStyles||{})};
+    delete newSellerStyles[sellerId];
+    // Recompute merged styles from remaining sellers
+    const merged = {};
+    Object.values(newSellerStyles).forEach(sm => {
+      Object.entries(sm).forEach(([sid,sd]) => {
+        if (!merged[sid]) { merged[sid]={...sd,skus:{...sd.skus}}; }
+        else {
+          merged[sid].units += sd.units;
+          merged[sid].revenue += sd.revenue;
+          Object.entries(sd.skus||{}).forEach(([sku,sv]) => {
+            if (merged[sid].skus[sku]) { merged[sid].skus[sku].units+=sv.units; merged[sid].skus[sku].revenue+=sv.revenue; }
+            else merged[sid].skus[sku]={...sv};
+          });
+        }
+      });
+    });
+    const totalUnits=Object.values(merged).reduce((a,s)=>a+s.units,0);
+    const totalRevenue=Object.values(merged).reduce((a,s)=>a+s.revenue,0);
+    const memPayload={...existing,styles:merged,sellerStyles:newSellerStyles,sellers:remaining,totalUnits,totalRevenue};
+    const fsPayload={...memPayload,styles:JSON.stringify(merged),sellerStyles:JSON.stringify(newSellerStyles)};
+    await setDoc(doc(fsDb,'sales_monthly',month),fsPayload);
+    DB.salesMonths[month]=memPayload;
+  }
+  buildDBFYIndex(); renderDBScreen();
+}
+
+async function deleteReturnsSellerMonth(month, sellerId) {
+  const existing = DB.returnsMonths[month];
+  if (!existing) return;
+  const remaining = (existing.sellers || []).filter(s => s !== sellerId);
+  if (remaining.length === 0) {
+    await deleteDoc(doc(fsDb,'returns_monthly',month));
+    delete DB.returnsMonths[month];
+  } else {
+    const newSellerReturns = {...(existing.sellerReturns||{})};
+    delete newSellerReturns[sellerId];
+    // Recompute merged styles and skuRets from remaining sellers
+    const mergedStyles = {}, mergedSkuRets = {};
+    Object.values(newSellerReturns).forEach(({styles,skuRets}) => {
+      Object.entries(styles||{}).forEach(([sid,count]) => { mergedStyles[sid]=(mergedStyles[sid]||0)+count; });
+      Object.entries(skuRets||{}).forEach(([sku,count]) => { mergedSkuRets[sku]=(mergedSkuRets[sku]||0)+count; });
+    });
+    const totalRets=Object.values(mergedStyles).reduce((a,b)=>a+b,0);
+    const memPayload={...existing,styles:mergedStyles,skuRets:mergedSkuRets,sellerReturns:newSellerReturns,sellers:remaining,totalRets};
+    const fsPayload={...memPayload,styles:JSON.stringify(mergedStyles),skuRets:JSON.stringify(mergedSkuRets),sellerReturns:JSON.stringify(newSellerReturns)};
+    await setDoc(doc(fsDb,'returns_monthly',month),fsPayload);
+    DB.returnsMonths[month]=memPayload;
+  }
+  buildDBFYIndex(); renderDBScreen();
+}
 async function deleteCostMaster() {
   await deleteDoc(doc(fsDb,'cost_master','master'));
   DB.costMaster={costs:{},uploadedAt:null};
@@ -1539,6 +1739,8 @@ function openDBUploadModal() {
   document.getElementById('dbupPwErr').style.display='none';
   document.getElementById('dbupPwInput').value='';
   document.getElementById('dbupSave').disabled=true;
+  document.getElementById('dbupSave').style.display='';
+  document.getElementById('dbupSave').textContent='Save to Database';
   document.getElementById('dbupDropZone').style.display='block';
   document.getElementById('dbupCancel').textContent='Cancel';
   dbupCurrentFile=null; dbupParsed=null;
@@ -1558,29 +1760,53 @@ async function handleDBUploadFile(file) {
 
   if (parsed.type === 'sales') {
     const month = detectSalesMonth(parsed.rows);
+    const sellerId = getSellerFromRows(parsed.rows);
+    const sellerName = getSellerLabel(sellerId);
     document.getElementById('dbupPreviewType').textContent='📊 Sales File';
     if (!month) {
       rows.innerHTML=`<div class="dbup-preview-row"><span>Status</span><span class="dbup-status-err">❌ Could not detect a single month. Use one-time view for multi-month files.</span></div>`;
       document.getElementById('dbupSave').disabled=true; return;
     }
     const complete = isMonthComplete(month);
-    const inDB = !!DB.salesMonths[month];
     const fy = getFY(month);
+    const existing = DB.salesMonths[month];
+    const existingSellers = existing?.sellers || (existing ? ['18724'] : []);
+    const isDuplicate = existing && existingSellers.includes(sellerId);
+    const isMerge = existing && !isDuplicate;
+    const mergeWith = isMerge ? existingSellers.map(getSellerLabel).join(' + ') : '';
+    let statusHtml;
+    if (isDuplicate) {
+      statusHtml=`<span class="dbup-status-err">❌ ${sellerName} data for ${formatMonth(month)} already exists — delete from Manage DB first</span>`;
+    } else if (isMerge) {
+      statusHtml=`<span class="dbup-status-ok">✓ Will merge with existing ${mergeWith} data</span>`;
+    } else {
+      statusHtml=`<span class="dbup-status-ok">✓ New — no existing data for this month</span>`;
+    }
     rows.innerHTML=`
+      <div class="dbup-preview-row"><span>Channel</span><span class="dbup-preview-val">${sellerName} (${sellerId})</span></div>
       <div class="dbup-preview-row"><span>Month</span><span class="dbup-preview-val">${formatMonth(month)}</span></div>
       <div class="dbup-preview-row"><span>Financial Year</span><span class="dbup-preview-val">${fy}</span></div>
       <div class="dbup-preview-row"><span>Rows</span><span class="dbup-preview-val">${parsed.rowCount.toLocaleString('en-IN')}</span></div>
       <div class="dbup-preview-row"><span>Month complete</span><span class="${complete?'dbup-status-ok':'dbup-status-err'}">${complete?'✓ Yes':'✗ Month not yet over — use one-time view'}</span></div>
-      <div class="dbup-preview-row"><span>Already in database</span><span class="${inDB?'dbup-status-warn':'dbup-status-ok'}">${inDB?'⚠ Yes — will replace existing data':'✓ No'}</span></div>`;
-    if (!complete) document.getElementById('dbupSave').disabled=true;
+      <div class="dbup-preview-row"><span>Database</span>${statusHtml}</div>`;
+    if (!complete || isDuplicate) document.getElementById('dbupSave').disabled=true;
 
   } else if (parsed.type === 'returns') {
     const orderMonths = detectReturnOrderMonths(parsed.rows);
+    const sellerId = getSellerFromRows(parsed.rows);
+    const sellerName = getSellerLabel(sellerId);
     document.getElementById('dbupPreviewType').textContent='↩ Returns File';
+    const monthStatuses = orderMonths.map(m => {
+      const existing = DB.returnsMonths[m];
+      const existingSellers = existing?.sellers || (existing ? ['18724'] : []);
+      if (existing && existingSellers.includes(sellerId)) return `<span class="dbup-status-warn">${formatMonth(m)} ↻ update</span>`;
+      if (existing) return `<span class="dbup-status-ok">${formatMonth(m)} ✓ merge</span>`;
+      return `<span class="dbup-status-ok">${formatMonth(m)} ✓ new</span>`;
+    });
     rows.innerHTML=`
+      <div class="dbup-preview-row"><span>Channel</span><span class="dbup-preview-val">${sellerName} (${sellerId})</span></div>
       <div class="dbup-preview-row"><span>Records</span><span class="dbup-preview-val">${parsed.rowCount.toLocaleString('en-IN')}</span></div>
-      <div class="dbup-preview-row"><span>Order months covered</span><span class="dbup-preview-val">${orderMonths.map(formatMonth).join(', ')||'—'}</span></div>
-      <div class="dbup-preview-row"><span>Effect</span><span class="dbup-status-warn">⚠ Will replace return data for above months</span></div>`;
+      <div class="dbup-preview-row"><span>Order months</span><div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end;">${monthStatuses.join('')}</div></div>`;
 
   } else if (parsed.type === 'itemmaster') {
     const hasExisting = DB.costMaster.uploadedAt;
@@ -1748,6 +1974,9 @@ function renderDBFYTabs() {
       if (!DB.compareFYA && DB.allFYs.length >= 2) { DB.compareFYA = DB.allFYs[DB.allFYs.length-2]; DB.compareFYB = DB.allFYs[DB.allFYs.length-1]; }
     } else {
       DB.compareMode = false; DB.activeFY = btn.dataset.fy;
+      DB.selectedMonths = new Set(DB.fyMonths[btn.dataset.fy] || []);
+      DB.dbActiveBrands = new Set(['All']);
+      DB.dbActiveTiers = new Set(['VF','F','M','S','D']);
     }
     renderDBFYTabs(); renderDBFYView();
     if (DB.compareMode) renderCompare();
@@ -1768,6 +1997,7 @@ function renderDBFYView() {
   const selMonths = fyMonths.filter(m => DB.selectedMonths.has(m));
   document.getElementById('dbTabBar').style.display = 'flex';
   document.getElementById('db-compare').style.display = 'none';
+  document.getElementById('dbManageBtn').classList.remove('active');
   ['db-overview','db-styles','db-manage'].forEach(id => {
     document.getElementById(id).classList.remove('active');
     document.getElementById(id).style.display = 'none';
@@ -1840,11 +2070,17 @@ function renderDBMonthTimeline(fy, allFYMonths, fyMonths) {
     <div class="mt-legend-item"><div class="mt-legend-dot" style="background:#f8fafc;border:2px solid #e5e7eb;"></div>No data</div>
   </div>`;
   tl.querySelectorAll('.mt-month').forEach(el => {
-    el.addEventListener('click', () => {
+    el.addEventListener('click', (e) => {
       const m = el.dataset.month;
       if (el.dataset.has !== 'true') return;
-      if (DB.selectedMonths.has(m)) { if (DB.selectedMonths.size > 1) DB.selectedMonths.delete(m); }
-      else DB.selectedMonths.add(m);
+      if (e.ctrlKey || e.metaKey) {
+        // Ctrl/Cmd+click: toggle this month in/out
+        if (DB.selectedMonths.has(m)) { if (DB.selectedMonths.size > 1) DB.selectedMonths.delete(m); }
+        else DB.selectedMonths.add(m);
+      } else {
+        // Plain click: select only this month
+        DB.selectedMonths = new Set([m]);
+      }
       DB.dbActiveBrands = new Set(['All']);
       DB.dbActiveTiers = new Set(['VF','F','M','S','D']);
       renderDBFYView();
@@ -1987,155 +2223,360 @@ function renderDBTable() {
 }
 
 // ─── COMPARATIVE ANALYSIS ────────────────────────────────
+function cmpDelta(a,b,invert=false) {
+  if(!a) return '<span class="compare-delta delta-neutral">NEW</span>';
+  const pct=((b-a)/a)*100;
+  const up=invert?pct<0:pct>=0;
+  const cls=pct===0?'delta-neutral':up?'delta-up':'delta-down';
+  return `<span class="compare-delta ${cls}">${pct>=0?'+':''}${pct.toFixed(1)}%</span>`;
+}
+
 function renderCompare() {
   document.getElementById('monthTimeline').style.display = 'none';
   document.getElementById('dbTabBar').style.display = 'none';
   document.getElementById('dbFilterBar').style.display = 'none';
   ['db-overview','db-styles','db-manage'].forEach(id=>{ document.getElementById(id).style.display='none'; document.getElementById(id).classList.remove('active'); });
+  document.getElementById('dbManageBtn').classList.remove('active');
   const cpanel = document.getElementById('db-compare');
   cpanel.style.display = 'block';
+  const sub = DB.compareSubMode || 'fy';
+  cpanel.innerHTML = `
+    <div class="compare-sub-tabs">
+      <button class="compare-sub-btn${sub==='fy'?' active':''}" data-sub="fy">FY vs FY</button>
+      <button class="compare-sub-btn${sub==='month'?' active':''}" data-sub="month">Month vs Month</button>
+    </div>
+    <div id="cmpSubBody"></div>`;
+  cpanel.querySelectorAll('.compare-sub-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{ DB.compareSubMode=btn.dataset.sub; renderCompare(); });
+  });
+  if (sub === 'fy') renderCompareFY();
+  else renderCompareMth();
+}
+
+function renderCompareFY() {
+  const cont = document.getElementById('cmpSubBody');
   const fyA = DB.compareFYA || DB.allFYs[0];
   const fyB = DB.compareFYB || DB.allFYs[1];
-  // Find common FY month positions
   const fyAMonths = DB.fyMonths[fyA] || [];
   const fyBMonths = DB.fyMonths[fyB] || [];
   const fyAPos = new Set(fyAMonths.map(getFYMonth));
   const fyBPos = new Set(fyBMonths.map(getFYMonth));
-  const commonPos = [...fyAPos].filter(p => fyBPos.has(p)).sort((a,b)=>a-b);
+  const commonPos = [...fyAPos].filter(p=>fyBPos.has(p)).sort((a,b)=>a-b);
   const MONTH_NAMES = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
-  const rows = commonPos.map(pos => {
-    const mA = getMonthForFY(fyA, pos), mB = getMonthForFY(fyB, pos);
-    const sdA = DB.salesMonths[mA], sdB = DB.salesMonths[mB];
-    const rdA = DB.returnsMonths[mA], rdB = DB.returnsMonths[mB];
-    return { label: MONTH_NAMES[pos-1], mA, mB, sdA, sdB, rdA, rdB };
+  const rows = commonPos.map(pos=>{
+    const mA=getMonthForFY(fyA,pos), mB=getMonthForFY(fyB,pos);
+    return {label:MONTH_NAMES[pos-1], mA, mB, sdA:DB.salesMonths[mA], sdB:DB.salesMonths[mB], rdA:DB.returnsMonths[mA], rdB:DB.returnsMonths[mB]};
   });
-  // Aggregate totals for matched months
-  const totA = {units:0,revenue:0,rets:0};
-  const totB = {units:0,revenue:0,rets:0};
-  rows.forEach(r => {
-    totA.units += r.sdA?.totalUnits||0; totA.revenue += r.sdA?.totalRevenue||0; totA.rets += r.rdA?.totalRets||0;
-    totB.units += r.sdB?.totalUnits||0; totB.revenue += r.sdB?.totalRevenue||0; totB.rets += r.rdB?.totalRets||0;
+  const costs=DB.costMaster.costs||{};
+  const hasCost=Object.keys(costs).length>0;
+  const totA={units:0,revenue:0,rets:0,wc:0,styles:new Set()};
+  const totB={units:0,revenue:0,rets:0,wc:0,styles:new Set()};
+  rows.forEach(r=>{
+    totA.units+=r.sdA?.totalUnits||0; totA.revenue+=r.sdA?.totalRevenue||0; totA.rets+=r.rdA?.totalRets||0;
+    totB.units+=r.sdB?.totalUnits||0; totB.revenue+=r.sdB?.totalRevenue||0; totB.rets+=r.rdB?.totalRets||0;
+    Object.keys(r.sdA?.styles||{}).forEach(s=>totA.styles.add(s));
+    Object.keys(r.sdB?.styles||{}).forEach(s=>totB.styles.add(s));
+    if(hasCost){
+      Object.entries(r.sdA?.styles||{}).forEach(([sid,sd])=>{ const c=costs[sid]; if(c) totA.wc+=c*(sd.units||0); });
+      Object.entries(r.sdB?.styles||{}).forEach(([sid,sd])=>{ const c=costs[sid]; if(c) totB.wc+=c*(sd.units||0); });
+    }
   });
-  const totARetPct = totA.units>0?(totA.rets/totA.units*100):0;
-  const totBRetPct = totB.units>0?(totB.rets/totB.units*100):0;
-  function delta(a,b,invert=false) {
-    if(!a) return '<span class="compare-delta delta-neutral">NEW</span>';
-    const pct = ((b-a)/a)*100;
-    const up = invert ? pct < 0 : pct >= 0;
-    const cls = pct===0?'delta-neutral':up?'delta-up':'delta-down';
-    return `<span class="compare-delta ${cls}">${pct>=0?'+':''}${pct.toFixed(1)}%</span>`;
-  }
-  cpanel.innerHTML = `
+  const avgPA=totA.units>0?totA.revenue/totA.units:0, avgPB=totB.units>0?totB.revenue/totB.units:0;
+  const rpA=totA.units>0?(totA.rets/totA.units*100):0, rpB=totB.units>0?(totB.rets/totB.units*100):0;
+  cont.innerHTML = `
     <div class="compare-header">
       <span style="font-size:12px;font-weight:600;color:#555;">Comparing</span>
       <select class="compare-fy-select" id="cmpFyA">${DB.allFYs.map(f=>`<option value="${f}"${f===fyA?' selected':''}>${f}</option>`).join('')}</select>
       <span class="compare-vs">vs</span>
       <select class="compare-fy-select" id="cmpFyB">${DB.allFYs.map(f=>`<option value="${f}"${f===fyB?' selected':''}>${f}</option>`).join('')}</select>
-      <div class="compare-note">Showing ${commonPos.length} common month${commonPos.length!==1?'s':''}: ${commonPos.map(p=>MONTH_NAMES[p-1]).join(', ')||'—'}</div>
+      <div class="compare-note">Matching ${commonPos.length} month${commonPos.length!==1?'s':''}: ${commonPos.map(p=>MONTH_NAMES[p-1]).join(', ')||'—'}</div>
     </div>
     <div class="compare-kpi-row">
-      <div class="compare-kpi"><div class="compare-kpi-label">Units (matched months)</div><div class="compare-kpi-vals"><span class="compare-kpi-a">${totA.units.toLocaleString('en-IN')}</span><span class="compare-kpi-b">${totB.units.toLocaleString('en-IN')}</span>${delta(totA.units,totB.units)}</div></div>
-      <div class="compare-kpi"><div class="compare-kpi-label">Revenue</div><div class="compare-kpi-vals"><span class="compare-kpi-a">₹${Math.round(totA.revenue/100000).toLocaleString('en-IN')}L</span><span class="compare-kpi-b">₹${Math.round(totB.revenue/100000).toLocaleString('en-IN')}L</span>${delta(totA.revenue,totB.revenue)}</div></div>
-      <div class="compare-kpi"><div class="compare-kpi-label">Returns</div><div class="compare-kpi-vals"><span class="compare-kpi-a">${totA.rets.toLocaleString('en-IN')}</span><span class="compare-kpi-b">${totB.rets.toLocaleString('en-IN')}</span>${delta(totA.rets,totB.rets,true)}</div></div>
-      <div class="compare-kpi"><div class="compare-kpi-label">Return %</div><div class="compare-kpi-vals"><span class="compare-kpi-a">${totARetPct.toFixed(1)}%</span><span class="compare-kpi-b">${totBRetPct.toFixed(1)}%</span>${delta(totARetPct,totBRetPct,true)}</div></div>
+      <div class="compare-kpi"><div class="compare-kpi-label">Units</div><div class="compare-kpi-vals"><span class="compare-kpi-a">${totA.units.toLocaleString('en-IN')}</span><span class="compare-kpi-b">${totB.units.toLocaleString('en-IN')}</span>${cmpDelta(totA.units,totB.units)}</div></div>
+      <div class="compare-kpi"><div class="compare-kpi-label">Revenue</div><div class="compare-kpi-vals"><span class="compare-kpi-a">₹${Math.round(totA.revenue/100000).toLocaleString('en-IN')}L</span><span class="compare-kpi-b">₹${Math.round(totB.revenue/100000).toLocaleString('en-IN')}L</span>${cmpDelta(totA.revenue,totB.revenue)}</div></div>
+      <div class="compare-kpi"><div class="compare-kpi-label">Returns</div><div class="compare-kpi-vals"><span class="compare-kpi-a">${totA.rets.toLocaleString('en-IN')}</span><span class="compare-kpi-b">${totB.rets.toLocaleString('en-IN')}</span>${cmpDelta(totA.rets,totB.rets,true)}</div></div>
+      <div class="compare-kpi"><div class="compare-kpi-label">Return %</div><div class="compare-kpi-vals"><span class="compare-kpi-a">${rpA.toFixed(1)}%</span><span class="compare-kpi-b">${rpB.toFixed(1)}%</span>${cmpDelta(rpA,rpB,true)}</div></div>
+      <div class="compare-kpi"><div class="compare-kpi-label">Avg Selling Price</div><div class="compare-kpi-vals"><span class="compare-kpi-a">₹${Math.round(avgPA).toLocaleString('en-IN')}</span><span class="compare-kpi-b">₹${Math.round(avgPB).toLocaleString('en-IN')}</span>${cmpDelta(avgPA,avgPB)}</div></div>
+      ${hasCost?`<div class="compare-kpi"><div class="compare-kpi-label">Working Capital</div><div class="compare-kpi-vals"><span class="compare-kpi-a">₹${Math.round(totA.wc/100000).toLocaleString('en-IN')}L</span><span class="compare-kpi-b">₹${Math.round(totB.wc/100000).toLocaleString('en-IN')}L</span>${cmpDelta(totA.wc,totB.wc)}</div></div>`:''}
+      <div class="compare-kpi"><div class="compare-kpi-label">Unique Styles</div><div class="compare-kpi-vals"><span class="compare-kpi-a">${totA.styles.size}</span><span class="compare-kpi-b">${totB.styles.size}</span>${cmpDelta(totA.styles.size,totB.styles.size)}</div></div>
     </div>
     <div class="section">
-      <div class="section-title">Month-by-Month: Units</div>
+      <div class="section-title">Month-by-Month Trend</div>
       <div class="chart-grid cols2">
-        <div class="chart-card"><div class="chart-card-title">Units Comparison</div><div class="chart-wrap"><canvas id="cmpChartUnits"></canvas></div></div>
-        <div class="chart-card"><div class="chart-card-title">Revenue Comparison (₹)</div><div class="chart-wrap"><canvas id="cmpChartRev"></canvas></div></div>
+        <div class="chart-card"><div class="chart-card-title">Units</div><div class="chart-wrap"><canvas id="cmpChartUnits"></canvas></div></div>
+        <div class="chart-card"><div class="chart-card-title">Revenue (₹)</div><div class="chart-wrap"><canvas id="cmpChartRev"></canvas></div></div>
       </div>
     </div>
     <div class="compare-month-table">
       <div class="section-title">Month-by-Month Detail</div>
       <div style="margin-top:12px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
         <div class="cmt-head">
-          <div>Month</div><div style="color:#6366f1;">${fyA} Units</div><div style="color:#f59e0b;">${fyB} Units</div><div>Δ Units</div>
+          <div>Month</div>
+          <div style="color:#6366f1;">${fyA} Units</div><div style="color:#f59e0b;">${fyB} Units</div><div>Δ Units</div>
           <div style="color:#6366f1;">${fyA} Rev</div><div style="color:#f59e0b;">${fyB} Rev</div><div>Δ Rev</div>
-          <div style="color:#6366f1;">${fyA} Ret%</div><div style="color:#f59e0b;">${fyB} Ret%</div>
+          <div style="color:#6366f1;">${fyA} Ret%</div><div style="color:#f59e0b;">${fyB} Ret%</div><div>Δ Avg₹</div>
         </div>
         ${rows.map(r=>{
           const uA=r.sdA?.totalUnits||0,uB=r.sdB?.totalUnits||0;
           const rA=r.sdA?.totalRevenue||0,rB=r.sdB?.totalRevenue||0;
           const retA=r.rdA?.totalRets||0,retB=r.rdB?.totalRets||0;
           const rpA=uA>0?(retA/uA*100).toFixed(1):'—',rpB=uB>0?(retB/uB*100).toFixed(1):'—';
+          const apA=uA>0?rA/uA:0,apB=uB>0?rB/uB:0;
           return `<div class="cmt-row">
             <div class="cmt-month">${r.label}</div>
-            <div>${uA.toLocaleString('en-IN')}</div><div>${uB.toLocaleString('en-IN')}</div><div>${delta(uA,uB)}</div>
-            <div>₹${Math.round(rA/1000)}K</div><div>₹${Math.round(rB/1000)}K</div><div>${delta(rA,rB)}</div>
-            <div>${rpA}%</div><div>${rpB}%</div>
+            <div>${uA.toLocaleString('en-IN')}</div><div>${uB.toLocaleString('en-IN')}</div><div>${cmpDelta(uA,uB)}</div>
+            <div>₹${Math.round(rA/1000)}K</div><div>₹${Math.round(rB/1000)}K</div><div>${cmpDelta(rA,rB)}</div>
+            <div>${rpA}%</div><div>${rpB}%</div><div>${cmpDelta(apA,apB)}</div>
           </div>`;
         }).join('')||`<div class="cmt-row"><div class="cmt-month" style="color:#aaa;padding:20px;">No common months found between ${fyA} and ${fyB}</div></div>`}
       </div>
     </div>`;
-  // Grouped bar charts
-  const labels = rows.map(r=>r.label);
-  const unitsA = rows.map(r=>r.sdA?.totalUnits||0);
-  const unitsB = rows.map(r=>r.sdB?.totalUnits||0);
-  const revA = rows.map(r=>Math.round(r.sdA?.totalRevenue||0));
-  const revB = rows.map(r=>Math.round(r.sdB?.totalRevenue||0));
-  setTimeout(() => {
-    destroyDBChart('cmpChartUnits');
-    destroyDBChart('cmpChartRev');
-    const ctx1=document.getElementById('cmpChartUnits');
-    const ctx2=document.getElementById('cmpChartRev');
-    if(ctx1) DB_CHARTS['cmpChartUnits']=new Chart(ctx1.getContext('2d'),{type:'bar',data:{labels,datasets:[{label:fyA,data:unitsA,backgroundColor:'#818cf8aa',borderRadius:3},{label:fyB,data:unitsB,backgroundColor:'#f59e0baa',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{family:'DM Sans',size:10},boxWidth:10}}},scales:{x:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{display:false}},y:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{color:'#f0f0f0'}}}}});
-    if(ctx2) DB_CHARTS['cmpChartRev']=new Chart(ctx2.getContext('2d'),{type:'bar',data:{labels,datasets:[{label:fyA,data:revA,backgroundColor:'#34d399aa',borderRadius:3},{label:fyB,data:revB,backgroundColor:'#fb923caa',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{family:'DM Sans',size:10},boxWidth:10}}},scales:{x:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{display:false}},y:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{color:'#f0f0f0'}}}}});
-  }, 50);
-  // FY selector change
-  document.getElementById('cmpFyA').addEventListener('change', e=>{DB.compareFYA=e.target.value;renderCompare();});
-  document.getElementById('cmpFyB').addEventListener('change', e=>{DB.compareFYB=e.target.value;renderCompare();});
+  const labels=rows.map(r=>r.label);
+  setTimeout(()=>{
+    destroyDBChart('cmpChartUnits'); destroyDBChart('cmpChartRev');
+    const ctx1=document.getElementById('cmpChartUnits'), ctx2=document.getElementById('cmpChartRev');
+    if(ctx1) DB_CHARTS['cmpChartUnits']=new Chart(ctx1.getContext('2d'),{type:'bar',data:{labels,datasets:[{label:fyA,data:rows.map(r=>r.sdA?.totalUnits||0),backgroundColor:'#818cf8aa',borderRadius:3},{label:fyB,data:rows.map(r=>r.sdB?.totalUnits||0),backgroundColor:'#f59e0baa',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{family:'DM Sans',size:10},boxWidth:10}}},scales:{x:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{display:false}},y:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{color:'#f0f0f0'}}}}});
+    if(ctx2) DB_CHARTS['cmpChartRev']=new Chart(ctx2.getContext('2d'),{type:'bar',data:{labels,datasets:[{label:fyA,data:rows.map(r=>Math.round(r.sdA?.totalRevenue||0)),backgroundColor:'#34d399aa',borderRadius:3},{label:fyB,data:rows.map(r=>Math.round(r.sdB?.totalRevenue||0)),backgroundColor:'#fb923caa',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{family:'DM Sans',size:10},boxWidth:10}}},scales:{x:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{display:false}},y:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{color:'#f0f0f0'}}}}});
+  },50);
+  document.getElementById('cmpFyA').addEventListener('change',e=>{DB.compareFYA=e.target.value;renderCompare();});
+  document.getElementById('cmpFyB').addEventListener('change',e=>{DB.compareFYB=e.target.value;renderCompare();});
+}
+
+function renderCompareMth() {
+  const cont = document.getElementById('cmpSubBody');
+  const allMonths = Object.keys(DB.salesMonths).sort();
+  if (allMonths.length < 2) {
+    cont.innerHTML = `<div style="padding:60px;text-align:center;color:#aaa;font-size:12px;">Need at least 2 months of data to compare.</div>`;
+    return;
+  }
+  // Smart defaults: same FY position from different FYs
+  if (!DB.compareMthA || !DB.salesMonths[DB.compareMthA]) {
+    const lastFY = DB.allFYs[DB.allFYs.length-1];
+    DB.compareMthA = (DB.fyMonths[lastFY]||[]).sort()[0] || allMonths[allMonths.length-1];
+  }
+  if (!DB.compareMthB || !DB.salesMonths[DB.compareMthB] || DB.compareMthB===DB.compareMthA) {
+    const pos = getFYMonth(DB.compareMthA);
+    const fyOfA = getFY(DB.compareMthA);
+    const prevFYIdx = DB.allFYs.indexOf(fyOfA)-1;
+    const candidate = prevFYIdx>=0 ? getMonthForFY(DB.allFYs[prevFYIdx],pos) : null;
+    DB.compareMthB = (candidate && DB.salesMonths[candidate]) ? candidate : allMonths.find(m=>m!==DB.compareMthA)||allMonths[0];
+  }
+  const mA=DB.compareMthA, mB=DB.compareMthB;
+  const sdA=DB.salesMonths[mA], sdB=DB.salesMonths[mB];
+  const rdA=DB.returnsMonths[mA], rdB=DB.returnsMonths[mB];
+  const uA=sdA?.totalUnits||0, uB=sdB?.totalUnits||0;
+  const rA=sdA?.totalRevenue||0, rB=sdB?.totalRevenue||0;
+  const retsA=rdA?.totalRets||0, retsB=rdB?.totalRets||0;
+  const avgPA=uA>0?rA/uA:0, avgPB=uB>0?rB/uB:0;
+  const rpA=uA>0?retsA/uA*100:0, rpB=uB>0?retsB/uB*100:0;
+  const daysA=getDaysInMonth(mA), daysB=getDaysInMonth(mB);
+  const rosA=daysA>0?uA/daysA:0, rosB=daysB>0?uB/daysB:0;
+  const stylesA=Object.keys(sdA?.styles||{}).length, stylesB=Object.keys(sdB?.styles||{}).length;
+  const costs=DB.costMaster.costs||{};
+  const hasCost=Object.keys(costs).length>0;
+  let wcA=0,wcB=0;
+  if(hasCost){
+    Object.entries(sdA?.styles||{}).forEach(([sid,sd])=>{ const c=costs[sid]; if(c) wcA+=c*(sd.units||0); });
+    Object.entries(sdB?.styles||{}).forEach(([sid,sd])=>{ const c=costs[sid]; if(c) wcB+=c*(sd.units||0); });
+  }
+  // Per-brand breakdown
+  const brandsA={},brandsB={};
+  Object.entries(sdA?.styles||{}).forEach(([sid,sd])=>{ const b=sd.brand||'Other'; if(!brandsA[b]) brandsA[b]={units:0,revenue:0}; brandsA[b].units+=sd.units||0; brandsA[b].revenue+=sd.revenue||0; });
+  Object.entries(sdB?.styles||{}).forEach(([sid,sd])=>{ const b=sd.brand||'Other'; if(!brandsB[b]) brandsB[b]={units:0,revenue:0}; brandsB[b].units+=sd.units||0; brandsB[b].revenue+=sd.revenue||0; });
+  const allBrands=[...new Set([...Object.keys(brandsA),...Object.keys(brandsB)])].sort();
+  const metrics=[
+    {label:'Units Sold', a:uA.toLocaleString('en-IN'), b:uB.toLocaleString('en-IN'), d:cmpDelta(uA,uB)},
+    {label:'Revenue', a:`₹${Math.round(rA/1000)}K`, b:`₹${Math.round(rB/1000)}K`, d:cmpDelta(rA,rB)},
+    {label:'Avg Selling Price', a:`₹${Math.round(avgPA)}`, b:`₹${Math.round(avgPB)}`, d:cmpDelta(avgPA,avgPB)},
+    {label:'Returns', a:retsA.toLocaleString('en-IN'), b:retsB.toLocaleString('en-IN'), d:cmpDelta(retsA,retsB,true)},
+    {label:'Return %', a:`${rpA.toFixed(1)}%`, b:`${rpB.toFixed(1)}%`, d:cmpDelta(rpA,rpB,true)},
+    {label:'ROS / day', a:rosA.toFixed(3), b:rosB.toFixed(3), d:cmpDelta(rosA,rosB)},
+    {label:'Unique Styles', a:stylesA, b:stylesB, d:cmpDelta(stylesA,stylesB)},
+    ...(hasCost?[{label:'Working Capital', a:`₹${Math.round(wcA/1000)}K`, b:`₹${Math.round(wcB/1000)}K`, d:cmpDelta(wcA,wcB)}]:[]),
+  ];
+  const mthOpts=allMonths.map(m=>`<option value="${m}"${m===mA?' selected':''}>${formatMonth(m)}</option>`).join('');
+  const mthOptsB=allMonths.map(m=>`<option value="${m}"${m===mB?' selected':''}>${formatMonth(m)}</option>`).join('');
+  const tblStyle=`background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;`;
+  const thStyle=(col)=>`flex:${col};padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;`;
+  const tdStyle=(col,mono=false)=>`flex:${col};padding:9px 12px;font-size:12px;${mono?`font-family:'DM Mono',monospace;`:''}`;
+  cont.innerHTML=`
+    <div class="compare-header">
+      <span style="font-size:12px;font-weight:600;color:#555;">Comparing</span>
+      <select class="compare-fy-select" id="cmpMthA">${mthOpts}</select>
+      <span class="compare-vs">vs</span>
+      <select class="compare-fy-select" id="cmpMthB">${mthOptsB}</select>
+    </div>
+    <div class="compare-kpi-row">
+      <div class="compare-kpi"><div class="compare-kpi-label">Units</div><div class="compare-kpi-vals"><span class="compare-kpi-a">${uA.toLocaleString('en-IN')}</span><span class="compare-kpi-b">${uB.toLocaleString('en-IN')}</span>${cmpDelta(uA,uB)}</div></div>
+      <div class="compare-kpi"><div class="compare-kpi-label">Revenue</div><div class="compare-kpi-vals"><span class="compare-kpi-a">₹${Math.round(rA/1000)}K</span><span class="compare-kpi-b">₹${Math.round(rB/1000)}K</span>${cmpDelta(rA,rB)}</div></div>
+      <div class="compare-kpi"><div class="compare-kpi-label">Return %</div><div class="compare-kpi-vals"><span class="compare-kpi-a">${rpA.toFixed(1)}%</span><span class="compare-kpi-b">${rpB.toFixed(1)}%</span>${cmpDelta(rpA,rpB,true)}</div></div>
+      <div class="compare-kpi"><div class="compare-kpi-label">Avg Price</div><div class="compare-kpi-vals"><span class="compare-kpi-a">₹${Math.round(avgPA)}</span><span class="compare-kpi-b">₹${Math.round(avgPB)}</span>${cmpDelta(avgPA,avgPB)}</div></div>
+      <div class="compare-kpi"><div class="compare-kpi-label">ROS / day</div><div class="compare-kpi-vals"><span class="compare-kpi-a">${rosA.toFixed(3)}</span><span class="compare-kpi-b">${rosB.toFixed(3)}</span>${cmpDelta(rosA,rosB)}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px 28px 24px;">
+      <div>
+        <div class="section-title" style="margin-bottom:10px;">Detailed Metrics</div>
+        <div style="${tblStyle}">
+          <div style="display:flex;background:#fafafa;border-bottom:1px solid #e5e7eb;">
+            <div style="${thStyle(2)}color:#999;">Metric</div>
+            <div style="${thStyle(1)}color:#6366f1;">${formatMonth(mA)}</div>
+            <div style="${thStyle(1)}color:#f59e0b;">${formatMonth(mB)}</div>
+            <div style="${thStyle(1)}color:#999;">Δ</div>
+          </div>
+          ${metrics.map(row=>`<div style="display:flex;border-bottom:1px solid #f0f0f0;">
+            <div style="${tdStyle(2)}font-weight:600;color:#555;">${row.label}</div>
+            <div style="${tdStyle(1,true)}color:#6366f1;">${row.a}</div>
+            <div style="${tdStyle(1,true)}color:#f59e0b;">${row.b}</div>
+            <div style="${tdStyle(1)}">${row.d}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+      ${allBrands.length>1?`
+      <div>
+        <div class="section-title" style="margin-bottom:10px;">Brand Breakdown (Units)</div>
+        <div style="${tblStyle}">
+          <div style="display:flex;background:#fafafa;border-bottom:1px solid #e5e7eb;">
+            <div style="${thStyle(2)}color:#999;">Brand</div>
+            <div style="${thStyle(1)}color:#6366f1;">${formatMonth(mA)}</div>
+            <div style="${thStyle(1)}color:#f59e0b;">${formatMonth(mB)}</div>
+            <div style="${thStyle(1)}color:#999;">Δ</div>
+          </div>
+          ${allBrands.map(b=>{const a=brandsA[b]||{units:0};const bb=brandsB[b]||{units:0};return `<div style="display:flex;border-bottom:1px solid #f0f0f0;">
+            <div style="${tdStyle(2)}font-weight:600;color:#555;">${b}</div>
+            <div style="${tdStyle(1,true)}color:#6366f1;">${a.units.toLocaleString('en-IN')}</div>
+            <div style="${tdStyle(1,true)}color:#f59e0b;">${bb.units.toLocaleString('en-IN')}</div>
+            <div style="${tdStyle(1)}">${cmpDelta(a.units,bb.units)}</div>
+          </div>`;}).join('')}
+        </div>
+      </div>`:
+      `<div>
+        <div class="section-title" style="margin-bottom:10px;">Overview Chart</div>
+        <div class="chart-card" style="height:260px;"><div class="chart-wrap"><canvas id="cmpChartMth"></canvas></div></div>
+      </div>`}
+    </div>`;
+  document.getElementById('cmpMthA').addEventListener('change',e=>{DB.compareMthA=e.target.value;renderCompare();});
+  document.getElementById('cmpMthB').addEventListener('change',e=>{DB.compareMthB=e.target.value;renderCompare();});
+  if(allBrands.length<=1) setTimeout(()=>{
+    const ctx=document.getElementById('cmpChartMth'); if(!ctx) return;
+    destroyDBChart('cmpChartMth');
+    DB_CHARTS['cmpChartMth']=new Chart(ctx.getContext('2d'),{type:'bar',data:{labels:['Units','Revenue (K₹)','Returns'],datasets:[{label:formatMonth(mA),data:[uA,Math.round(rA/1000),retsA],backgroundColor:'#818cf8aa',borderRadius:3},{label:formatMonth(mB),data:[uB,Math.round(rB/1000),retsB],backgroundColor:'#f59e0baa',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{family:'DM Sans',size:10},boxWidth:10}}},scales:{x:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{display:false}},y:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{color:'#f0f0f0'}}}}});
+  },50);
 }
 
 // ─── DB MANAGE ───────────────────────────────────────────
+const CHANNELS = [
+  { id:'18724', label:'MDirect' },
+  { id:'30377', label:'SJIT' },
+  { id:'36387', label:'Anouk Rustic' }
+];
+
 function renderDBManage() {
   const el = document.getElementById('db-manage');
-  const salesList = Object.keys(DB.salesMonths).sort();
-  const retList = Object.keys(DB.returnsMonths).sort();
-  el.innerHTML = `<div class="db-manage-section">
-    <div class="db-manage-title">Sales Data (${salesList.length} months)</div>
-    <div class="db-manage-list">${salesList.length?salesList.map(m=>`<div class="db-manage-item">
-      <div><div class="dmi-label">${formatMonth(m)} Sales</div><div class="dmi-meta">${(DB.salesMonths[m]?.totalUnits||0).toLocaleString()} units · ₹${Math.round((DB.salesMonths[m]?.totalRevenue||0)/1000)}K · ${DB.salesMonths[m]?.fy||''} · uploaded ${(DB.salesMonths[m]?.uploadedAt||'').slice(0,10)}</div></div>
-      <span class="${isReturnsFrozen(m)?'badge-frozen':'badge-pending'}">${isReturnsFrozen(m)?'Frozen':'Pending'}</span>
-      <button class="dmi-del" data-action="del-sales" data-month="${m}">Delete</button>
-    </div>`).join(''):'<div style="color:#aaa;font-size:12px;padding:8px 0;">No sales data stored</div>'}</div>
-    <div class="db-manage-title">Returns Data (${retList.length} order months)</div>
-    <div class="db-manage-list">${retList.length?retList.map(m=>`<div class="db-manage-item">
-      <div><div class="dmi-label">${formatMonth(m)} Returns</div><div class="dmi-meta">${(DB.returnsMonths[m]?.totalRets||0).toLocaleString()} returns · uploaded ${(DB.returnsMonths[m]?.uploadedAt||'').slice(0,10)}</div></div>
-      <button class="dmi-del" data-action="del-returns" data-month="${m}">Delete</button>
-    </div>`).join(''):'<div style="color:#aaa;font-size:12px;padding:8px 0;">No returns data stored</div>'}</div>
-    <div class="db-manage-title">Master Data</div>
-    <div class="db-manage-list">
-      ${DB.costMaster.uploadedAt?`<div class="db-manage-item"><div><div class="dmi-label">Cost Master (Item Master)</div><div class="dmi-meta">${Object.keys(DB.costMaster.costs||{}).length.toLocaleString()} products · uploaded ${DB.costMaster.uploadedAt.slice(0,10)}</div></div><button class="dmi-del" data-action="del-cost">Delete</button></div>`:'<div style="color:#aaa;font-size:12px;padding:8px 0;">No cost data stored</div>'}
-      ${DB.listingsMaster.uploadedAt?`<div class="db-manage-item"><div><div class="dmi-label">Listings Master</div><div class="dmi-meta">${Object.keys(DB.listingsMaster.listings||{}).length.toLocaleString()} styles · uploaded ${DB.listingsMaster.uploadedAt.slice(0,10)}</div></div><button class="dmi-del" data-action="del-listings">Delete</button></div>`:'<div style="color:#aaa;font-size:12px;padding:8px 0;">No listings data stored</div>'}
-    </div>
-    <div class="db-danger-zone">
-      <div class="db-danger-title">⚠ Danger Zone</div>
-      <div class="db-danger-desc">Permanently delete all data from the database. This cannot be undone. Requires 3-step confirmation.</div>
-      <button class="danger-btn" id="deleteAllBtn">Delete Entire Database</button>
-    </div>
-  </div>`;
+  const ch = DB.manageChannel || '18724';
+
+  const salesMonths = Object.keys(DB.salesMonths)
+    .filter(m => (DB.salesMonths[m].sellers||['18724']).includes(ch)).sort();
+  const retMonths = Object.keys(DB.returnsMonths)
+    .filter(m => (DB.returnsMonths[m].sellers||['18724']).includes(ch)).sort();
+
+  const salesByFY = {}, retByFY = {};
+  salesMonths.forEach(m => { const fy=getFY(m); if(!salesByFY[fy]) salesByFY[fy]=[]; salesByFY[fy].push(m); });
+  retMonths.forEach(m => { const fy=getFY(m); if(!retByFY[fy]) retByFY[fy]=[]; retByFY[fy].push(m); });
+  const allFYs = [...new Set([...Object.keys(salesByFY),...Object.keys(retByFY)])].sort().reverse();
+
+  function fyBlock(fy) {
+    const sRows = (salesByFY[fy]||[]).map(m => {
+      const sd = DB.salesMonths[m];
+      const ss = sd.sellerStyles?.[ch] || {};
+      const units = Object.values(ss).reduce((a,s)=>a+s.units,0);
+      const rev = Object.values(ss).reduce((a,s)=>a+s.revenue,0);
+      const frozen = isReturnsFrozen(m);
+      return `<div class="mgmt-item">
+        <div class="mgmt-item-label">${formatMonth(m)} Sales</div>
+        <div class="mgmt-item-meta">${units.toLocaleString('en-IN')} units · ₹${Math.round(rev/1000)}K</div>
+        <span class="mgmt-item-badge ${frozen?'badge-frozen':'badge-pending'}">${frozen?'Frozen':'Pending'}</span>
+        <button class="dmi-del" data-action="del-sales-seller" data-month="${m}" data-seller="${ch}">Delete</button>
+      </div>`;
+    }).join('');
+    const rRows = (retByFY[fy]||[]).map(m => {
+      const rd = DB.returnsMonths[m];
+      const sr = rd.sellerReturns?.[ch]?.styles || {};
+      const count = Object.values(sr).reduce((a,b)=>a+b,0);
+      return `<div class="mgmt-item">
+        <div class="mgmt-item-label">${formatMonth(m)} Returns</div>
+        <div class="mgmt-item-meta">${count.toLocaleString('en-IN')} returns</div>
+        <button class="dmi-del" data-action="del-ret-seller" data-month="${m}" data-seller="${ch}">Delete</button>
+      </div>`;
+    }).join('');
+    if (!sRows && !rRows) return '';
+    return `<div class="mgmt-fy-section">
+      <div class="mgmt-fy-header">${fy}</div>
+      <div class="mgmt-list">${sRows}${rRows}</div>
+    </div>`;
+  }
+
+  const channelTabsHtml = CHANNELS.map(c =>
+    `<button class="mgmt-channel-tab${c.id===ch?' active':''}" data-chid="${c.id}">${c.label}</button>`
+  ).join('');
+
+  const fyContent = allFYs.length
+    ? allFYs.map(fyBlock).join('')
+    : `<div style="color:#aaa;font-size:12px;padding:16px 0;">No data uploaded for this channel yet.</div>`;
+
+  el.innerHTML = `
+    <div class="mgmt-channel-tabs">${channelTabsHtml}</div>
+    <div class="mgmt-body">
+      ${fyContent}
+      <div class="mgmt-master-section">
+        <div class="db-manage-title">Master Data</div>
+        <div class="db-manage-list">
+          ${DB.costMaster.uploadedAt
+            ?`<div class="db-manage-item"><div><div class="dmi-label">Cost Master</div><div class="dmi-meta">${Object.keys(DB.costMaster.costs||{}).length.toLocaleString()} products · ${DB.costMaster.uploadedAt.slice(0,10)}</div></div><button class="dmi-del" data-action="del-cost">Delete</button></div>`
+            :'<div style="color:#aaa;font-size:12px;padding:6px 0;">No cost data stored</div>'}
+          ${DB.listingsMaster.uploadedAt
+            ?`<div class="db-manage-item"><div><div class="dmi-label">Listings Master</div><div class="dmi-meta">${Object.keys(DB.listingsMaster.listings||{}).length.toLocaleString()} styles · ${DB.listingsMaster.uploadedAt.slice(0,10)}</div></div><button class="dmi-del" data-action="del-listings">Delete</button></div>`
+            :'<div style="color:#aaa;font-size:12px;padding:6px 0;">No listings data stored</div>'}
+        </div>
+      </div>
+      <div class="db-danger-zone">
+        <div class="db-danger-title">⚠ Danger Zone</div>
+        <div class="db-danger-desc">Permanently delete all data from the database. This cannot be undone. Requires 3-step confirmation.</div>
+        <button class="danger-btn" id="deleteAllBtn">Delete Entire Database</button>
+      </div>
+    </div>`;
+
+  el.querySelectorAll('.mgmt-channel-tab').forEach(btn => {
+    btn.addEventListener('click', () => { DB.manageChannel = btn.dataset.chid; renderDBManage(); });
+  });
+
   el.querySelectorAll('[data-action]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const action = btn.dataset.action, month = btn.dataset.month;
-      if (action === 'del-sales') confirmDelete3Layer(`${formatMonth(month)} sales data`,month,'sales');
-      else if (action === 'del-returns') confirmDelete3Layer(`${formatMonth(month)} returns data`,month,'returns');
-      else if (action === 'del-cost') confirmDelete3Layer('Cost Master',null,'cost');
-      else if (action === 'del-listings') confirmDelete3Layer('Listings Master',null,'listings');
+      const {action, month, seller} = btn.dataset;
+      if (action==='del-sales-seller')
+        confirmDelete3Layer(`${getSellerLabel(seller)} sales for ${formatMonth(month)}`, month, 'sales-seller', seller);
+      else if (action==='del-ret-seller')
+        confirmDelete3Layer(`${getSellerLabel(seller)} returns for ${formatMonth(month)}`, month, 'ret-seller', seller);
+      else if (action==='del-cost') confirmDelete3Layer('Cost Master', null, 'cost');
+      else if (action==='del-listings') confirmDelete3Layer('Listings Master', null, 'listings');
     });
   });
+
   const delAllBtn = document.getElementById('deleteAllBtn');
-  if(delAllBtn) delAllBtn.addEventListener('click', () => confirmDelete3Layer('ENTIRE DATABASE — ALL months of sales, returns, cost, and listings',null,'all'));
+  if (delAllBtn) delAllBtn.addEventListener('click', () =>
+    confirmDelete3Layer('ENTIRE DATABASE — ALL months of sales, returns, cost, and listings', null, 'all')
+  );
 }
 
 // ─── 3-LAYER CONFIRM ─────────────────────────────────────
 let _confirmSteps = [], _confirmStep = 0, _confirmCallback = null;
 
-function confirmDelete3Layer(itemDesc, month, type) {
+function confirmDelete3Layer(itemDesc, month, type, seller) {
   _confirmCallback = async () => {
     promptPassword(async () => {
       try {
-        if (type === 'sales') await deleteSalesMonth(month);
+        if (type === 'sales-seller') await deleteSalesSellerMonth(month, seller);
+        else if (type === 'ret-seller') await deleteReturnsSellerMonth(month, seller);
+        else if (type === 'sales') await deleteSalesMonth(month);
         else if (type === 'returns') await deleteReturnsMonth(month);
         else if (type === 'cost') await deleteCostMaster();
         else if (type === 'listings') await deleteListingsMaster();
@@ -2363,18 +2804,45 @@ document.getElementById('dbSearchInput')?.addEventListener('input',()=>renderDBT
 
 // DB mode tabs
 document.querySelectorAll('.db-tab').forEach(btn=>btn.addEventListener('click',()=>{
+  // Clicking a tab exits manage mode
+  document.getElementById('db-manage').style.display='none';
+  document.getElementById('db-manage').classList.remove('active');
+  document.getElementById('dbManageBtn').classList.remove('active');
   document.querySelectorAll('.db-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   const tab=btn.dataset.dbtab;
-  ['db-overview','db-styles','db-manage'].forEach(id=>{document.getElementById(id).style.display='none';document.getElementById(id).classList.remove('active');});
+  ['db-overview','db-styles'].forEach(id=>{document.getElementById(id).style.display='none';document.getElementById(id).classList.remove('active');});
   document.getElementById(tab).style.display='block';
   document.getElementById(tab).classList.add('active');
   const selMonths=(DB.fyMonths[DB.activeFY]||[]).filter(m=>DB.selectedMonths.has(m));
   if(tab==='db-overview') renderDBOverview(selMonths);
   else if(tab==='db-styles') renderDBTable();
-  else if(tab==='db-manage') renderDBManage();
-  document.getElementById('dbFilterBar').style.display = tab==='db-manage'?'none':'flex';
+  document.getElementById('dbFilterBar').style.display='flex';
 }));
+
+// Manage DB button
+document.getElementById('dbManageBtn').addEventListener('click',()=>{
+  const manageEl = document.getElementById('db-manage');
+  const isOpen = manageEl.style.display==='block';
+  if(isOpen) {
+    // Close manage, restore last active tab
+    manageEl.style.display='none';
+    manageEl.classList.remove('active');
+    document.getElementById('dbManageBtn').classList.remove('active');
+    const activeTab = document.querySelector('.db-tab.active')?.dataset?.dbtab || 'db-overview';
+    document.getElementById(activeTab).style.display='block';
+    document.getElementById(activeTab).classList.add('active');
+    document.getElementById('dbFilterBar').style.display='flex';
+  } else {
+    // Open manage panel
+    ['db-overview','db-styles'].forEach(id=>{document.getElementById(id).style.display='none';document.getElementById(id).classList.remove('active');});
+    document.getElementById('dbFilterBar').style.display='none';
+    manageEl.style.display='block';
+    manageEl.classList.add('active');
+    document.getElementById('dbManageBtn').classList.add('active');
+    renderDBManage();
+  }
+});
 
 // DB sort
 document.getElementById('dbSortSelect').addEventListener('change',e=>{DB.dbSortKey=e.target.value;renderDBTable();});
