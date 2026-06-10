@@ -1493,11 +1493,19 @@ async function loadFirestoreData() {
 
 async function saveSalesMonth(month, rows) {
   const newSellerId = getSellerFromRows(rows);
+  const isSJIT = newSellerId === '30377';
+  const vanToSku = DB.listingsMaster.vanToSku || {};
   // Build new style map from uploaded rows
   const newStyleMap={};
   rows.forEach(r=>{
     const sid=String(r['style id']||'').trim(); if(!sid) return;
-    const sku=(r['seller sku code']||'').trim();
+    let sku;
+    if(isSJIT){
+      const van=findRowVal(r,'vendor article number','vendor_article_number','van');
+      sku = van ? (vanToSku[String(van).trim()]||'') : '';
+    } else {
+      sku=(r['seller sku code']||'').trim();
+    }
     const price=parseFloat(r['seller price'])||0;
     if(!newStyleMap[sid]) newStyleMap[sid]={brand:(r['brand']||'').trim(),styleName:(r['style name']||'').trim(),articleType:(r['article type']||'').trim(),firstSku:sku,units:0,revenue:0,skus:{}};
     newStyleMap[sid].units++; newStyleMap[sid].revenue+=price;
@@ -1619,12 +1627,16 @@ async function saveCostMaster(rows) {
 
 async function saveListingsMaster(rows) {
   const listings={};
+  const vanToSku={};
   rows.forEach(r=>{
     const sid=String(r['style id']||'').trim();
     const cd=findRowVal(r,'style catalogued date','catalogued date','catalogue date','catalog date','listing date','listed date','go live date');
     if(sid&&cd) listings[sid]=String(cd).trim();
+    const van=findRowVal(r,'vendor article number','vendor_article_number','van');
+    const sku=findRowVal(r,'seller sku code','seller_sku_code','sku code','sku_code');
+    if(van&&sku){ const v=String(van).trim(), s=String(sku).trim(); if(v&&s) vanToSku[v]=s; }
   });
-  const payload={listings,uploadedAt:new Date().toISOString()};
+  const payload={listings,vanToSku,uploadedAt:new Date().toISOString()};
   await setDoc(doc(fsDb,'listings_master','master'),payload);
   DB.listingsMaster=payload;
   return Object.keys(listings).length;
