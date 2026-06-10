@@ -188,7 +188,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 /* SKU MODAL */
 .sku-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;}
 .sku-overlay.open{display:flex;}
-.sku-modal{background:#fff;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,0.18);width:100%;max-width:940px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.sku-modal{background:#fff;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,0.18);width:100%;max-width:1160px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;position:relative;}
 .sku-modal-head{padding:20px 24px 16px;border-bottom:1px solid #f0f0f0;flex-shrink:0;}
 .sku-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#bbb;line-height:1;padding:4px;}
 .sku-modal-close:hover{color:#111;}
@@ -217,7 +217,8 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 
 /* ── DB SCREEN ─────────────────────────────────────────── */
 #dbScreen{display:none;min-height:calc(100vh - 51px);}
-.db-fy-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:0 28px;display:flex;align-items:center;gap:0;position:sticky;top:51px;z-index:960;}
+#dbStickyHeader{position:sticky;top:51px;z-index:960;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.db-fy-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:0 28px;display:flex;align-items:center;gap:0;}
 .fy-tab{padding:13px 16px;font-size:11px;font-weight:600;color:#aaa;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:color 0.2s,border-color 0.2s;}
 .fy-tab:hover{color:#555;}
 .fy-tab.active{color:#4f46e5;border-bottom-color:#4f46e5;}
@@ -226,7 +227,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 .db-add-btn:hover{opacity:0.88;}
 
 /* MONTH TIMELINE */
-.month-timeline{background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 28px;display:flex;align-items:flex-start;gap:6px;overflow-x:auto;}
+.month-timeline{background:#fff;border-bottom:1px solid #e5e7eb;padding:12px 28px;display:flex;align-items:flex-start;gap:6px;overflow-x:auto;}
 .mt-month{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-width:44px;}
 .mt-dot{width:28px;height:28px;border-radius:50%;border:2px solid #e5e7eb;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all 0.15s;position:relative;}
 .mt-dot.has-sales{border-color:#10b981;background:#d1fae5;color:#065f46;}
@@ -242,11 +243,19 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 .mt-legend{display:flex;gap:12px;margin-left:auto;flex-shrink:0;align-items:center;}
 .mt-legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#888;}
 .mt-legend-dot{width:10px;height:10px;border-radius:50%;}
+.full-fy-btn{padding:5px 13px;border:1px solid #e5e7eb;border-radius:20px;font-size:10px;font-weight:600;color:#4f46e5;background:#f5f3ff;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0;margin-left:8px;align-self:center;}
+.full-fy-btn:hover{background:#ede9fe;border-color:#818cf8;}
+.full-fy-btn.active{background:#4f46e5;color:#fff;border-color:#4f46e5;}
 
 /* DB CONTENT TABS */
-.db-tabs{background:#fff;padding:0 28px;display:flex;gap:0;border-bottom:1px solid #e5e7eb;position:sticky;top:calc(51px + 45px + 57px);z-index:940;}
+.db-tabs{background:#fff;padding:0 28px;display:flex;gap:0;border-bottom:1px solid #e5e7eb;}
 .db-tab{padding:12px 16px;font-size:11px;font-weight:600;color:#aaa;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:color 0.2s,border-color 0.2s;}
 .db-tab:hover{color:#555;}
+
+/* SEARCH BAR */
+.search-wrap{padding:10px 28px 0;display:flex;align-items:center;gap:8px;}
+.search-input{flex:1;max-width:360px;border:1px solid #e5e7eb;border-radius:8px;padding:7px 12px 7px 32px;font-family:'DM Sans',sans-serif;font-size:12px;color:#111;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center;outline:none;transition:border-color 0.15s;}
+.search-input:focus{border-color:#818cf8;}
 .db-tab.active{color:#4f46e5;border-bottom-color:#4f46e5;}
 .db-tab-panel{display:none;}.db-tab-panel.active{display:block;}
 
@@ -550,9 +559,12 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
   </div>
   <!-- STYLE TABLE TAB -->
   <div class="tab-panel" id="tab-styles">
-    <div style="padding:16px 32px 0;display:flex;align-items:center;gap:12px;">
+    <div class="search-wrap" style="padding:12px 32px 0;">
+      <input class="search-input" id="otSearchInput" type="text" placeholder="Search style ID, SKU code, article type…">
+    </div>
+    <div style="padding:6px 32px 0;display:flex;align-items:center;gap:12px;">
       <div class="row-count" id="rowCount"></div>
-      <div id="skuHint" style="display:none;font-size:10px;color:#aaa;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:5px;padding:3px 10px;">Click any SKU code to see size-wise breakdown</div>
+      <div id="skuHint" style="display:none;font-size:10px;color:#aaa;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:5px;padding:3px 10px;">Click any SKU code to see SKU breakdown</div>
     </div>
     <div class="table-wrap">
       <div class="tw"><table id="mainTable"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
@@ -562,21 +574,23 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 
 <!-- DATABASE SCREEN -->
 <div id="dbScreen">
-  <!-- FY tabs bar -->
-  <div class="db-fy-bar" id="dbFyBar">
-    <div id="dbFyTabs" style="display:flex;gap:0;"></div>
-    <button class="db-add-btn" id="dbAddBtn">+ Add Data</button>
-  </div>
-  <!-- Month timeline -->
-  <div class="month-timeline" id="monthTimeline" style="display:none;"></div>
-  <!-- DB content tabs -->
-  <div class="db-tabs" id="dbTabBar" style="display:none;">
-    <button class="db-tab active" data-dbtab="db-overview">Overview</button>
-    <button class="db-tab" data-dbtab="db-styles">Style Table</button>
-    <button class="db-tab" data-dbtab="db-manage">Manage DB</button>
-  </div>
-  <!-- DB FILTER BAR -->
-  <div class="filter-bar" id="dbFilterBar" style="display:none;position:sticky;top:calc(51px + 45px + 57px + 44px);z-index:880;">
+  <!-- Sticky header wrapper (replaces individual sticky on each child) -->
+  <div id="dbStickyHeader">
+    <!-- FY tabs bar -->
+    <div class="db-fy-bar" id="dbFyBar">
+      <div id="dbFyTabs" style="display:flex;gap:0;"></div>
+      <button class="db-add-btn" id="dbAddBtn">+ Add Data</button>
+    </div>
+    <!-- Month timeline -->
+    <div class="month-timeline" id="monthTimeline" style="display:none;"></div>
+    <!-- DB content tabs -->
+    <div class="db-tabs" id="dbTabBar" style="display:none;">
+      <button class="db-tab active" data-dbtab="db-overview">Overview</button>
+      <button class="db-tab" data-dbtab="db-styles">Style Table</button>
+      <button class="db-tab" data-dbtab="db-manage">Manage DB</button>
+    </div>
+    <!-- DB FILTER BAR -->
+    <div class="filter-bar" id="dbFilterBar" style="display:none;">
     <span class="filter-label">Brand</span>
     <div id="dbBrandPills" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
     <div class="filter-sep"></div>
@@ -597,11 +611,15 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
         <option value="cost_desc">Total Cost ↓</option>
       </select>
     </div>
-  </div>
+    </div><!-- end #dbFilterBar -->
+  </div><!-- end #dbStickyHeader -->
   <!-- DB tab panels -->
   <div class="db-tab-panel active" id="db-overview"></div>
   <div class="db-tab-panel" id="db-styles">
-    <div style="padding:16px 28px 0;display:flex;align-items:center;gap:12px;">
+    <div class="search-wrap" style="padding:12px 28px 0;">
+      <input class="search-input" id="dbSearchInput" type="text" placeholder="Search style ID, SKU code, article type…">
+    </div>
+    <div style="padding:6px 28px 0;display:flex;align-items:center;gap:12px;">
       <div class="row-count" id="dbRowCount"></div>
     </div>
     <div class="table-wrap">
@@ -949,23 +967,30 @@ function processData() {
   returnRows.forEach(r=>{const sku=(r['seller_sku_code']||r['sku_code']||r['seller sku code']||'').trim();if(sku)retSkuMap[sku]=(retSkuMap[sku]||0)+1;});
   const invMap={};
   invRows.forEach(r=>{const sid=String(r['style id']||'').trim();if(!sid)return;invMap[sid]=(invMap[sid]||0)+(parseInt(r['inventory count'])||0);});
-  S.skusByStyle={};
-  if (S.hasCatalogue) {
-    catRows.forEach(r=>{
-      const sid=String(r['style id']||'').trim(), sellerSku=(r['seller sku code']||'').trim();
-      if(!sid||!sellerSku) return;
-      if(!S.skusByStyle[sid]) S.skusByStyle[sid]={};
-      if(!S.skusByStyle[sid][sellerSku]) S.skusByStyle[sid][sellerSku]={sellerSkuCode:sellerSku,myntraSkuCode:(r['sku code']||'').trim(),size:(r['size']||'').trim(),mrp:parseFloat(String(r['mrp']||'').replace(/,/g,''))||null,listingStatus:(r['listing status description']||r['listing status']||'').trim(),units:0,revenue:0,rets:0};
+  // Build per-SKU inventory map (try to match by seller sku code in inventory rows)
+  const invSkuMap={};
+  if(S.hasInventory){
+    invRows.forEach(r=>{
+      const skuCode=(r['seller sku code']||r['sku code']||r['seller_sku_code']||'').trim();
+      if(skuCode) invSkuMap[skuCode]=(invSkuMap[skuCode]||0)+(parseInt(r['inventory count'])||0);
     });
   }
+  S.skusByStyle={};
   salesRows.forEach(r=>{
     const sid=String(r['style id']||'').trim(), sellerSku=(r['seller sku code']||'').trim();
     if(!sid||!sellerSku) return;
     if(!S.skusByStyle[sid]) S.skusByStyle[sid]={};
-    if(!S.skusByStyle[sid][sellerSku]) S.skusByStyle[sid][sellerSku]={sellerSkuCode:sellerSku,myntraSkuCode:'',size:'',mrp:null,listingStatus:'',units:0,revenue:0,rets:0};
-    S.skusByStyle[sid][sellerSku].units++; S.skusByStyle[sid][sellerSku].revenue+=parseFloat(r['seller price'])||0;
+    if(!S.skusByStyle[sid][sellerSku]) S.skusByStyle[sid][sellerSku]={sellerSkuCode:sellerSku,units:0,revenue:0,rets:0,inv:null};
+    S.skusByStyle[sid][sellerSku].units++;
+    S.skusByStyle[sid][sellerSku].revenue+=parseFloat(r['seller price'])||0;
   });
-  Object.keys(S.skusByStyle).forEach(sid=>{ Object.values(S.skusByStyle[sid]).forEach(sku=>{ sku.rets=retSkuMap[sku.sellerSkuCode]||0; }); });
+  // Assign returns and inventory per SKU
+  Object.keys(S.skusByStyle).forEach(sid=>{
+    Object.values(S.skusByStyle[sid]).forEach(sku=>{
+      sku.rets=retSkuMap[sku.sellerSkuCode]||0;
+      if(S.hasInventory) sku.inv=invSkuMap[sku.sellerSkuCode]!==undefined?invSkuMap[sku.sellerSkuCode]:null;
+    });
+  });
   const allIds=new Set([...Object.keys(salesMap),...Object.keys(invMap)]);
   const rows=[]; const days=S.days;
   allIds.forEach(sid=>{
@@ -1060,8 +1085,16 @@ function renderOverview(mode='onetimeview') {
   const grossMargin=(totalCOGS!==null&&totalRev>0)?((totalRev-totalCOGS)/totalRev)*100:null;
   let cataloguedCount=null, catKpiLabel='Catalogued Styles';
   if(S.hasCatalogue){
-    if(S.activeCatalogueMonth!=='All'){cataloguedCount=filtered.length;catKpiLabel=`In ${formatMonth(S.activeCatalogueMonth)}`;}
-    else{cataloguedCount=filtered.filter(r=>r.catalogueDate).length;}
+    const detectedMonth=detectSalesMonth(S.data.sales);
+    if(S.activeCatalogueMonth!=='All'){
+      cataloguedCount=filtered.filter(r=>r.catalogueDate&&parseDateToYYYYMM(r.catalogueDate)===S.activeCatalogueMonth).length;
+      catKpiLabel=`Catalogued in ${formatMonth(S.activeCatalogueMonth)}`;
+    } else if(detectedMonth){
+      cataloguedCount=filtered.filter(r=>r.catalogueDate&&parseDateToYYYYMM(r.catalogueDate)===detectedMonth).length;
+      catKpiLabel=`Catalogued in ${formatMonth(detectedMonth)}`;
+    } else {
+      cataloguedCount=filtered.filter(r=>r.catalogueDate).length;
+    }
   }
   let kh=`
     <div class="kpi-card c-indigo"><div class="kpi-val">${totalUnits.toLocaleString('en-IN')}</div><div class="kpi-lbl">Total Units</div></div>
@@ -1073,7 +1106,7 @@ function renderOverview(mode='onetimeview') {
     <div class="kpi-card c-amber"><div class="kpi-val">${totalRets.toLocaleString('en-IN')}</div><div class="kpi-lbl">Total Returns</div></div>
     <div class="kpi-card c-rose"><div class="kpi-val">${retPct.toFixed(1)}%</div><div class="kpi-lbl">Return %</div></div>`;
   if(S.hasCost&&totalCOGS!==null) kh+=`
-    <div class="kpi-card c-orange"><div class="kpi-val">₹${Math.round(totalCOGS).toLocaleString('en-IN')}</div><div class="kpi-lbl">Total Cost (COGS)</div></div>
+    <div class="kpi-card c-orange"><div class="kpi-val">₹${Math.round(totalCOGS).toLocaleString('en-IN')}</div><div class="kpi-lbl">Working Capital</div></div>
     ${grossMargin!==null?`<div class="kpi-card c-blue"><div class="kpi-val">${grossMargin.toFixed(1)}%</div><div class="kpi-lbl">Gross Margin</div></div>`:''}`;
   if(S.hasCatalogue&&cataloguedCount!==null) kh+=`<div class="kpi-card c-teal"><div class="kpi-val">${cataloguedCount.toLocaleString('en-IN')}</div><div class="kpi-lbl">${catKpiLabel}</div></div>`;
   document.getElementById('kpiStrip').innerHTML=kh;
@@ -1122,7 +1155,7 @@ function renderOverview(mode='onetimeview') {
       <div class="boc-row"><span>Units</span><span class="boc-val">${u.toLocaleString('en-IN')}</span></div>
       <div class="boc-row"><span>Revenue</span><span class="boc-val">₹${Math.round(rev).toLocaleString('en-IN')}</span></div>
       ${S.hasReturns?`<div class="boc-row"><span>Returns</span><span class="boc-val">${rt} (${rp}%)</span></div>`:''}
-      ${cogs!==null?`<div class="boc-row"><span>Total Cost</span><span class="boc-val">₹${Math.round(cogs).toLocaleString('en-IN')}</span></div>`:''}
+      ${cogs!==null?`<div class="boc-row"><span>Working Capital</span><span class="boc-val">₹${Math.round(cogs).toLocaleString('en-IN')}</span></div>`:''}
       ${inv!==null?`<div class="boc-row"><span>Inventory</span><span class="boc-val">${inv.toLocaleString('en-IN')}</span></div>`:''}
     </div>`;
   }).join('');
@@ -1136,7 +1169,16 @@ function renderOverview(mode='onetimeview') {
 
 // ─── RENDER TABLE ────────────────────────────────────────
 function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={}) {
-  if (!rows) rows = getFilteredStyles();
+  if (!rows) {
+    rows = getFilteredStyles();
+    const q = (document.getElementById('otSearchInput')?.value||'').trim().toLowerCase();
+    if(q) rows = rows.filter(r=>
+      (r.styleId||'').toLowerCase().includes(q)||
+      (r.firstSku||'').toLowerCase().includes(q)||
+      (r.articleType||'').toLowerCase().includes(q)||
+      (r.brand||'').toLowerCase().includes(q)
+    );
+  }
   const sk = opts.sortKey || S.sortKey;
   rows = [...rows].sort((a,b) => {
     if(sk==='units_desc') return b.units-a.units;
@@ -1232,33 +1274,75 @@ function renderTierPills(containerId='tierPills', activeTiers, onToggle) {
 }
 
 // ─── SKU MODAL ───────────────────────────────────────────
-function showSkuModal(sid) {
-  const style=S.styles.find(s=>s.styleId===sid); if(!style) return;
+function showSkuModal(sid, dbSkus) {
+  // dbSkus: optional array for DB mode (pre-built). If absent, use one-time S state.
+  const isDB = !!dbSkus;
+  const style = isDB ? DB.dbStyles.find(s=>s.styleId===sid) : S.styles.find(s=>s.styleId===sid);
+  if(!style) return;
   document.getElementById('smSid').textContent=`Style ID: ${sid}`;
   document.getElementById('smName').textContent=style.styleName||sid;
   const bk=brandKey(style.brand);
-  document.getElementById('smBadges').innerHTML=`<span class="brand-tag bt-${bk}">${style.brand||'—'}</span><span style="font-size:11px;color:#777;">${style.articleType||''}</span>`;
-  let kh=`<div class="smk c-indigo"><div class="smk-val">${style.units.toLocaleString('en-IN')}</div><div class="smk-lbl">Total Units</div></div><div class="smk c-green"><div class="smk-val">₹${Math.round(style.revenue).toLocaleString('en-IN')}</div><div class="smk-lbl">Revenue</div></div><div class="smk"><div class="smk-val">${style.ros!==null?style.ros.toFixed(3):'—'}</div><div class="smk-lbl">ROS/day</div></div><div class="smk"><div class="smk-val"><span class="tier-badge tb-${style.tier}">${style.tier}</span></div><div class="smk-lbl">Tier</div></div>`;
+  // Catalogue date KPI chip
+  const catDate = style.catalogueDate || null;
+  const catChip = catDate ? `<span style="font-size:11px;color:#0891b2;background:#f0f9ff;border:1px solid #bae6fd;padding:2px 10px;border-radius:12px;">🗓 Catalogued: ${fCatDate(catDate).replace(/<[^>]*>/g,'')}</span>` : '';
+  document.getElementById('smBadges').innerHTML=`<span class="brand-tag bt-${bk}">${style.brand||'—'}</span><span style="font-size:11px;color:#777;">${style.articleType||''}</span>${catChip}`;
+  // KPI strip
+  let kh=`
+    <div class="smk c-indigo"><div class="smk-val">${style.units.toLocaleString('en-IN')}</div><div class="smk-lbl">Total Units</div></div>
+    <div class="smk c-green"><div class="smk-val">₹${Math.round(style.revenue).toLocaleString('en-IN')}</div><div class="smk-lbl">Revenue</div></div>
+    <div class="smk"><div class="smk-val">${style.ros!==null?style.ros.toFixed(3):'—'}</div><div class="smk-lbl">ROS/day</div></div>
+    <div class="smk"><div class="smk-val"><span class="tier-badge tb-${style.tier}">${style.tier}</span></div><div class="smk-lbl">Tier</div></div>`;
   if(S.hasReturns) kh+=`<div class="smk c-amber"><div class="smk-val">${style.rets}</div><div class="smk-lbl">Returns</div></div><div class="smk c-rose"><div class="smk-val">${style.retPct!==null?style.retPct.toFixed(1)+'%':'—'}</div><div class="smk-lbl">Return %</div></div>`;
+  if(!isDB&&S.hasInventory&&style.inv!==null) kh+=`<div class="smk c-teal"><div class="smk-val">${style.inv.toLocaleString('en-IN')}</div><div class="smk-lbl">Total Inventory</div></div>`;
   if(S.hasCost&&style.unitCost!==null) kh+=`<div class="smk c-orange"><div class="smk-val">₹${Math.round(style.unitCost).toLocaleString('en-IN')}</div><div class="smk-lbl">Unit Cost</div></div>`;
   document.getElementById('smKpis').innerHTML=kh;
-  const skuMap=S.skusByStyle[sid]||{}, skus=Object.values(skuMap);
-  const sizeOrder=['XS','S','M','L','XL','XXL','XXXL','2XL','3XL','4XL','28','30','32','34','36','38','40','42','44','46'];
-  skus.sort((a,b)=>{const ai=sizeOrder.indexOf((a.size||'').toUpperCase()),bi=sizeOrder.indexOf((b.size||'').toUpperCase());if(ai===-1&&bi===-1)return(a.size||'').localeCompare(b.size||'');if(ai===-1)return 1;if(bi===-1)return -1;return ai-bi;});
-  const hasSize=skus.some(s=>s.size),hasMrp=skus.some(s=>s.mrp),hasLS=skus.some(s=>s.listingStatus),hasMyntra=skus.some(s=>s.myntraSkuCode);
-  let thCols=['Seller SKU'];if(hasMyntra)thCols.push('Myntra SKU');if(hasSize)thCols.push('Size');if(hasMrp)thCols.push('MRP');thCols.push('Units','Revenue');if(S.hasReturns)thCols.push('Returns');if(hasLS)thCols.push('Listing Status');
+
+  // Build SKU rows
+  let skus;
+  if(isDB) {
+    skus = dbSkus; // pre-built from DB aggregated data
+  } else {
+    skus = Object.values(S.skusByStyle[sid]||{});
+  }
+
+  // Columns: Seller SKU | Seller Price | Units | Revenue | Returns | Inventory | ROS/day | Cost Multiplier | DOH
+  const hasRets = isDB ? S.hasReturns : S.hasReturns;
+  const hasInv  = !isDB && S.hasInventory;
+  const hasCost = S.hasCost && style.unitCost !== null;
+  const days = S.days || 1;
+
+  const thCols = ['Seller SKU Code','Seller Price','Units Sold','Revenue'];
+  if(hasRets) thCols.push('Returns');
+  if(hasInv)  thCols.push('Inventory');
+  thCols.push('ROS/day');
+  if(hasCost) thCols.push('Cost Multiplier');
+  if(hasInv)  thCols.push('DOH');
+
   document.getElementById('smTableTitle').textContent=`SKU Breakdown · ${skus.length} SKU${skus.length!==1?'s':''}`;
   document.getElementById('smThead').innerHTML=`<tr>${thCols.map(h=>`<th>${h}</th>`).join('')}</tr>`;
-  document.getElementById('smTbody').innerHTML=!skus.length?`<tr><td colspan="${thCols.length}" style="text-align:center;padding:24px;color:#aaa;">No SKU data</td></tr>`:skus.map(s=>{
-    let cells=[`<td class="mono" style="font-size:10px;">${s.sellerSkuCode||'—'}</td>`];
-    if(hasMyntra)cells.push(`<td class="mono" style="font-size:10px;color:#aaa;">${s.myntraSkuCode||'—'}</td>`);
-    if(hasSize)cells.push(`<td><span class="size-badge">${s.size||'—'}</span></td>`);
-    if(hasMrp)cells.push(`<td class="mono">${s.mrp!==null?'₹'+s.mrp.toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);
-    cells.push(`<td class="mono">${s.units>0?s.units:'<span class="zero">0</span>'}</td>`,`<td class="mono">${s.revenue>0?'₹'+Math.round(s.revenue).toLocaleString('en-IN'):'<span class="zero">₹0</span>'}</td>`);
-    if(S.hasReturns)cells.push(`<td class="mono">${s.rets>0?s.rets:'<span class="zero">0</span>'}</td>`);
-    if(hasLS){const ls=s.listingStatus||'',cls=ls.toLowerCase().includes('active')&&!ls.toLowerCase().includes('inactive')?'ls-active':ls.toLowerCase().includes('inactive')?'ls-inactive':'ls-other';cells.push(`<td><span class="${cls}">${ls||'—'}</span></td>`);}
-    return `<tr>${cells.join('')}</tr>`;
-  }).join('');
+
+  if(!skus.length){
+    document.getElementById('smTbody').innerHTML=`<tr><td colspan="${thCols.length}" style="text-align:center;padding:24px;color:#aaa;">No SKU data available${isDB?' — re-upload sales to get SKU breakdown':''}</td></tr>`;
+  } else {
+    document.getElementById('smTbody').innerHTML=skus.map(s=>{
+      const avgPrice = s.units>0 ? s.revenue/s.units : 0;
+      const skuRos   = days>0 ? s.units/days : null;
+      const costMult = (hasCost&&style.unitCost&&avgPrice>0) ? avgPrice/style.unitCost : null;
+      const skuDoh   = (hasInv&&s.inv!==null&&skuRos&&skuRos>0) ? s.inv/skuRos : null;
+      let cells=[
+        `<td class="mono" style="font-size:10px;">${s.sellerSkuCode||'—'}</td>`,
+        `<td class="mono">${avgPrice>0?'₹'+Math.round(avgPrice).toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`,
+        `<td class="mono">${s.units>0?s.units.toLocaleString('en-IN'):'<span class="zero">0</span>'}</td>`,
+        `<td class="mono">${s.revenue>0?'₹'+Math.round(s.revenue).toLocaleString('en-IN'):'<span class="zero">₹0</span>'}</td>`
+      ];
+      if(hasRets) cells.push(`<td class="mono">${s.rets>0?s.rets:'<span class="zero">0</span>'}</td>`);
+      if(hasInv)  cells.push(`<td class="mono">${s.inv!==null?s.inv.toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);
+      cells.push(`<td class="mono">${skuRos!==null?skuRos.toFixed(3):'<span class="na">—</span>'}</td>`);
+      if(hasCost) cells.push(`<td class="mono">${costMult!==null?costMult.toFixed(2)+'×':'<span class="na">—</span>'}</td>`);
+      if(hasInv)  cells.push(`<td class="mono">${skuDoh!==null?Math.round(skuDoh).toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);
+      return `<tr>${cells.join('')}</tr>`;
+    }).join('');
+  }
   document.getElementById('skuOverlay').classList.add('open');
 }
 
@@ -1334,8 +1418,14 @@ async function saveSalesMonth(month, rows) {
   const styleMap={};
   rows.forEach(r=>{
     const sid=String(r['style id']||'').trim(); if(!sid) return;
-    if(!styleMap[sid]) styleMap[sid]={brand:(r['brand']||'').trim(),styleName:(r['style name']||'').trim(),articleType:(r['article type']||'').trim(),firstSku:(r['seller sku code']||'').trim(),units:0,revenue:0};
-    styleMap[sid].units++; styleMap[sid].revenue+=parseFloat(r['seller price'])||0;
+    const sku=(r['seller sku code']||'').trim();
+    const price=parseFloat(r['seller price'])||0;
+    if(!styleMap[sid]) styleMap[sid]={brand:(r['brand']||'').trim(),styleName:(r['style name']||'').trim(),articleType:(r['article type']||'').trim(),firstSku:sku,units:0,revenue:0,skus:{}};
+    styleMap[sid].units++; styleMap[sid].revenue+=price;
+    if(sku){
+      if(!styleMap[sid].skus[sku]) styleMap[sid].skus[sku]={units:0,revenue:0};
+      styleMap[sid].skus[sku].units++; styleMap[sid].skus[sku].revenue+=price;
+    }
   });
   const totalUnits=Object.values(styleMap).reduce((a,s)=>a+s.units,0);
   const totalRevenue=Object.values(styleMap).reduce((a,s)=>a+s.revenue,0);
@@ -1346,10 +1436,12 @@ async function saveSalesMonth(month, rows) {
 }
 
 async function saveReturnsMonths(rows) {
-  // Group by order month
+  // Group by order month — also capture per-SKU returns
   const byMonth={};
+  const byMonthSkuRets={};
   rows.forEach(r=>{
     const sid=String(r['style_id']||'').trim(); if(!sid) return;
+    const skuCode=(r['seller_sku_code']||r['sku_code']||r['seller sku code']||'').trim();
     const d=findRowVal(r,'order_created_date','order created date');
     if(!d) return;
     const ds=String(d).trim().split(' ')[0];
@@ -1357,11 +1449,15 @@ async function saveReturnsMonths(rows) {
     const month=ds.slice(0,7);
     if(!byMonth[month]) byMonth[month]={};
     byMonth[month][sid]=(byMonth[month][sid]||0)+1;
+    if(skuCode){
+      if(!byMonthSkuRets[month]) byMonthSkuRets[month]={};
+      byMonthSkuRets[month][skuCode]=(byMonthSkuRets[month][skuCode]||0)+1;
+    }
   });
   for(const [month,styles] of Object.entries(byMonth)){
     const fy=getFY(month);
     const totalRets=Object.values(styles).reduce((a,b)=>a+b,0);
-    const payload={month,fy,styles,totalRets,uploadedAt:new Date().toISOString()};
+    const payload={month,fy,styles,skuRets:byMonthSkuRets[month]||{},totalRets,uploadedAt:new Date().toISOString()};
     await setDoc(doc(fsDb,'returns_monthly',month),payload);
     DB.returnsMonths[month]=payload;
   }
@@ -1570,15 +1666,31 @@ function aggregateDBStyles(months) {
     totalDays += getDaysInMonth(month);
     const md = DB.salesMonths[month]; if (!md) return;
     Object.entries(md.styles || {}).forEach(([sid, sd]) => {
-      if (!styleMap[sid]) styleMap[sid] = {styleId:sid, brand:sd.brand||'', styleName:sd.styleName||'', articleType:sd.articleType||'', firstSku:sd.firstSku||'', units:0, revenue:0, rets:0};
+      if (!styleMap[sid]) styleMap[sid] = {styleId:sid, brand:sd.brand||'', styleName:sd.styleName||'', articleType:sd.articleType||'', firstSku:sd.firstSku||'', units:0, revenue:0, rets:0, skus:{}};
       styleMap[sid].units += sd.units || 0;
       styleMap[sid].revenue += sd.revenue || 0;
+      // Aggregate per-SKU sales (only present in newly-uploaded months)
+      Object.entries(sd.skus||{}).forEach(([sku, skuData]) => {
+        if (!styleMap[sid].skus[sku]) styleMap[sid].skus[sku] = {sellerSkuCode:sku, units:0, revenue:0, rets:0};
+        styleMap[sid].skus[sku].units += skuData.units||0;
+        styleMap[sid].skus[sku].revenue += skuData.revenue||0;
+      });
     });
+  });
+  // Build sku→styleId reverse map for return attribution
+  const skuToStyle = {};
+  Object.entries(styleMap).forEach(([sid, st]) => {
+    Object.keys(st.skus).forEach(sku => { skuToStyle[sku] = sid; });
   });
   months.forEach(month => {
     const rd = DB.returnsMonths[month]; if (!rd) return;
     Object.entries(rd.styles || {}).forEach(([sid, rets]) => {
       if (styleMap[sid]) styleMap[sid].rets += typeof rets === 'number' ? rets : 0;
+    });
+    // Per-SKU returns attribution
+    Object.entries(rd.skuRets||{}).forEach(([sku, rets]) => {
+      const sid = skuToStyle[sku]; if (!sid || !styleMap[sid]?.skus[sku]) return;
+      styleMap[sid].skus[sku].rets += rets;
     });
   });
   const costs = DB.costMaster.costs || {};
@@ -1702,10 +1814,10 @@ function refreshDBView(selMonths, fy, allFYMonths, fyMonths) {
 function renderDBMonthTimeline(fy, allFYMonths, fyMonths) {
   const MONTH_LABELS = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
   const tl = document.getElementById('monthTimeline');
+  const allSelected = fyMonths.length > 0 && fyMonths.every(m => DB.selectedMonths.has(m));
   tl.innerHTML = MONTH_LABELS.map((lbl, i) => {
     const month = allFYMonths[i];
     const hasSales = fyMonths.includes(month);
-    const hasReturns = !!DB.returnsMonths[month];
     const frozen = isReturnsFrozen(month);
     const pending = hasSales && !frozen;
     const selected = DB.selectedMonths.has(month);
@@ -1721,7 +1833,8 @@ function renderDBMonthTimeline(fy, allFYMonths, fyMonths) {
       <div class="mt-label">${lbl}</div>
     </div>`;
   }).join('') +
-  `<div class="mt-legend">
+  `<button class="full-fy-btn${allSelected?' active':''}" id="fullFYBtn" title="Select all available months in ${fy}">Full Year</button>
+  <div class="mt-legend">
     <div class="mt-legend-item"><div class="mt-legend-dot" style="background:#10b981;border:2px solid #10b981;"></div>Frozen</div>
     <div class="mt-legend-item"><div class="mt-legend-dot" style="background:#fef3c7;border:2px solid #f59e0b;"></div>Pending</div>
     <div class="mt-legend-item"><div class="mt-legend-dot" style="background:#f8fafc;border:2px solid #e5e7eb;"></div>No data</div>
@@ -1736,6 +1849,13 @@ function renderDBMonthTimeline(fy, allFYMonths, fyMonths) {
       DB.dbActiveTiers = new Set(['VF','F','M','S','D']);
       renderDBFYView();
     });
+  });
+  const fullBtn = document.getElementById('fullFYBtn');
+  if(fullBtn) fullBtn.addEventListener('click', () => {
+    DB.selectedMonths = new Set(fyMonths);
+    DB.dbActiveBrands = new Set(['All']);
+    DB.dbActiveTiers = new Set(['VF','F','M','S','D']);
+    renderDBFYView();
   });
 }
 
@@ -1806,7 +1926,7 @@ function renderDBOverview(selMonths) {
     <div class="kpi-card c-purple"><div class="kpi-val">${S.days}</div><div class="kpi-lbl">Days</div></div>
     <div class="kpi-card c-amber"><div class="kpi-val">${totalRets.toLocaleString('en-IN')}</div><div class="kpi-lbl">Total Returns</div></div>
     <div class="kpi-card c-rose"><div class="kpi-val">${retPct.toFixed(1)}%</div><div class="kpi-lbl">Return %</div></div>`;
-  if(totalCOGS!==null) kh+=`<div class="kpi-card c-orange"><div class="kpi-val">₹${Math.round(totalCOGS).toLocaleString('en-IN')}</div><div class="kpi-lbl">Total Cost</div></div>${grossMargin!==null?`<div class="kpi-card c-blue"><div class="kpi-val">${grossMargin.toFixed(1)}%</div><div class="kpi-lbl">Gross Margin</div></div>`:''}`;
+  if(totalCOGS!==null) kh+=`<div class="kpi-card c-orange"><div class="kpi-val">₹${Math.round(totalCOGS).toLocaleString('en-IN')}</div><div class="kpi-lbl">Working Capital</div></div>${grossMargin!==null?`<div class="kpi-card c-blue"><div class="kpi-val">${grossMargin.toFixed(1)}%</div><div class="kpi-lbl">Gross Margin</div></div>`:''}`;
   document.getElementById('dbKpiStrip').innerHTML = kh;
   // Pie charts
   const brands = [...new Set(filtered.map(r=>r.brand).filter(Boolean))].sort();
@@ -1842,7 +1962,7 @@ function renderDBOverview(selMonths) {
     const u=br.reduce((a,r)=>a+r.units,0),rev=br.reduce((a,r)=>a+r.revenue,0),rt=br.reduce((a,r)=>a+r.rets,0);
     const rp=u>0?(rt/u*100).toFixed(1):'—';
     const cogs=S.hasCost?br.reduce((a,r)=>a+(r.totalCost||0),0):null;
-    return `<div class="brand-ov-card"><div class="boc-name">${b}</div><div class="boc-row"><span>Units</span><span class="boc-val">${u.toLocaleString('en-IN')}</span></div><div class="boc-row"><span>Revenue</span><span class="boc-val">₹${Math.round(rev).toLocaleString('en-IN')}</span></div><div class="boc-row"><span>Returns</span><span class="boc-val">${rt} (${rp}%)</span></div>${cogs!==null?`<div class="boc-row"><span>Total Cost</span><span class="boc-val">₹${Math.round(cogs).toLocaleString('en-IN')}</span></div>`:''}</div>`;
+    return `<div class="brand-ov-card"><div class="boc-name">${b}</div><div class="boc-row"><span>Units</span><span class="boc-val">${u.toLocaleString('en-IN')}</span></div><div class="boc-row"><span>Revenue</span><span class="boc-val">₹${Math.round(rev).toLocaleString('en-IN')}</span></div><div class="boc-row"><span>Returns</span><span class="boc-val">${rt} (${rp}%)</span></div>${cogs!==null?`<div class="boc-row"><span>Working Capital</span><span class="boc-val">₹${Math.round(cogs).toLocaleString('en-IN')}</span></div>`:''}</div>`;
   }).join('');
   // Article type
   const artMap={};
@@ -1855,8 +1975,15 @@ function renderDBOverview(selMonths) {
 
 // ─── DB TABLE ────────────────────────────────────────────
 function renderDBTable() {
-  const filtered = getDBFiltered();
-  renderTable('dbTableBody','dbTableHead', filtered, {sortKey:DB.dbSortKey, showSku:false});
+  const q = (document.getElementById('dbSearchInput')?.value||'').trim().toLowerCase();
+  let filtered = getDBFiltered();
+  if(q) filtered = filtered.filter(r=>
+    (r.styleId||'').toLowerCase().includes(q)||
+    (r.firstSku||'').toLowerCase().includes(q)||
+    (r.articleType||'').toLowerCase().includes(q)||
+    (r.brand||'').toLowerCase().includes(q)
+  );
+  renderTable('dbTableBody','dbTableHead', filtered, {sortKey:DB.dbSortKey, showSku:true, isDB:true});
 }
 
 // ─── COMPARATIVE ANALYSIS ────────────────────────────────
@@ -2219,7 +2346,20 @@ document.addEventListener('click',e=>{if(!tierInfoBox.contains(e.target))tierInf
 document.getElementById('skuModalClose').addEventListener('click',()=>document.getElementById('skuOverlay').classList.remove('open'));
 document.getElementById('skuOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('skuOverlay'))document.getElementById('skuOverlay').classList.remove('open');});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('skuOverlay').classList.remove('open');document.getElementById('pwOverlay').classList.remove('open');document.getElementById('confirmOverlay').classList.remove('open');document.getElementById('dbupOverlay').classList.remove('open');}});
-document.getElementById('tableBody').addEventListener('click',e=>{const btn=e.target.closest('.sku-drill-btn');if(btn)showSkuModal(btn.dataset.sid);});
+// One-time view: SKU drill
+document.getElementById('tableBody').addEventListener('click',e=>{const btn=e.target.closest('.sku-drill-btn');if(btn)showSkuModal(btn.dataset.sid,null);});
+// DB view: SKU drill — shows aggregated SKU data from DB
+document.getElementById('dbTableBody').addEventListener('click',e=>{
+  const btn=e.target.closest('.sku-drill-btn'); if(!btn) return;
+  const sid=btn.dataset.sid;
+  const style=DB.dbStyles.find(s=>s.styleId===sid); if(!style) return;
+  const skuData = style.skus||{};
+  const skuArr = Object.values(skuData).map(s=>({...s}));
+  showSkuModal(sid, skuArr);
+});
+// Search bars
+document.getElementById('otSearchInput')?.addEventListener('input',()=>renderTable());
+document.getElementById('dbSearchInput')?.addEventListener('input',()=>renderDBTable());
 
 // DB mode tabs
 document.querySelectorAll('.db-tab').forEach(btn=>btn.addEventListener('click',()=>{
