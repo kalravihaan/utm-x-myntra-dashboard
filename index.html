@@ -185,6 +185,26 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 .ret-high{color:#dc2626;font-weight:600;}.ret-mid{color:#d97706;font-weight:600;}.ret-low{color:#059669;font-weight:600;}
 .cat-date{font-family:'DM Mono',monospace;font-size:10px;color:#0891b2;background:#f0f9ff;padding:2px 7px;border-radius:10px;white-space:nowrap;}
 
+/* RETURN REASON */
+.ret-reason-btn{background:none;border:none;padding:0;cursor:pointer;font-size:10px;color:#7c3aed;font-family:'DM Sans',sans-serif;font-weight:600;text-align:left;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;}
+.ret-reason-btn:hover{text-decoration:underline;}
+.ret-reason-pct{font-size:9px;color:#aaa;font-weight:400;margin-left:3px;}
+/* REASONS POPUP */
+.reasons-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:3500;display:none;align-items:center;justify-content:center;padding:20px;}
+.reasons-overlay.open{display:flex;}
+.reasons-modal{background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.2);width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;}
+.reasons-modal-head{padding:18px 20px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;}
+.reasons-modal-title{font-size:13px;font-weight:700;color:#111;}
+.reasons-modal-sub{font-size:11px;color:#aaa;margin-top:2px;}
+.reasons-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;color:#aaa;cursor:pointer;line-height:1;}
+.reasons-modal-body{overflow-y:auto;flex:1;padding:14px 20px;}
+.reasons-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;}
+.reasons-row:last-child{border-bottom:none;}
+.reasons-label{flex:1;font-size:11px;color:#333;font-weight:500;}
+.reasons-bar-wrap{width:100px;height:6px;background:#f0f0f0;border-radius:3px;flex-shrink:0;}
+.reasons-bar{height:6px;background:#7c3aed;border-radius:3px;}
+.reasons-count{font-size:11px;font-family:'DM Mono',monospace;color:#555;width:28px;text-align:right;flex-shrink:0;}
+.reasons-pct{font-size:10px;color:#aaa;width:38px;text-align:right;flex-shrink:0;}
 /* SKU MODAL */
 .sku-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;}
 .sku-overlay.open{display:flex;}
@@ -699,6 +719,18 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
   </div>
 </div>
 
+<!-- RETURN REASONS POPUP -->
+<div class="reasons-overlay" id="reasonsOverlay">
+  <div class="reasons-modal" style="position:relative;">
+    <button class="reasons-modal-close" id="reasonsModalClose">×</button>
+    <div class="reasons-modal-head">
+      <div class="reasons-modal-title" id="reasonsModalTitle">Return Reasons</div>
+      <div class="reasons-modal-sub" id="reasonsModalSub"></div>
+    </div>
+    <div class="reasons-modal-body" id="reasonsModalBody"></div>
+  </div>
+</div>
+
 <!-- PASSWORD MODAL -->
 <div class="pw-overlay" id="pwOverlay">
   <div class="pw-modal">
@@ -1000,24 +1032,44 @@ function processData() {
     });
   }
   S.catalogueMap={};
+  S.vanToSku={};
   if (S.hasCatalogue) {
     catRows.forEach(r => {
       const sid=String(r['style id']||'').trim();
       const cd=findRowVal(r,'style catalogued date','catalogued date','catalogue date','catalog date','listing date','listed date','go live date');
       if (sid&&cd&&!S.catalogueMap[sid]) S.catalogueMap[sid]=String(cd).trim();
+      const van=findRowVal(r,'vendor article number','vendor_article_number','van');
+      const sku=findRowVal(r,'seller sku code','seller_sku_code','sku code','sku_code');
+      if(van&&sku){const v=String(van).trim(),s=String(sku).trim();if(v&&s&&!S.vanToSku[v])S.vanToSku[v]=s;}
     });
   }
   const ms=new Set(); Object.values(S.catalogueMap).forEach(d=>{const m=parseDateToYYYYMM(d);if(m)ms.add(m);}); S.catalogueMonths=[...ms].sort();
   const salesMap={};
   salesRows.forEach(r=>{
     const sid=String(r['style id']||'').trim(); if(!sid) return;
-    if(!salesMap[sid]) salesMap[sid]={styleId:sid,brand:(r['brand']||'').trim(),styleName:(r['style name']||'').trim(),articleType:(r['article type']||'').trim(),firstSku:(r['seller sku code']||'').trim(),units:0,revenue:0};
+    const sellerId=String(r['seller id']||r['seller_id']||'').trim();
+    const rawSku=(r['seller sku code']||'').trim();
+    const resolvedSku=sellerId==='30377'?(findRowVal(r,'vendor article number','vendor_article_number','van') ? (S.vanToSku[String(findRowVal(r,'vendor article number','vendor_article_number','van')).trim()]||'') : '') : rawSku;
+    if(!salesMap[sid]) salesMap[sid]={styleId:sid,brand:(r['brand']||'').trim(),styleName:(r['style name']||'').trim(),articleType:(r['article type']||'').trim(),firstSku:resolvedSku,units:0,revenue:0};
     salesMap[sid].units++; salesMap[sid].revenue+=parseFloat(r['seller price'])||0;
   });
   const retMap={};
   returnRows.forEach(r=>{const sid=String(r['style_id']||'').trim();if(!sid)return;retMap[sid]=(retMap[sid]||0)+1;});
   const retSkuMap={};
   returnRows.forEach(r=>{const sku=(r['seller_sku_code']||r['sku_code']||r['seller sku code']||'').trim();if(sku)retSkuMap[sku]=(retSkuMap[sku]||0)+1;});
+  S.retReasonsByStyle={};
+  S.retReasonsBySku={};
+  returnRows.forEach(r=>{
+    const sid=String(r['style_id']||'').trim(); if(!sid) return;
+    const reason=(String(r['return_reason']||r['Return Reason']||r['returnReason']||'').trim())||'RTO';
+    const sku=(r['seller_sku_code']||r['sku_code']||r['seller sku code']||'').trim();
+    if(!S.retReasonsByStyle[sid]) S.retReasonsByStyle[sid]={};
+    S.retReasonsByStyle[sid][reason]=(S.retReasonsByStyle[sid][reason]||0)+1;
+    if(sku){
+      if(!S.retReasonsBySku[sku]) S.retReasonsBySku[sku]={};
+      S.retReasonsBySku[sku][reason]=(S.retReasonsBySku[sku][reason]||0)+1;
+    }
+  });
   const invMap={};
   invRows.forEach(r=>{const sid=String(r['style id']||'').trim();if(!sid)return;invMap[sid]=(invMap[sid]||0)+(parseInt(r['inventory count'])||0);});
   // Build per-SKU inventory map (try to match by seller sku code in inventory rows)
@@ -1030,8 +1082,16 @@ function processData() {
   }
   S.skusByStyle={};
   salesRows.forEach(r=>{
-    const sid=String(r['style id']||'').trim(), sellerSku=(r['seller sku code']||'').trim();
-    if(!sid||!sellerSku) return;
+    const sid=String(r['style id']||'').trim(); if(!sid) return;
+    const sellerId=String(r['seller id']||r['seller_id']||'').trim();
+    let sellerSku;
+    if(sellerId==='30377'){
+      const van=findRowVal(r,'vendor article number','vendor_article_number','van');
+      sellerSku=van?(S.vanToSku[String(van).trim()]||''):'';
+    } else {
+      sellerSku=(r['seller sku code']||'').trim();
+    }
+    if(!sellerSku) return;
     if(!S.skusByStyle[sid]) S.skusByStyle[sid]={};
     if(!S.skusByStyle[sid][sellerSku]) S.skusByStyle[sid][sellerSku]={sellerSkuCode:sellerSku,units:0,revenue:0,rets:0,inv:null};
     S.skusByStyle[sid][sellerSku].units++;
@@ -1056,7 +1116,8 @@ function processData() {
     const unitCost=S.hasCost?(S.costMap[sid]!==undefined?S.costMap[sid]:null):null;
     const totalCost=(unitCost!==null&&units>0)?unitCost*units:null;
     const catalogueDate=S.hasCatalogue?(S.catalogueMap[sid]||null):null;
-    rows.push({styleId:sid,brand:sale.brand,styleName:sale.styleName,articleType:sale.articleType,firstSku:sale.firstSku,units,revenue,rets,retPct,ros,tier,inv,doh,unitCost,totalCost,catalogueDate});
+    const avgSellerPrice=units>0?revenue/units:null;
+    rows.push({styleId:sid,brand:sale.brand,styleName:sale.styleName,articleType:sale.articleType,firstSku:sale.firstSku,units,revenue,avgSellerPrice,rets,retPct,ros,tier,inv,doh,unitCost,totalCost,catalogueDate});
   });
   S.styles=rows;
 }
@@ -1253,13 +1314,16 @@ function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={
   const rowCountEl = document.getElementById(tbodyId==='tableBody'?'rowCount':'dbRowCount');
   if(rowCountEl) rowCountEl.textContent=`${rows.length} styles`;
   const showSku = opts.showSku !== false;
+  const isDB = opts.isDB || false;
   let hCols=['Style ID'];
   if(showSku) hCols.push('SKU Code');
-  hCols.push('Brand','Article Type','Units','Revenue');
-  if(S.hasCost) hCols.push('Unit Cost','Total Cost');
+  hCols.push('Brand','Article Type','Units');
+  if(!isDB) hCols.push('Avg Seller Price');
+  hCols.push('Revenue');
+  if(S.hasCost) hCols.push('Unit Cost');
   hCols.push('ROS/day','Tier');
   if(S.hasCatalogue) hCols.push('Catalogue Date');
-  if(S.hasReturns) hCols.push('Returns','Return%');
+  if(S.hasReturns){hCols.push('Returns','Return%');if(!isDB)hCols.push('Top Return Reason');}
   if(S.hasInventory){hCols.push(`Inventory (${S.invDateLabel})`);if(S.days)hCols.push('Days on Hand');}
   document.getElementById(theadId).innerHTML=`<tr>${hCols.map(h=>`<th>${h}</th>`).join('')}</tr>`;
   if(!rows.length){
@@ -1275,13 +1339,22 @@ function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={
     cells.push(
       `<td><span class="brand-tag bt-${bk}">${r.brand||'—'}</span></td>`,
       `<td style="color:#555;">${r.articleType||'—'}</td>`,
-      `<td class="mono">${r.units>0?r.units.toLocaleString('en-IN'):'<span class="zero">0</span>'}</td>`,
-      `<td class="mono">${fINR(r.revenue)}</td>`
+      `<td class="mono">${r.units>0?r.units.toLocaleString('en-IN'):'<span class="zero">0</span>'}</td>`
     );
-    if(S.hasCost){cells.push(`<td class="mono">${r.unitCost!==null?fINR(r.unitCost):'<span class="na">—</span>'}</td>`);cells.push(`<td class="mono">${r.totalCost!==null?fINR(r.totalCost):'<span class="na">—</span>'}</td>`);}
+    if(!isDB) cells.push(`<td class="mono">${r.avgSellerPrice!=null?fINR(r.avgSellerPrice):'<span class="na">—</span>'}</td>`);
+    cells.push(`<td class="mono">${fINR(r.revenue)}</td>`);
+    if(S.hasCost) cells.push(`<td class="mono">${r.unitCost!==null?fINR(r.unitCost):'<span class="na">—</span>'}</td>`);
     cells.push(`<td class="mono">${r.ros!==null?r.ros.toFixed(3):'<span class="na">—</span>'}</td>`,`<td><span class="tier-badge tb-${r.tier}">${r.tier}</span></td>`);
     if(S.hasCatalogue) cells.push(`<td>${fCatDate(r.catalogueDate)}</td>`);
-    if(S.hasReturns){cells.push(`<td class="mono">${r.rets>0?r.rets:'<span class="zero">0</span>'}</td>`);cells.push(`<td>${fRetPct(r.retPct)}</td>`);}
+    if(S.hasReturns){
+      cells.push(`<td class="mono">${r.rets>0?r.rets:'<span class="zero">0</span>'}</td>`);
+      cells.push(`<td>${fRetPct(r.retPct)}</td>`);
+      if(!isDB){
+        const reasonMap=S.retReasonsByStyle[r.styleId]||{};
+        const top=getTopReason(reasonMap);
+        cells.push(top?`<td><button class="ret-reason-btn" data-sid="${r.styleId}" data-mode="style">${top.reason}<span class="ret-reason-pct">${top.pct}%</span></button></td>`:`<td><span class="na">—</span></td>`);
+      }
+    }
     if(S.hasInventory){cells.push(`<td class="mono">${r.inv!==null?r.inv.toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);if(S.days)cells.push(`<td class="mono">${r.doh!==null?Math.round(r.doh).toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);}
     tr.innerHTML=cells.join('');
     frag.appendChild(tr);
@@ -1337,6 +1410,37 @@ function renderTierPills(containerId='tierPills', activeTiers, onToggle) {
   }));
 }
 
+// ─── RETURN REASON HELPERS ───────────────────────────────
+function getTopReason(reasonMap) {
+  const entries=Object.entries(reasonMap||{});
+  if(!entries.length) return null;
+  const total=entries.reduce((a,[,c])=>a+c,0);
+  entries.sort((a,b)=>b[1]-a[1]);
+  const [reason,count]=entries[0];
+  return {reason,count,pct:total>0?Math.round(count/total*100):0,total};
+}
+
+function showReturnReasonsPopup(title, sub, reasonMap) {
+  const entries=Object.entries(reasonMap||{}).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((a,[,c])=>a+c,0);
+  document.getElementById('reasonsModalTitle').textContent=title;
+  document.getElementById('reasonsModalSub').textContent=sub;
+  const maxCount=entries.length?entries[0][1]:1;
+  document.getElementById('reasonsModalBody').innerHTML=entries.length
+    ?entries.map(([reason,count])=>{
+        const pct=total>0?Math.round(count/total*100):0;
+        const barW=Math.round(count/maxCount*100);
+        return `<div class="reasons-row">
+          <div class="reasons-label">${reason}</div>
+          <div class="reasons-bar-wrap"><div class="reasons-bar" style="width:${barW}%"></div></div>
+          <div class="reasons-count">${count}</div>
+          <div class="reasons-pct">${pct}%</div>
+        </div>`;
+      }).join('')
+    :'<div style="color:#aaa;font-size:12px;padding:16px 0;">No return reason data</div>';
+  document.getElementById('reasonsOverlay').classList.add('open');
+}
+
 // ─── SKU MODAL ───────────────────────────────────────────
 function showSkuModal(sid, dbSkus) {
   // dbSkus: optional array for DB mode (pre-built). If absent, use one-time S state.
@@ -1356,7 +1460,13 @@ function showSkuModal(sid, dbSkus) {
     <div class="smk c-green"><div class="smk-val">₹${Math.round(style.revenue).toLocaleString('en-IN')}</div><div class="smk-lbl">Revenue</div></div>
     <div class="smk"><div class="smk-val">${style.ros!==null?style.ros.toFixed(3):'—'}</div><div class="smk-lbl">ROS/day</div></div>
     <div class="smk"><div class="smk-val"><span class="tier-badge tb-${style.tier}">${style.tier}</span></div><div class="smk-lbl">Tier</div></div>`;
-  if(S.hasReturns) kh+=`<div class="smk c-amber"><div class="smk-val">${style.rets}</div><div class="smk-lbl">Returns</div></div><div class="smk c-rose"><div class="smk-val">${style.retPct!==null?style.retPct.toFixed(1)+'%':'—'}</div><div class="smk-lbl">Return %</div></div>`;
+  if(S.hasReturns){
+    kh+=`<div class="smk c-amber"><div class="smk-val">${style.rets}</div><div class="smk-lbl">Returns</div></div><div class="smk c-rose"><div class="smk-val">${style.retPct!==null?style.retPct.toFixed(1)+'%':'—'}</div><div class="smk-lbl">Return %</div></div>`;
+    if(!isDB){
+      const topR=getTopReason(S.retReasonsByStyle[sid]||{});
+      if(topR) kh+=`<div class="smk smk-reason-trigger" data-sid="${sid}" style="cursor:pointer;border-color:#ede9fe;"><div class="smk-val" style="font-size:10px;color:#7c3aed;font-family:'DM Sans',sans-serif;">${topR.reason}</div><div class="smk-lbl">Top Return Reason · ${topR.pct}%</div></div>`;
+    }
+  }
   if(!isDB&&S.hasInventory&&style.inv!==null) kh+=`<div class="smk c-teal"><div class="smk-val">${style.inv.toLocaleString('en-IN')}</div><div class="smk-lbl">Total Inventory</div></div>`;
   if(S.hasCost&&style.unitCost!==null) kh+=`<div class="smk c-orange"><div class="smk-val">₹${Math.round(style.unitCost).toLocaleString('en-IN')}</div><div class="smk-lbl">Unit Cost</div></div>`;
   document.getElementById('smKpis').innerHTML=kh;
@@ -1375,12 +1485,14 @@ function showSkuModal(sid, dbSkus) {
   const hasCost = S.hasCost && style.unitCost !== null;
   const days = S.days || 1;
 
+  const hasSkuReasons = !isDB && S.hasReturns;
   const thCols = ['Seller SKU Code','Seller Price','Units Sold','Revenue'];
   if(hasRets) thCols.push('Returns');
   if(hasInv)  thCols.push('Inventory');
   thCols.push('ROS/day');
   if(hasCost) thCols.push('Cost Multiplier');
   if(hasInv)  thCols.push('DOH');
+  if(hasSkuReasons) thCols.push('Top Return Reason');
 
   document.getElementById('smTableTitle').textContent=`SKU Breakdown · ${skus.length} SKU${skus.length!==1?'s':''}`;
   document.getElementById('smThead').innerHTML=`<tr>${thCols.map(h=>`<th>${h}</th>`).join('')}</tr>`;
@@ -1404,6 +1516,13 @@ function showSkuModal(sid, dbSkus) {
       cells.push(`<td class="mono">${skuRos!==null?skuRos.toFixed(3):'<span class="na">—</span>'}</td>`);
       if(hasCost) cells.push(`<td class="mono">${costMult!==null?costMult.toFixed(2)+'×':'<span class="na">—</span>'}</td>`);
       if(hasInv)  cells.push(`<td class="mono">${skuDoh!==null?Math.round(skuDoh).toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);
+      if(hasSkuReasons){
+        const skuReasonMap=S.retReasonsBySku[s.sellerSkuCode]||{};
+        const topSku=getTopReason(skuReasonMap);
+        cells.push(topSku
+          ?`<td><button class="ret-reason-btn" data-sku="${s.sellerSkuCode.replace(/"/g,'&quot;')}">${topSku.reason}<span class="ret-reason-pct">${topSku.pct}%</span></button></td>`
+          :`<td><span class="na">—</span></td>`);
+      }
       return `<tr>${cells.join('')}</tr>`;
     }).join('');
   }
@@ -2724,7 +2843,7 @@ document.getElementById('backToModeBtn').addEventListener('click', () => {
   document.getElementById('topStatus').classList.remove('loaded');
   // Reset one-time state
   Object.values(S.charts).forEach(c=>c.destroy());
-  Object.assign(S,{files:[],errors:[],days:null,daysAuto:null,daysManual:null,data:{sales:[],returns:[],inventory:[],itemmaster:[],catalogue:[]},styles:[],skusByStyle:{},activeBrands:new Set(['All']),activeTiers:new Set(['VF','F','M','S','D']),activeCatalogueMonth:'All',sortKey:'units_desc',hasReturns:false,hasInventory:false,hasCost:false,hasCatalogue:false,invDateLabel:'',charts:{},costMap:{},catalogueMap:{},catalogueMonths:[]});
+  Object.assign(S,{files:[],errors:[],days:null,daysAuto:null,daysManual:null,data:{sales:[],returns:[],inventory:[],itemmaster:[],catalogue:[]},styles:[],skusByStyle:{},retReasonsByStyle:{},retReasonsBySku:{},activeBrands:new Set(['All']),activeTiers:new Set(['VF','F','M','S','D']),activeCatalogueMonth:'All',sortKey:'units_desc',hasReturns:false,hasInventory:false,hasCost:false,hasCatalogue:false,invDateLabel:'',charts:{},costMap:{},catalogueMap:{},catalogueMonths:[]});
   document.getElementById('daysInput').value='';
   document.getElementById('daysAutoLabel').textContent='';
   document.getElementById('daysNote').style.display='none';
@@ -2763,7 +2882,7 @@ document.getElementById('resetBtn').addEventListener('click',()=>{
   document.getElementById('uploadScreen').style.display='flex';
   document.getElementById('topStatus').textContent='Drop your files to get started';
   document.getElementById('topStatus').classList.remove('loaded');
-  Object.assign(S,{files:[],errors:[],days:null,daysAuto:null,daysManual:null,data:{sales:[],returns:[],inventory:[],itemmaster:[],catalogue:[]},styles:[],skusByStyle:{},activeBrands:new Set(['All']),activeTiers:new Set(['VF','F','M','S','D']),activeCatalogueMonth:'All',sortKey:'units_desc',hasReturns:false,hasInventory:false,hasCost:false,hasCatalogue:false,invDateLabel:'',charts:{},costMap:{},catalogueMap:{},catalogueMonths:[]});
+  Object.assign(S,{files:[],errors:[],days:null,daysAuto:null,daysManual:null,data:{sales:[],returns:[],inventory:[],itemmaster:[],catalogue:[]},styles:[],skusByStyle:{},retReasonsByStyle:{},retReasonsBySku:{},activeBrands:new Set(['All']),activeTiers:new Set(['VF','F','M','S','D']),activeCatalogueMonth:'All',sortKey:'units_desc',hasReturns:false,hasInventory:false,hasCost:false,hasCatalogue:false,invDateLabel:'',charts:{},costMap:{},catalogueMap:{},catalogueMonths:[]});
   document.getElementById('daysInput').value='';document.getElementById('daysAutoLabel').textContent='';document.getElementById('daysNote').style.display='none';document.getElementById('fileList').innerHTML='';document.getElementById('errorBox').style.display='none';document.getElementById('goBtn').disabled=true;
   document.querySelectorAll('.mtab')[0].click();
 });
@@ -2798,9 +2917,29 @@ document.addEventListener('click',e=>{if(!tierInfoBox.contains(e.target))tierInf
 // SKU modal
 document.getElementById('skuModalClose').addEventListener('click',()=>document.getElementById('skuOverlay').classList.remove('open'));
 document.getElementById('skuOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('skuOverlay'))document.getElementById('skuOverlay').classList.remove('open');});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('skuOverlay').classList.remove('open');document.getElementById('pwOverlay').classList.remove('open');document.getElementById('confirmOverlay').classList.remove('open');document.getElementById('dbupOverlay').classList.remove('open');}});
-// One-time view: SKU drill
-document.getElementById('tableBody').addEventListener('click',e=>{const btn=e.target.closest('.sku-drill-btn');if(btn)showSkuModal(btn.dataset.sid,null);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('skuOverlay').classList.remove('open');document.getElementById('reasonsOverlay').classList.remove('open');document.getElementById('pwOverlay').classList.remove('open');document.getElementById('confirmOverlay').classList.remove('open');document.getElementById('dbupOverlay').classList.remove('open');}});
+// Return reasons popup
+document.getElementById('reasonsModalClose').addEventListener('click',()=>document.getElementById('reasonsOverlay').classList.remove('open'));
+document.getElementById('reasonsOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('reasonsOverlay'))document.getElementById('reasonsOverlay').classList.remove('open');});
+// One-time view: SKU drill + return reason
+document.getElementById('tableBody').addEventListener('click',e=>{
+  const skuBtn=e.target.closest('.sku-drill-btn');if(skuBtn)showSkuModal(skuBtn.dataset.sid,null);
+  const rrBtn=e.target.closest('.ret-reason-btn[data-mode="style"]');if(rrBtn){const sid=rrBtn.dataset.sid;const style=S.styles.find(s=>s.styleId===sid);showReturnReasonsPopup(`Return Reasons — ${sid}`,style?.styleName||sid,S.retReasonsByStyle[sid]||{});}
+});
+// SKU modal: return reason drill (one-time view)
+document.getElementById('smTbody').addEventListener('click',e=>{
+  const btn=e.target.closest('.ret-reason-btn');
+  if(!btn) return;
+  const sku=btn.dataset.sku;
+  showReturnReasonsPopup(`Return Reasons — ${sku}`,'SKU level',S.retReasonsBySku[sku]||{});
+});
+document.getElementById('smKpis').addEventListener('click',e=>{
+  const chip=e.target.closest('.smk-reason-trigger');
+  if(!chip) return;
+  const sid=chip.dataset.sid;
+  const style=S.styles.find(s=>s.styleId===sid);
+  showReturnReasonsPopup(`Return Reasons — ${sid}`,style?.styleName||sid,S.retReasonsByStyle[sid]||{});
+});
 // DB view: SKU drill — shows aggregated SKU data from DB
 document.getElementById('dbTableBody').addEventListener('click',e=>{
   const btn=e.target.closest('.sku-drill-btn'); if(!btn) return;
