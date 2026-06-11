@@ -443,6 +443,28 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 .dbup-fc-desc{font-size:11px;color:#888;line-height:1.5;}
 .dbup-add-more{font-size:11px;color:#4f46e5;background:none;border:none;cursor:pointer;font-weight:600;padding:0;margin-bottom:14px;display:block;}
 
+/* MANAGE FILES OVERLAY */
+.mgr-drop-zone{border:2px dashed #d1d5db;border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;margin-top:4px;}
+.mgr-drop-zone.drag-over{border-color:#818cf8;background:#f5f3ff;}
+.dash-mgr-btn{font-size:11px;font-weight:600;color:#555;background:#f4f4f5;border:1px solid #e5e7eb;border-radius:6px;padding:6px 14px;cursor:pointer;white-space:nowrap;transition:all 0.15s;}
+.dash-mgr-btn:hover{background:#e5e7eb;color:#111;}
+.dash-mgr-btn.add{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border-color:transparent;}
+.dash-mgr-btn.add:hover{opacity:0.88;}
+
+/* MANAGE DB SUB-TABS + BULK DELETE */
+.mgmt-bulk-zone{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;}
+.mgmt-bulk-title{font-size:12px;font-weight:700;color:#991b1b;margin-bottom:2px;}
+.mgmt-bulk-desc{font-size:11px;color:#9f1239;line-height:1.5;}
+.mgmt-bulk-btn{background:#dc2626;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.mgmt-bulk-btn:hover{background:#b91c1c;}
+.mgmt-sub-tabs{display:flex;gap:0;border-bottom:2px solid #e5e7eb;margin-bottom:16px;}
+.mgmt-sub-tab{padding:9px 18px;font-size:11px;font-weight:600;color:#aaa;background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color 0.2s,border-color 0.2s;}
+.mgmt-sub-tab:hover{color:#555;}
+.mgmt-sub-tab.active{color:#4f46e5;border-bottom-color:#4f46e5;}
+.mgmt-sub-bulk{margin-bottom:14px;}
+.mgmt-sub-bulk-btn{background:none;border:1px solid #fecaca;color:#dc2626;border-radius:6px;padding:5px 12px;font-size:10px;font-weight:700;cursor:pointer;transition:all 0.15s;}
+.mgmt-sub-bulk-btn:hover{background:#fef2f2;}
+
 @media(max-width:700px){
   .chart-grid.cols2{grid-template-columns:1fr;}
   .upload-card{padding:32px 20px;}
@@ -532,7 +554,11 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
       <div class="dash-title">Myntra Sales Dashboard</div>
       <div class="dash-meta" id="dashMeta"></div>
     </div>
-    <button class="reset-btn" id="resetBtn">← Load new files</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="dash-mgr-btn" id="dashManageFilesBtn">Manage Files</button>
+      <button class="dash-mgr-btn add" id="dashAddFilesBtn">+ Add Files</button>
+      <button class="reset-btn" id="resetBtn">← Load new files</button>
+    </div>
   </div>
   <div class="main-tabs">
     <button class="mtab active" data-tab="overview">Overview</button>
@@ -625,6 +651,18 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <div class="table-wrap">
       <div class="tw"><table id="mainTable"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
     </div>
+  </div>
+</div>
+
+<!-- MANAGE FILES OVERLAY (ONE-TIME VIEW) -->
+<div class="reasons-overlay" id="manageFilesOverlay">
+  <div class="reasons-modal" style="max-width:560px;position:relative;">
+    <button class="reasons-modal-close" id="manageFilesClose">×</button>
+    <div class="reasons-modal-head">
+      <div class="reasons-modal-title">Manage Files</div>
+      <div class="reasons-modal-sub" id="manageFilesSub"></div>
+    </div>
+    <div class="reasons-modal-body" id="manageFilesBody"></div>
   </div>
 </div>
 
@@ -1324,13 +1362,11 @@ function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={
   const isDB = opts.isDB || false;
   let hCols=['Style ID'];
   if(showSku) hCols.push('SKU Code');
-  hCols.push('Brand','Article Type','Units');
-  if(!isDB) hCols.push('Avg Seller Price');
-  hCols.push('Revenue');
+  hCols.push('Brand','Article Type','Units','Avg Seller Price','Revenue');
   if(S.hasCost) hCols.push('Unit Cost');
   hCols.push('ROS/day','Tier');
   if(S.hasCatalogue) hCols.push('Catalogue Date');
-  if(S.hasReturns){hCols.push('Returns','Return%');if(!isDB)hCols.push('Top Return Reason');}
+  if(S.hasReturns){hCols.push('Returns','Return%','Top Return Reason');}
   if(S.hasInventory){hCols.push(`Inventory (${S.invDateLabel})`);if(S.days)hCols.push('Days on Hand');}
   document.getElementById(theadId).innerHTML=`<tr>${hCols.map(h=>`<th>${h}</th>`).join('')}</tr>`;
   if(!rows.length){
@@ -1348,7 +1384,7 @@ function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={
       `<td style="color:#555;">${r.articleType||'—'}</td>`,
       `<td class="mono">${r.units>0?r.units.toLocaleString('en-IN'):'<span class="zero">0</span>'}</td>`
     );
-    if(!isDB) cells.push(`<td class="mono">${r.avgSellerPrice!=null?fINR(r.avgSellerPrice):'<span class="na">—</span>'}</td>`);
+    cells.push(`<td class="mono">${r.avgSellerPrice!=null?fINR(r.avgSellerPrice):'<span class="na">—</span>'}</td>`);
     cells.push(`<td class="mono">${fINR(r.revenue)}</td>`);
     if(S.hasCost) cells.push(`<td class="mono">${r.unitCost!==null?fINR(r.unitCost):'<span class="na">—</span>'}</td>`);
     cells.push(`<td class="mono">${r.ros!==null?r.ros.toFixed(3):'<span class="na">—</span>'}</td>`,`<td><span class="tier-badge tb-${r.tier}">${r.tier}</span></td>`);
@@ -1356,11 +1392,9 @@ function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={
     if(S.hasReturns){
       cells.push(`<td class="mono">${r.rets>0?r.rets:'<span class="zero">0</span>'}</td>`);
       cells.push(`<td>${fRetPct(r.retPct)}</td>`);
-      if(!isDB){
-        const reasonMap=S.retReasonsByStyle[r.styleId]||{};
-        const top=getTopReason(reasonMap);
-        cells.push(top?`<td><button class="ret-reason-btn" data-sid="${r.styleId}" data-mode="style">${top.reason}<span class="ret-reason-pct">${top.pct}%</span></button></td>`:`<td><span class="na">—</span></td>`);
-      }
+      const reasonMap=S.retReasonsByStyle[r.styleId]||{};
+      const top=getTopReason(reasonMap);
+      cells.push(top?`<td><button class="ret-reason-btn" data-sid="${r.styleId}" data-mode="style">${top.reason}<span class="ret-reason-pct">${top.pct}%</span></button></td>`:`<td><span class="na">—</span></td>`);
     }
     if(S.hasInventory){cells.push(`<td class="mono">${r.inv!==null?r.inv.toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);if(S.days)cells.push(`<td class="mono">${r.doh!==null?Math.round(r.doh).toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);}
     tr.innerHTML=cells.join('');
@@ -1469,10 +1503,8 @@ function showSkuModal(sid, dbSkus) {
     <div class="smk"><div class="smk-val"><span class="tier-badge tb-${style.tier}">${style.tier}</span></div><div class="smk-lbl">Tier</div></div>`;
   if(S.hasReturns){
     kh+=`<div class="smk c-amber"><div class="smk-val">${style.rets}</div><div class="smk-lbl">Returns</div></div><div class="smk c-rose"><div class="smk-val">${style.retPct!==null?style.retPct.toFixed(1)+'%':'—'}</div><div class="smk-lbl">Return %</div></div>`;
-    if(!isDB){
-      const topR=getTopReason(S.retReasonsByStyle[sid]||{});
-      if(topR) kh+=`<div class="smk smk-reason-trigger" data-sid="${sid}" style="cursor:pointer;border-color:#ede9fe;"><div class="smk-val" style="font-size:10px;color:#7c3aed;font-family:'DM Sans',sans-serif;">${topR.reason}</div><div class="smk-lbl">Top Return Reason · ${topR.pct}%</div></div>`;
-    }
+    const topR=getTopReason(S.retReasonsByStyle[sid]||{});
+    if(topR) kh+=`<div class="smk smk-reason-trigger" data-sid="${sid}" style="cursor:pointer;border-color:#ede9fe;"><div class="smk-val" style="font-size:10px;color:#7c3aed;font-family:'DM Sans',sans-serif;">${topR.reason}</div><div class="smk-lbl">Top Return Reason · ${topR.pct}%</div></div>`;
   }
   if(!isDB&&S.hasInventory&&style.inv!==null) kh+=`<div class="smk c-teal"><div class="smk-val">${style.inv.toLocaleString('en-IN')}</div><div class="smk-lbl">Total Inventory</div></div>`;
   if(S.hasCost&&style.unitCost!==null) kh+=`<div class="smk c-orange"><div class="smk-val">₹${Math.round(style.unitCost).toLocaleString('en-IN')}</div><div class="smk-lbl">Unit Cost</div></div>`;
@@ -1492,7 +1524,7 @@ function showSkuModal(sid, dbSkus) {
   const hasCost = S.hasCost && style.unitCost !== null;
   const days = S.days || 1;
 
-  const hasSkuReasons = !isDB && S.hasReturns;
+  const hasSkuReasons = S.hasReturns;
   const thCols = ['Seller SKU Code','Seller Price','Units Sold','Revenue'];
   if(hasRets) thCols.push('Returns');
   if(hasInv)  thCols.push('Inventory');
@@ -1568,6 +1600,7 @@ const DB = {
   compareMthA: null,
   compareMthB: null,
   manageChannel: '18724',
+  manageSubTab: 'sales',
   selectedMonths: new Set(), // months selected in timeline
   allFYs: [],
   fyMonths: {},       // 'FY27' → ['2026-04','2026-05',...]
@@ -1600,6 +1633,8 @@ async function loadFirestoreData() {
       if(typeof o.sellerStyles==='string') o.sellerStyles=JSON.parse(o.sellerStyles);
       if(typeof o.skuRets==='string') o.skuRets=JSON.parse(o.skuRets);
       if(typeof o.sellerReturns==='string') o.sellerReturns=JSON.parse(o.sellerReturns);
+      if(typeof o.retReasonsByStyle==='string') o.retReasonsByStyle=JSON.parse(o.retReasonsByStyle);
+      if(typeof o.retReasonsBySku==='string') o.retReasonsBySku=JSON.parse(o.retReasonsBySku);
       return o;
     }
     DB.salesMonths={};
@@ -1685,8 +1720,7 @@ async function saveSalesMonth(month, rows) {
 async function saveReturnsMonths(rows) {
   const newSellerId = getSellerFromRows(rows);
   // Group by order month
-  const byMonth={};
-  const byMonthSkuRets={};
+  const byMonth={}, byMonthSkuRets={}, byMonthReasonsByStyle={}, byMonthReasonsBySku={};
   rows.forEach(r=>{
     const sid=String(r['style_id']||'').trim(); if(!sid) return;
     const skuCode=(r['seller_sku_code']||r['sku_code']||r['seller sku code']||'').trim();
@@ -1695,42 +1729,65 @@ async function saveReturnsMonths(rows) {
     const ds=String(d).trim().split(' ')[0];
     if(!/^\d{4}-\d{2}-\d{2}$/.test(ds)) return;
     const month=ds.slice(0,7);
+    const reason=(String(r['return_reason']||r['Return Reason']||r['returnReason']||'').trim())||'RTO';
     if(!byMonth[month]) byMonth[month]={};
     byMonth[month][sid]=(byMonth[month][sid]||0)+1;
+    if(!byMonthReasonsByStyle[month]) byMonthReasonsByStyle[month]={};
+    if(!byMonthReasonsByStyle[month][sid]) byMonthReasonsByStyle[month][sid]={};
+    byMonthReasonsByStyle[month][sid][reason]=(byMonthReasonsByStyle[month][sid][reason]||0)+1;
     if(skuCode){
       if(!byMonthSkuRets[month]) byMonthSkuRets[month]={};
       byMonthSkuRets[month][skuCode]=(byMonthSkuRets[month][skuCode]||0)+1;
+      if(!byMonthReasonsBySku[month]) byMonthReasonsBySku[month]={};
+      if(!byMonthReasonsBySku[month][skuCode]) byMonthReasonsBySku[month][skuCode]={};
+      byMonthReasonsBySku[month][skuCode][reason]=(byMonthReasonsBySku[month][skuCode][reason]||0)+1;
     }
   });
+  // Helper to merge nested reason maps: { key: { reason: count } }
+  const mergeReasons=(base,incoming)=>{
+    const out=JSON.parse(JSON.stringify(base||{}));
+    Object.entries(incoming||{}).forEach(([k,reasons])=>{
+      if(!out[k]) out[k]={};
+      Object.entries(reasons).forEach(([r,c])=>{ out[k][r]=(out[k][r]||0)+c; });
+    });
+    return out;
+  };
   for(const [month,styles] of Object.entries(byMonth)){
     const existing=DB.returnsMonths[month];
     const existingSellers=existing?.sellers||(existing?['18724']:[]);
     const fy=getFY(month);
     const newSkuRets=byMonthSkuRets[month]||{};
-    let finalStyles, finalSkuRets, sellerReturns;
+    const newReasonsByStyle=byMonthReasonsByStyle[month]||{};
+    const newReasonsBySku=byMonthReasonsBySku[month]||{};
+    let finalStyles, finalSkuRets, finalReasonsByStyle, finalReasonsBySku, sellerReturns;
     if(existing){
-      // Always accumulate — works for both same-seller new settlement cycles and different sellers
+      // Always accumulate — settlement cycles mean multiple uploads per month per seller
       finalStyles={...existing.styles};
       Object.entries(styles).forEach(([sid,count])=>{ finalStyles[sid]=(finalStyles[sid]||0)+count; });
       finalSkuRets={...(existing.skuRets||{})};
       Object.entries(newSkuRets).forEach(([sku,count])=>{ finalSkuRets[sku]=(finalSkuRets[sku]||0)+count; });
-      const prevSR = typeof existing.sellerReturns==='string' ? JSON.parse(existing.sellerReturns) : (existing.sellerReturns||{});
-      const prevSlice = prevSR[newSellerId]||{styles:{},skuRets:{}};
+      const prevRBS = typeof existing.retReasonsByStyle==='string'?JSON.parse(existing.retReasonsByStyle):(existing.retReasonsByStyle||{});
+      const prevRBSku = typeof existing.retReasonsBySku==='string'?JSON.parse(existing.retReasonsBySku):(existing.retReasonsBySku||{});
+      finalReasonsByStyle=mergeReasons(prevRBS,newReasonsByStyle);
+      finalReasonsBySku=mergeReasons(prevRBSku,newReasonsBySku);
+      const prevSR=typeof existing.sellerReturns==='string'?JSON.parse(existing.sellerReturns):(existing.sellerReturns||{});
+      const prevSlice=prevSR[newSellerId]||{styles:{},skuRets:{},retReasonsByStyle:{},retReasonsBySku:{}};
       const accSellerStyles={...prevSlice.styles};
       Object.entries(styles).forEach(([sid,c])=>{ accSellerStyles[sid]=(accSellerStyles[sid]||0)+c; });
       const accSellerSkuRets={...(prevSlice.skuRets||{})};
       Object.entries(newSkuRets).forEach(([sku,c])=>{ accSellerSkuRets[sku]=(accSellerSkuRets[sku]||0)+c; });
-      sellerReturns={...prevSR,[newSellerId]:{styles:accSellerStyles,skuRets:accSellerSkuRets}};
+      const accSellerRBS=mergeReasons(prevSlice.retReasonsByStyle,newReasonsByStyle);
+      const accSellerRBSku=mergeReasons(prevSlice.retReasonsBySku,newReasonsBySku);
+      sellerReturns={...prevSR,[newSellerId]:{styles:accSellerStyles,skuRets:accSellerSkuRets,retReasonsByStyle:accSellerRBS,retReasonsBySku:accSellerRBSku}};
     } else {
-      // New month entirely
-      finalStyles=styles;
-      finalSkuRets=newSkuRets;
-      sellerReturns={[newSellerId]:{styles,skuRets:newSkuRets}};
+      finalStyles=styles; finalSkuRets=newSkuRets;
+      finalReasonsByStyle=newReasonsByStyle; finalReasonsBySku=newReasonsBySku;
+      sellerReturns={[newSellerId]:{styles,skuRets:newSkuRets,retReasonsByStyle:newReasonsByStyle,retReasonsBySku:newReasonsBySku}};
     }
     const totalRets=Object.values(finalStyles).reduce((a,b)=>a+b,0);
     const sellers=[...new Set([...existingSellers,newSellerId])];
-    const memPayload={month,fy,styles:finalStyles,skuRets:finalSkuRets,sellerReturns,totalRets,sellers,uploadedAt:new Date().toISOString()};
-    const fsPayload={...memPayload,styles:JSON.stringify(finalStyles),skuRets:JSON.stringify(finalSkuRets),sellerReturns:JSON.stringify(sellerReturns)};
+    const memPayload={month,fy,styles:finalStyles,skuRets:finalSkuRets,retReasonsByStyle:finalReasonsByStyle,retReasonsBySku:finalReasonsBySku,sellerReturns,totalRets,sellers,uploadedAt:new Date().toISOString()};
+    const fsPayload={...memPayload,styles:JSON.stringify(finalStyles),skuRets:JSON.stringify(finalSkuRets),retReasonsByStyle:JSON.stringify(finalReasonsByStyle),retReasonsBySku:JSON.stringify(finalReasonsBySku),sellerReturns:JSON.stringify(sellerReturns)};
     await setDoc(doc(fsDb,'returns_monthly',month),fsPayload);
     DB.returnsMonths[month]=memPayload;
   }
@@ -1780,7 +1837,7 @@ async function deleteReturnsMonth(month) {
 }
 
 // Delete one seller's contribution from a month; removes doc entirely if last seller
-async function deleteSalesSellerMonth(month, sellerId) {
+async function deleteSalesSellerMonth(month, sellerId, noRender=false) {
   const existing = DB.salesMonths[month];
   if (!existing) return;
   const remaining = (existing.sellers || []).filter(s => s !== sellerId);
@@ -1812,10 +1869,10 @@ async function deleteSalesSellerMonth(month, sellerId) {
     await setDoc(doc(fsDb,'sales_monthly',month),fsPayload);
     DB.salesMonths[month]=memPayload;
   }
-  buildDBFYIndex(); renderDBScreen();
+  if(!noRender){ buildDBFYIndex(); renderDBScreen(); }
 }
 
-async function deleteReturnsSellerMonth(month, sellerId) {
+async function deleteReturnsSellerMonth(month, sellerId, noRender=false) {
   const existing = DB.returnsMonths[month];
   if (!existing) return;
   const remaining = (existing.sellers || []).filter(s => s !== sellerId);
@@ -1825,19 +1882,27 @@ async function deleteReturnsSellerMonth(month, sellerId) {
   } else {
     const newSellerReturns = {...(existing.sellerReturns||{})};
     delete newSellerReturns[sellerId];
-    // Recompute merged styles and skuRets from remaining sellers
-    const mergedStyles = {}, mergedSkuRets = {};
-    Object.values(newSellerReturns).forEach(({styles,skuRets}) => {
+    // Recompute merged styles, skuRets, and reason maps from remaining sellers
+    const mergedStyles={}, mergedSkuRets={}, mergedRBS={}, mergedRBSku={};
+    Object.values(newSellerReturns).forEach(({styles,skuRets,retReasonsByStyle,retReasonsBySku}) => {
       Object.entries(styles||{}).forEach(([sid,count]) => { mergedStyles[sid]=(mergedStyles[sid]||0)+count; });
       Object.entries(skuRets||{}).forEach(([sku,count]) => { mergedSkuRets[sku]=(mergedSkuRets[sku]||0)+count; });
+      Object.entries(retReasonsByStyle||{}).forEach(([sid,reasons]) => {
+        if(!mergedRBS[sid]) mergedRBS[sid]={};
+        Object.entries(reasons).forEach(([r,c]) => { mergedRBS[sid][r]=(mergedRBS[sid][r]||0)+c; });
+      });
+      Object.entries(retReasonsBySku||{}).forEach(([sku,reasons]) => {
+        if(!mergedRBSku[sku]) mergedRBSku[sku]={};
+        Object.entries(reasons).forEach(([r,c]) => { mergedRBSku[sku][r]=(mergedRBSku[sku][r]||0)+c; });
+      });
     });
     const totalRets=Object.values(mergedStyles).reduce((a,b)=>a+b,0);
-    const memPayload={...existing,styles:mergedStyles,skuRets:mergedSkuRets,sellerReturns:newSellerReturns,sellers:remaining,totalRets};
-    const fsPayload={...memPayload,styles:JSON.stringify(mergedStyles),skuRets:JSON.stringify(mergedSkuRets),sellerReturns:JSON.stringify(newSellerReturns)};
+    const memPayload={...existing,styles:mergedStyles,skuRets:mergedSkuRets,retReasonsByStyle:mergedRBS,retReasonsBySku:mergedRBSku,sellerReturns:newSellerReturns,sellers:remaining,totalRets};
+    const fsPayload={...memPayload,styles:JSON.stringify(mergedStyles),skuRets:JSON.stringify(mergedSkuRets),retReasonsByStyle:JSON.stringify(mergedRBS),retReasonsBySku:JSON.stringify(mergedRBSku),sellerReturns:JSON.stringify(newSellerReturns)};
     await setDoc(doc(fsDb,'returns_monthly',month),fsPayload);
     DB.returnsMonths[month]=memPayload;
   }
-  buildDBFYIndex(); renderDBScreen();
+  if(!noRender){ buildDBFYIndex(); renderDBScreen(); }
 }
 async function deleteCostMaster() {
   await deleteDoc(doc(fsDb,'cost_master','master'));
@@ -1861,6 +1926,32 @@ async function deleteAllData() {
   DB.costMaster={costs:{},uploadedAt:null};
   DB.listingsMaster={listings:{},uploadedAt:null};
   DB.allFYs=[]; DB.fyMonths={}; DB.activeFY=null;
+  buildDBFYIndex(); renderDBScreen();
+}
+
+function formatUploadedAt(iso) {
+  if(!iso) return '';
+  const d=new Date(iso);
+  const date=d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const time=d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+  return `${date} · ${time}`;
+}
+
+async function deleteAllSellerSales(sellerId) {
+  const months=Object.keys(DB.salesMonths).filter(m=>(DB.salesMonths[m].sellers||['18724']).includes(sellerId));
+  for(const m of months) await deleteSalesSellerMonth(m,sellerId,true);
+  buildDBFYIndex(); renderDBScreen();
+}
+async function deleteAllSellerReturns(sellerId) {
+  const months=Object.keys(DB.returnsMonths).filter(m=>(DB.returnsMonths[m].sellers||['18724']).includes(sellerId));
+  for(const m of months) await deleteReturnsSellerMonth(m,sellerId,true);
+  buildDBFYIndex(); renderDBScreen();
+}
+async function deleteAllSellerData(sellerId) {
+  const salesMonths=Object.keys(DB.salesMonths).filter(m=>(DB.salesMonths[m].sellers||['18724']).includes(sellerId));
+  const retMonths=Object.keys(DB.returnsMonths).filter(m=>(DB.returnsMonths[m].sellers||['18724']).includes(sellerId));
+  for(const m of salesMonths) await deleteSalesSellerMonth(m,sellerId,true);
+  for(const m of retMonths) await deleteReturnsSellerMonth(m,sellerId,true);
   buildDBFYIndex(); renderDBScreen();
 }
 
@@ -2046,6 +2137,7 @@ function aggregateDBStyles(months) {
   Object.entries(styleMap).forEach(([sid, st]) => {
     Object.keys(st.skus).forEach(sku => { skuToStyle[sku] = sid; });
   });
+  const retReasonsByStyle={}, retReasonsBySku={};
   months.forEach(month => {
     const rd = DB.returnsMonths[month]; if (!rd) return;
     Object.entries(rd.styles || {}).forEach(([sid, rets]) => {
@@ -2056,6 +2148,15 @@ function aggregateDBStyles(months) {
       const sid = skuToStyle[sku]; if (!sid || !styleMap[sid]?.skus[sku]) return;
       styleMap[sid].skus[sku].rets += rets;
     });
+    // Merge reason maps
+    Object.entries(rd.retReasonsByStyle||{}).forEach(([sid,reasons])=>{
+      if(!retReasonsByStyle[sid]) retReasonsByStyle[sid]={};
+      Object.entries(reasons).forEach(([r,c])=>{ retReasonsByStyle[sid][r]=(retReasonsByStyle[sid][r]||0)+c; });
+    });
+    Object.entries(rd.retReasonsBySku||{}).forEach(([sku,reasons])=>{
+      if(!retReasonsBySku[sku]) retReasonsBySku[sku]={};
+      Object.entries(reasons).forEach(([r,c])=>{ retReasonsBySku[sku][r]=(retReasonsBySku[sku][r]||0)+c; });
+    });
   });
   const costs = DB.costMaster.costs || {};
   const listings = DB.listingsMaster.listings || {};
@@ -2063,12 +2164,13 @@ function aggregateDBStyles(months) {
     const ros = totalDays > 0 ? st.units / totalDays : null;
     const tier = getTierDB(ros);
     const retPct = st.units > 0 ? (st.rets / st.units) * 100 : null;
+    const avgSellerPrice = st.units > 0 ? st.revenue / st.units : null;
     const unitCost = costs[st.styleId] !== undefined ? costs[st.styleId] : null;
     const totalCost = unitCost !== null && st.units > 0 ? unitCost * st.units : null;
     const catalogueDate = listings[st.styleId] || null;
-    return {...st, ros, tier, retPct, inv:null, doh:null, unitCost, totalCost, catalogueDate};
+    return {...st, ros, tier, retPct, avgSellerPrice, inv:null, doh:null, unitCost, totalCost, catalogueDate};
   });
-  return {styles, totalDays};
+  return {styles, totalDays, retReasonsByStyle, retReasonsBySku};
 }
 
 function getTierDB(ros) {
@@ -2148,11 +2250,13 @@ function renderDBFYView() {
     document.getElementById('dbFilterBar').style.display = 'none';
     return;
   }
-  const {styles, totalDays} = aggregateDBStyles(selMonths);
+  const {styles, totalDays, retReasonsByStyle, retReasonsBySku} = aggregateDBStyles(selMonths);
   DB.dbStyles = styles;
   // Populate S state for shared render functions
   S.styles = styles;
   S.days = totalDays;
+  S.retReasonsByStyle = retReasonsByStyle;
+  S.retReasonsBySku = retReasonsBySku;
   S.daysManual = null;
   S.hasReturns = selMonths.some(m => DB.returnsMonths[m]);
   S.hasCost = Object.keys(DB.costMaster.costs||{}).length > 0;
@@ -2611,6 +2715,8 @@ const CHANNELS = [
 function renderDBManage() {
   const el = document.getElementById('db-manage');
   const ch = DB.manageChannel || '18724';
+  const chLabel = CHANNELS.find(c=>c.id===ch)?.label || ch;
+  const subTab = DB.manageSubTab || 'sales';
 
   const salesMonths = Object.keys(DB.salesMonths)
     .filter(m => (DB.salesMonths[m].sellers||['18724']).includes(ch)).sort();
@@ -2620,59 +2726,88 @@ function renderDBManage() {
   const salesByFY = {}, retByFY = {};
   salesMonths.forEach(m => { const fy=getFY(m); if(!salesByFY[fy]) salesByFY[fy]=[]; salesByFY[fy].push(m); });
   retMonths.forEach(m => { const fy=getFY(m); if(!retByFY[fy]) retByFY[fy]=[]; retByFY[fy].push(m); });
-  const allFYs = [...new Set([...Object.keys(salesByFY),...Object.keys(retByFY)])].sort().reverse();
 
-  function fyBlock(fy) {
-    const sRows = (salesByFY[fy]||[]).map(m => {
-      const sd = DB.salesMonths[m];
-      const ss = sd.sellerStyles?.[ch] || {};
-      const units = Object.values(ss).reduce((a,s)=>a+s.units,0);
-      const rev = Object.values(ss).reduce((a,s)=>a+s.revenue,0);
-      const frozen = isReturnsFrozen(m);
+  function fyBlockSales(fy) {
+    const rows=(salesByFY[fy]||[]).map(m=>{
+      const sd=DB.salesMonths[m];
+      const ss=sd.sellerStyles?.[ch]||{};
+      const units=Object.values(ss).reduce((a,s)=>a+s.units,0);
+      const rev=Object.values(ss).reduce((a,s)=>a+s.revenue,0);
+      const frozen=isReturnsFrozen(m);
       return `<div class="mgmt-item">
-        <div class="mgmt-item-label">${formatMonth(m)} Sales</div>
-        <div class="mgmt-item-meta">${units.toLocaleString('en-IN')} units · ₹${Math.round(rev/1000)}K</div>
+        <div class="mgmt-item-label">${formatMonth(m)}</div>
+        <div class="mgmt-item-meta">${units.toLocaleString('en-IN')} units · ₹${Math.round(rev/1000)}K · uploaded ${formatUploadedAt(sd.uploadedAt)}</div>
         <span class="mgmt-item-badge ${frozen?'badge-frozen':'badge-pending'}">${frozen?'Frozen':'Pending'}</span>
         <button class="dmi-del" data-action="del-sales-seller" data-month="${m}" data-seller="${ch}">Delete</button>
       </div>`;
     }).join('');
-    const rRows = (retByFY[fy]||[]).map(m => {
-      const rd = DB.returnsMonths[m];
-      const sr = rd.sellerReturns?.[ch]?.styles || {};
-      const count = Object.values(sr).reduce((a,b)=>a+b,0);
+    if(!rows) return '';
+    return `<div class="mgmt-fy-section"><div class="mgmt-fy-header">${fy}</div><div class="mgmt-list">${rows}</div></div>`;
+  }
+
+  function fyBlockReturns(fy) {
+    const rows=(retByFY[fy]||[]).map(m=>{
+      const rd=DB.returnsMonths[m];
+      const sr=rd.sellerReturns?.[ch]?.styles||{};
+      const count=Object.values(sr).reduce((a,b)=>a+b,0);
       return `<div class="mgmt-item">
-        <div class="mgmt-item-label">${formatMonth(m)} Returns</div>
-        <div class="mgmt-item-meta">${count.toLocaleString('en-IN')} returns</div>
+        <div class="mgmt-item-label">${formatMonth(m)}</div>
+        <div class="mgmt-item-meta">${count.toLocaleString('en-IN')} returns · uploaded ${formatUploadedAt(rd.uploadedAt)}</div>
         <button class="dmi-del" data-action="del-ret-seller" data-month="${m}" data-seller="${ch}">Delete</button>
       </div>`;
     }).join('');
-    if (!sRows && !rRows) return '';
-    return `<div class="mgmt-fy-section">
-      <div class="mgmt-fy-header">${fy}</div>
-      <div class="mgmt-list">${sRows}${rRows}</div>
-    </div>`;
+    if(!rows) return '';
+    return `<div class="mgmt-fy-section"><div class="mgmt-fy-header">${fy}</div><div class="mgmt-list">${rows}</div></div>`;
   }
 
-  const channelTabsHtml = CHANNELS.map(c =>
+  const allSalesFYs=Object.keys(salesByFY).sort().reverse();
+  const allRetFYs=Object.keys(retByFY).sort().reverse();
+
+  const salesContent=allSalesFYs.length
+    ?allSalesFYs.map(fyBlockSales).join('')
+    :`<div style="color:#aaa;font-size:12px;padding:12px 0;">No sales data uploaded for this channel.</div>`;
+  const returnsContent=allRetFYs.length
+    ?allRetFYs.map(fyBlockReturns).join('')
+    :`<div style="color:#aaa;font-size:12px;padding:12px 0;">No returns data uploaded for this channel.</div>`;
+
+  const channelTabsHtml=CHANNELS.map(c=>
     `<button class="mgmt-channel-tab${c.id===ch?' active':''}" data-chid="${c.id}">${c.label}</button>`
   ).join('');
 
-  const fyContent = allFYs.length
-    ? allFYs.map(fyBlock).join('')
-    : `<div style="color:#aaa;font-size:12px;padding:16px 0;">No data uploaded for this channel yet.</div>`;
-
-  el.innerHTML = `
+  el.innerHTML=`
     <div class="mgmt-channel-tabs">${channelTabsHtml}</div>
     <div class="mgmt-body">
-      ${fyContent}
+      <div class="mgmt-bulk-zone">
+        <div style="flex:1;">
+          <div class="mgmt-bulk-title">Delete All ${chLabel} Data</div>
+          <div class="mgmt-bulk-desc">Permanently removes all sales and returns for ${chLabel} across every month.</div>
+        </div>
+        <button class="mgmt-bulk-btn" data-action="del-all-seller" data-seller="${ch}">Delete All</button>
+      </div>
+      <div class="mgmt-sub-tabs">
+        <button class="mgmt-sub-tab${subTab==='sales'?' active':''}" data-sub="sales">Sales</button>
+        <button class="mgmt-sub-tab${subTab==='returns'?' active':''}" data-sub="returns">Returns</button>
+      </div>
+      <div id="mgmt-sub-sales" style="display:${subTab==='sales'?'block':'none'};">
+        <div class="mgmt-sub-bulk">
+          <button class="mgmt-sub-bulk-btn" data-action="del-all-seller-sales" data-seller="${ch}">Delete All ${chLabel} Sales</button>
+        </div>
+        ${salesContent}
+      </div>
+      <div id="mgmt-sub-returns" style="display:${subTab==='returns'?'block':'none'};">
+        <div class="mgmt-sub-bulk">
+          <button class="mgmt-sub-bulk-btn" data-action="del-all-seller-returns" data-seller="${ch}">Delete All ${chLabel} Returns</button>
+        </div>
+        ${returnsContent}
+      </div>
       <div class="mgmt-master-section">
         <div class="db-manage-title">Master Data</div>
         <div class="db-manage-list">
           ${DB.costMaster.uploadedAt
-            ?`<div class="db-manage-item"><div><div class="dmi-label">Cost Master</div><div class="dmi-meta">${Object.keys(DB.costMaster.costs||{}).length.toLocaleString()} products · ${DB.costMaster.uploadedAt.slice(0,10)}</div></div><button class="dmi-del" data-action="del-cost">Delete</button></div>`
+            ?`<div class="db-manage-item"><div><div class="dmi-label">Cost Master</div><div class="dmi-meta">${Object.keys(DB.costMaster.costs||{}).length.toLocaleString()} products · ${formatUploadedAt(DB.costMaster.uploadedAt)}</div></div><button class="dmi-del" data-action="del-cost">Delete</button></div>`
             :'<div style="color:#aaa;font-size:12px;padding:6px 0;">No cost data stored</div>'}
           ${DB.listingsMaster.uploadedAt
-            ?`<div class="db-manage-item"><div><div class="dmi-label">Listings Master</div><div class="dmi-meta">${Object.keys(DB.listingsMaster.listings||{}).length.toLocaleString()} styles · ${DB.listingsMaster.uploadedAt.slice(0,10)}</div></div><button class="dmi-del" data-action="del-listings">Delete</button></div>`
+            ?`<div class="db-manage-item"><div><div class="dmi-label">Listings Master</div><div class="dmi-meta">${Object.keys(DB.listingsMaster.listings||{}).length.toLocaleString()} styles · ${formatUploadedAt(DB.listingsMaster.uploadedAt)}</div></div><button class="dmi-del" data-action="del-listings">Delete</button></div>`
             :'<div style="color:#aaa;font-size:12px;padding:6px 0;">No listings data stored</div>'}
         </div>
       </div>
@@ -2683,26 +2818,27 @@ function renderDBManage() {
       </div>
     </div>`;
 
-  el.querySelectorAll('.mgmt-channel-tab').forEach(btn => {
-    btn.addEventListener('click', () => { DB.manageChannel = btn.dataset.chid; renderDBManage(); });
+  el.querySelectorAll('.mgmt-channel-tab').forEach(btn=>{
+    btn.addEventListener('click',()=>{ DB.manageChannel=btn.dataset.chid; DB.manageSubTab='sales'; renderDBManage(); });
   });
-
-  el.querySelectorAll('[data-action]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const {action, month, seller} = btn.dataset;
-      if (action==='del-sales-seller')
-        confirmDelete3Layer(`${getSellerLabel(seller)} sales for ${formatMonth(month)}`, month, 'sales-seller', seller);
-      else if (action==='del-ret-seller')
-        confirmDelete3Layer(`${getSellerLabel(seller)} returns for ${formatMonth(month)}`, month, 'ret-seller', seller);
-      else if (action==='del-cost') confirmDelete3Layer('Cost Master', null, 'cost');
-      else if (action==='del-listings') confirmDelete3Layer('Listings Master', null, 'listings');
+  el.querySelectorAll('.mgmt-sub-tab').forEach(btn=>{
+    btn.addEventListener('click',()=>{ DB.manageSubTab=btn.dataset.sub; renderDBManage(); });
+  });
+  el.querySelectorAll('[data-action]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const {action,month,seller}=btn.dataset;
+      const sl=getSellerLabel(seller);
+      if(action==='del-sales-seller') confirmDelete3Layer(`${sl} sales for ${formatMonth(month)}`,month,'sales-seller',seller);
+      else if(action==='del-ret-seller') confirmDelete3Layer(`${sl} returns for ${formatMonth(month)}`,month,'ret-seller',seller);
+      else if(action==='del-all-seller-sales') confirmDelete3Layer(`ALL ${sl} sales (every month)`,null,'all-seller-sales',seller);
+      else if(action==='del-all-seller-returns') confirmDelete3Layer(`ALL ${sl} returns (every month)`,null,'all-seller-returns',seller);
+      else if(action==='del-all-seller') confirmDelete3Layer(`ALL ${sl} data — sales AND returns (every month)`,null,'all-seller',seller);
+      else if(action==='del-cost') confirmDelete3Layer('Cost Master',null,'cost');
+      else if(action==='del-listings') confirmDelete3Layer('Listings Master',null,'listings');
     });
   });
-
-  const delAllBtn = document.getElementById('deleteAllBtn');
-  if (delAllBtn) delAllBtn.addEventListener('click', () =>
-    confirmDelete3Layer('ENTIRE DATABASE — ALL months of sales, returns, cost, and listings', null, 'all')
-  );
+  const delAllBtn=document.getElementById('deleteAllBtn');
+  if(delAllBtn) delAllBtn.addEventListener('click',()=>confirmDelete3Layer('ENTIRE DATABASE — ALL months of sales, returns, cost, and listings',null,'all'));
 }
 
 // ─── 3-LAYER CONFIRM ─────────────────────────────────────
@@ -2718,6 +2854,9 @@ function confirmDelete3Layer(itemDesc, month, type, seller) {
         else if (type === 'returns') await deleteReturnsMonth(month);
         else if (type === 'cost') await deleteCostMaster();
         else if (type === 'listings') await deleteListingsMaster();
+        else if (type === 'all-seller-sales') await deleteAllSellerSales(seller);
+        else if (type === 'all-seller-returns') await deleteAllSellerReturns(seller);
+        else if (type === 'all-seller') await deleteAllSellerData(seller);
         else if (type === 'all') await deleteAllData();
         DB.selectedMonths.clear();
         buildDBFYIndex(); renderDBScreen();
@@ -2921,10 +3060,83 @@ const tierInfoBtn=document.getElementById('tierInfoBtn'),tierInfoBox=document.ge
 tierInfoBtn.addEventListener('click',e=>{e.stopPropagation();tierInfoBox.style.display=tierInfoBox.style.display==='block'?'none':'block';});
 document.addEventListener('click',e=>{if(!tierInfoBox.contains(e.target))tierInfoBox.style.display='none';});
 
+// ─── MANAGE FILES (ONE-TIME VIEW) ────────────────────────
+function renderManageFilesOverlay() {
+  const labels={sales:'Sales',returns:'Returns',inventory:'Inventory',itemmaster:'Item Master',catalogue:'Listings',unknown:'Unknown'};
+  const validCount=S.files.filter(f=>f.type!=='unknown').length;
+  document.getElementById('manageFilesSub').textContent=`${validCount} file${validCount!==1?'s':''} loaded`;
+  const salesCount=S.files.filter(f=>f.type==='sales').length;
+  const listHtml=S.files.length
+    ?S.files.map((f,i)=>{
+        const canRemove=!(f.type==='sales'&&salesCount===1);
+        return `<div class="file-chip" style="margin-bottom:6px;">
+          <span class="fc-type ${f.type}">${labels[f.type]||f.type}</span>
+          <span class="fc-name">${f.name}</span>
+          <span class="fc-rows">${f.rowCount.toLocaleString('en-IN')} rows</span>
+          ${canRemove?`<button class="fc-remove" data-idx="${i}" title="Remove file">✕</button>`:`<span style="width:22px;display:inline-block;"></span>`}
+        </div>`;
+      }).join('')
+    :'<div style="color:#aaa;font-size:12px;padding:8px 0;">No files loaded.</div>';
+  document.getElementById('manageFilesBody').innerHTML=`
+    <div id="mgrFileList" style="margin-bottom:14px;">${listHtml}</div>
+    <div class="mgr-drop-zone" id="mgrDropZone">
+      <input type="file" class="file-input-hidden" id="mgrFileInput" accept=".csv" multiple>
+      <div style="font-size:12px;color:#888;margin-bottom:10px;">Drop new files here to add them</div>
+      <label for="mgrFileInput" class="browse-btn" style="font-size:11px;padding:7px 18px;cursor:pointer;">Browse files</label>
+    </div>`;
+  document.getElementById('mgrFileList').querySelectorAll('.fc-remove').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      S.files.splice(parseInt(btn.dataset.idx),1);
+      rebuildDashboardFromFiles();
+      renderManageFilesOverlay();
+    });
+  });
+  const mgrDz=document.getElementById('mgrDropZone');
+  mgrDz.addEventListener('dragover',e=>{e.preventDefault();mgrDz.classList.add('drag-over');});
+  mgrDz.addEventListener('dragleave',()=>mgrDz.classList.remove('drag-over'));
+  mgrDz.addEventListener('drop',async e=>{e.preventDefault();mgrDz.classList.remove('drag-over');await addFilesToDashboard(e.dataTransfer.files);});
+  document.getElementById('mgrFileInput').addEventListener('change',async e=>{await addFilesToDashboard(e.target.files);e.target.value='';});
+}
+
+async function addFilesToDashboard(fileList) {
+  const parsed=await Promise.all(Array.from(fileList).map(parseCSV));
+  parsed.forEach(pf=>{
+    if(pf.parseError) return;
+    if(S.files.find(f=>f.name===pf.name)) return;
+    S.files.push(pf);
+  });
+  rebuildDashboardFromFiles();
+  renderManageFilesOverlay();
+}
+
+function rebuildDashboardFromFiles() {
+  S.data.sales=S.files.filter(f=>f.type==='sales').flatMap(f=>f.rows);
+  S.data.returns=S.files.filter(f=>f.type==='returns').flatMap(f=>f.rows);
+  S.data.inventory=S.files.filter(f=>f.type==='inventory').flatMap(f=>f.rows);
+  S.data.itemmaster=S.files.filter(f=>f.type==='itemmaster').flatMap(f=>f.rows);
+  S.data.catalogue=S.files.filter(f=>f.type==='catalogue').flatMap(f=>f.rows);
+  Object.values(S.charts).forEach(c=>c.destroy());
+  S.charts={};
+  processData();
+  showDashboard();
+}
+
+document.getElementById('dashManageFilesBtn').addEventListener('click',()=>{
+  renderManageFilesOverlay();
+  document.getElementById('manageFilesOverlay').classList.add('open');
+});
+document.getElementById('dashAddFilesBtn').addEventListener('click',()=>{
+  renderManageFilesOverlay();
+  document.getElementById('manageFilesOverlay').classList.add('open');
+  document.getElementById('mgrFileInput')?.click();
+});
+document.getElementById('manageFilesClose').addEventListener('click',()=>document.getElementById('manageFilesOverlay').classList.remove('open'));
+document.getElementById('manageFilesOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('manageFilesOverlay'))document.getElementById('manageFilesOverlay').classList.remove('open');});
+
 // SKU modal
 document.getElementById('skuModalClose').addEventListener('click',()=>document.getElementById('skuOverlay').classList.remove('open'));
 document.getElementById('skuOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('skuOverlay'))document.getElementById('skuOverlay').classList.remove('open');});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('skuOverlay').classList.remove('open');document.getElementById('reasonsOverlay').classList.remove('open');document.getElementById('pwOverlay').classList.remove('open');document.getElementById('confirmOverlay').classList.remove('open');document.getElementById('dbupOverlay').classList.remove('open');}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('skuOverlay').classList.remove('open');document.getElementById('reasonsOverlay').classList.remove('open');document.getElementById('manageFilesOverlay').classList.remove('open');document.getElementById('pwOverlay').classList.remove('open');document.getElementById('confirmOverlay').classList.remove('open');document.getElementById('dbupOverlay').classList.remove('open');}});
 // Return reasons popup
 document.getElementById('reasonsModalClose').addEventListener('click',()=>document.getElementById('reasonsOverlay').classList.remove('open'));
 document.getElementById('reasonsOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('reasonsOverlay'))document.getElementById('reasonsOverlay').classList.remove('open');});
@@ -2949,12 +3161,19 @@ document.getElementById('smKpis').addEventListener('click',e=>{
 });
 // DB view: SKU drill — shows aggregated SKU data from DB
 document.getElementById('dbTableBody').addEventListener('click',e=>{
-  const btn=e.target.closest('.sku-drill-btn'); if(!btn) return;
-  const sid=btn.dataset.sid;
-  const style=DB.dbStyles.find(s=>s.styleId===sid); if(!style) return;
-  const skuData = style.skus||{};
-  const skuArr = Object.values(skuData).map(s=>({...s}));
-  showSkuModal(sid, skuArr);
+  const skuBtn=e.target.closest('.sku-drill-btn');
+  if(skuBtn){
+    const sid=skuBtn.dataset.sid;
+    const style=DB.dbStyles.find(s=>s.styleId===sid); if(!style) return;
+    const skuArr=Object.values(style.skus||{}).map(s=>({...s}));
+    showSkuModal(sid,skuArr); return;
+  }
+  const rrBtn=e.target.closest('.ret-reason-btn[data-mode="style"]');
+  if(rrBtn){
+    const sid=rrBtn.dataset.sid;
+    const style=DB.dbStyles.find(s=>s.styleId===sid);
+    showReturnReasonsPopup(`Return Reasons — ${sid}`,style?.styleName||sid,S.retReasonsByStyle[sid]||{});
+  }
 });
 // Search bars
 document.getElementById('otSearchInput')?.addEventListener('input',()=>renderTable());
