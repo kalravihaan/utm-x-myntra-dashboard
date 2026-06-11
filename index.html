@@ -81,6 +81,15 @@ body{font-family:'DM Sans',sans-serif;background:#f1f5f9;color:#111;font-size:13
 .tier-row input:focus{border-color:#4f46e5;}
 .tier-reset-btn{font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;text-decoration:underline;margin-top:4px;}
 .tier-reset-btn:hover{color:#4f46e5;}
+.tier-info-edit-btn{font-size:10px;color:#4f46e5;background:none;border:1px solid #c7d2fe;border-radius:5px;padding:2px 8px;cursor:pointer;flex-shrink:0;}
+.tier-info-edit-btn:hover{background:#ede9fe;}
+.tier-edit-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:11px;}
+.tier-edit-row label{min-width:88px;font-weight:600;}
+.tier-edit-row input{border:1px solid #e5e7eb;border-radius:5px;padding:3px 6px;font-family:'DM Mono',monospace;font-size:11px;width:56px;outline:none;}
+.tier-edit-row input:focus{border-color:#4f46e5;}
+.tier-info-save-btn{flex:1;background:#4f46e5;color:#fff;border:none;border-radius:6px;padding:5px 0;font-size:11px;font-weight:600;cursor:pointer;}
+.tier-info-save-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.tier-info-cancel-btn{flex:1;background:#f4f4f5;color:#555;border:1px solid #e5e7eb;border-radius:6px;padding:5px 0;font-size:11px;font-weight:600;cursor:pointer;}
 
 /* DASHBOARD SHELL */
 #dashboard{display:none;}
@@ -572,13 +581,30 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <div class="tier-filter-wrap" id="tierPills"></div>
     <div style="position:relative;margin-left:4px;">
       <button style="background:none;border:none;cursor:pointer;font-size:10px;color:#aaa;padding:2px 4px;" id="tierInfoBtn">ⓘ</button>
-      <div id="tierInfoBox" style="display:none;position:absolute;top:24px;left:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;z-index:999;width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.1);font-size:11px;white-space:nowrap;">
-        <div style="font-weight:700;color:#111;margin-bottom:6px;">Tier Classification</div>
-        <div style="color:#5b21b6;margin-bottom:3px;">VF — ROS &gt; <span id="li-VF">1.5</span>/day</div>
-        <div style="color:#065f46;margin-bottom:3px;">F &nbsp;— ROS ≥ <span id="li-F">0.7</span>/day</div>
-        <div style="color:#1e40af;margin-bottom:3px;">M — ROS ≥ <span id="li-M">0.3</span>/day</div>
-        <div style="color:#92400e;margin-bottom:3px;">S &nbsp;— ROS &gt; 0/day</div>
-        <div style="color:#991b1b;">D &nbsp;— ROS = 0 (no sales)</div>
+      <div id="tierInfoBox" style="display:none;position:absolute;top:24px;left:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;z-index:999;width:240px;box-shadow:0 4px 12px rgba(0,0,0,0.1);font-size:11px;">
+        <div id="tierInfoView">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
+            <div style="font-weight:700;color:#111;">Tier Classification</div>
+            <button class="tier-info-edit-btn" id="tierInfoEditBtn">Edit</button>
+          </div>
+          <div style="color:#5b21b6;margin-bottom:3px;">VF — ROS ≥ <span id="li-VF">1.5</span>/day</div>
+          <div style="color:#065f46;margin-bottom:3px;">F &nbsp;— ROS ≥ <span id="li-F">0.7</span>/day</div>
+          <div style="color:#1e40af;margin-bottom:3px;">M — ROS ≥ <span id="li-M">0.3</span>/day</div>
+          <div style="color:#92400e;margin-bottom:3px;">S &nbsp;— ROS > 0/day</div>
+          <div style="color:#991b1b;">D &nbsp;— ROS = 0 (no sales)</div>
+        </div>
+        <div id="tierInfoEdit" style="display:none;">
+          <div style="font-weight:700;color:#111;margin-bottom:8px;">Edit Thresholds</div>
+          <div class="tier-edit-row"><label style="color:#5b21b6;">VF (Very Fast)</label><span style="color:#aaa;">≥</span><input type="number" id="ti-VF" step="0.1" min="0.01"></div>
+          <div class="tier-edit-row"><label style="color:#065f46;">F (Fast)</label><span style="color:#aaa;">≥</span><input type="number" id="ti-F" step="0.1" min="0.01"></div>
+          <div class="tier-edit-row"><label style="color:#1e40af;">M (Medium)</label><span style="color:#aaa;">≥</span><input type="number" id="ti-M" step="0.01" min="0.001"></div>
+          <div style="font-size:10px;color:#aaa;margin:2px 0 8px;">S = any ROS > 0 · D = ROS of 0</div>
+          <div id="tierInfoEditErr" style="font-size:10px;color:#dc2626;display:none;margin-bottom:6px;white-space:normal;"></div>
+          <div style="display:flex;gap:6px;">
+            <button class="tier-info-cancel-btn" id="tierInfoCancelBtn">Cancel</button>
+            <button class="tier-info-save-btn" id="tierInfoSaveBtn">Save</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="filter-sep" id="catSep" style="display:none;"></div>
@@ -692,6 +718,35 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <div class="filter-sep"></div>
     <span class="filter-label">Tier</span>
     <div class="tier-filter-wrap" id="dbTierPills"></div>
+    <div style="position:relative;margin-left:4px;">
+      <button style="background:none;border:none;cursor:pointer;font-size:10px;color:#aaa;padding:2px 4px;" id="dbTierInfoBtn">ⓘ</button>
+      <div id="dbTierInfoBox" style="display:none;position:absolute;top:24px;right:0;left:auto;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;z-index:999;width:240px;box-shadow:0 4px 12px rgba(0,0,0,0.1);font-size:11px;">
+        <div id="dbTierInfoView">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
+            <div style="font-weight:700;color:#111;">Tier Classification</div>
+            <button class="tier-info-edit-btn" id="dbTierInfoEditBtn">Edit</button>
+          </div>
+          <div style="color:#5b21b6;margin-bottom:3px;">VF — ROS ≥ <span id="db-li-VF">1.5</span>/day</div>
+          <div style="color:#065f46;margin-bottom:3px;">F &nbsp;— ROS ≥ <span id="db-li-F">0.7</span>/day</div>
+          <div style="color:#1e40af;margin-bottom:3px;">M — ROS ≥ <span id="db-li-M">0.3</span>/day</div>
+          <div style="color:#92400e;margin-bottom:3px;">S &nbsp;— ROS > 0/day</div>
+          <div style="color:#991b1b;">D &nbsp;— ROS = 0 (no sales)</div>
+        </div>
+        <div id="dbTierInfoEdit" style="display:none;">
+          <div style="font-weight:700;color:#111;margin-bottom:8px;">Edit Thresholds</div>
+          <div style="font-size:10px;color:#aaa;margin-bottom:8px;">Saved to cloud — applies on all devices</div>
+          <div class="tier-edit-row"><label style="color:#5b21b6;">VF (Very Fast)</label><span style="color:#aaa;">≥</span><input type="number" id="db-ti-VF" step="0.1" min="0.01"></div>
+          <div class="tier-edit-row"><label style="color:#065f46;">F (Fast)</label><span style="color:#aaa;">≥</span><input type="number" id="db-ti-F" step="0.1" min="0.01"></div>
+          <div class="tier-edit-row"><label style="color:#1e40af;">M (Medium)</label><span style="color:#aaa;">≥</span><input type="number" id="db-ti-M" step="0.01" min="0.001"></div>
+          <div style="font-size:10px;color:#aaa;margin:2px 0 8px;">S = any ROS > 0 · D = ROS of 0</div>
+          <div id="dbTierInfoEditErr" style="font-size:10px;color:#dc2626;display:none;margin-bottom:6px;white-space:normal;"></div>
+          <div style="display:flex;gap:6px;">
+            <button class="tier-info-cancel-btn" id="dbTierInfoCancelBtn">Cancel</button>
+            <button class="tier-info-save-btn" id="dbTierInfoSaveBtn">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="filter-sep"></div>
     <div class="sort-group">
       <span class="filter-label">Sort</span>
@@ -1621,11 +1676,12 @@ async function loadFirestoreData() {
   document.getElementById('dbManageBtn').classList.remove('active');
   document.getElementById('dbFilterBar').style.display='none';
   try {
-    const [salesSnap, retSnap, costDoc, listDoc] = await Promise.all([
+    const [salesSnap, retSnap, costDoc, listDoc, settingsDoc] = await Promise.all([
       getDocs(collection(fsDb,'sales_monthly')),
       getDocs(collection(fsDb,'returns_monthly')),
       getDoc(doc(fsDb,'cost_master','master')),
-      getDoc(doc(fsDb,'listings_master','master'))
+      getDoc(doc(fsDb,'listings_master','master')),
+      getDoc(doc(fsDb,'settings','master'))
     ]);
     function parseDoc(d) {
       const o=d.data();
@@ -1643,6 +1699,8 @@ async function loadFirestoreData() {
     retSnap.forEach(d=>DB.returnsMonths[d.id]=parseDoc(d));
     DB.costMaster=costDoc.exists()?costDoc.data():{costs:{},uploadedAt:null};
     DB.listingsMaster=listDoc.exists()?listDoc.data():{listings:{},uploadedAt:null};
+    if(settingsDoc.exists()){const sd=settingsDoc.data();if(sd.tierThresholds)S.tierThresholds={...S.tierThresholds,...sd.tierThresholds};}
+    syncTierInfoBoxes();
     DB.loaded=true;
     buildDBFYIndex();
     renderDBScreen();
@@ -3015,9 +3073,7 @@ document.getElementById('goBtn').addEventListener('click',()=>{
   const manual=parseInt(document.getElementById('daysInput').value);
   S.daysManual=manual>0?manual:null;
   S.tierThresholds={VF:parseFloat(document.getElementById('te-VF').value)||1.5,F:parseFloat(document.getElementById('te-F').value)||0.7,M:parseFloat(document.getElementById('te-M').value)||0.3,S:parseFloat(document.getElementById('te-S').value)||0.001};
-  document.getElementById('li-VF').textContent=S.tierThresholds.VF;
-  document.getElementById('li-F').textContent=S.tierThresholds.F;
-  document.getElementById('li-M').textContent=S.tierThresholds.M;
+  syncTierInfoBoxes();
   processData(); showDashboard();
 });
 
@@ -3055,10 +3111,109 @@ document.getElementById('daysInput').addEventListener('input',()=>{const val=doc
 document.getElementById('tierEditorToggle').addEventListener('click',()=>{const body=document.getElementById('tierEditorBody'),arrow=document.getElementById('tierToggleArrow');arrow.textContent=body.classList.toggle('open')?'▴':'▾';});
 document.getElementById('tierResetBtn').addEventListener('click',()=>{document.getElementById('te-VF').value=1.5;document.getElementById('te-F').value=0.7;document.getElementById('te-M').value=0.3;document.getElementById('te-S').value=0.001;});
 
-// Tier info popup
+// ─── TIER THRESHOLD HELPERS ──────────────────────────────
+function syncTierInfoBoxes() {
+  const t=S.tierThresholds;
+  ['li-VF','db-li-VF'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t.VF;});
+  ['li-F','db-li-F'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t.F;});
+  ['li-M','db-li-M'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t.M;});
+}
+function validateTierInputs(vf,f,m) {
+  if(isNaN(vf)||isNaN(f)||isNaN(m)) return 'All fields must be valid numbers.';
+  if(vf<=0||f<=0||m<=0) return 'All thresholds must be greater than 0.';
+  if(vf<=f) return 'VF must be greater than F.';
+  if(f<=m) return 'F must be greater than M.';
+  return null;
+}
+async function saveTierThresholdsDB(t) {
+  await setDoc(doc(fsDb,'settings','master'),{tierThresholds:t},{merge:true});
+  S.tierThresholds={...t};
+  syncTierInfoBoxes();
+}
+
+// Tier info popup — one-time view
 const tierInfoBtn=document.getElementById('tierInfoBtn'),tierInfoBox=document.getElementById('tierInfoBox');
-tierInfoBtn.addEventListener('click',e=>{e.stopPropagation();tierInfoBox.style.display=tierInfoBox.style.display==='block'?'none':'block';});
-document.addEventListener('click',e=>{if(!tierInfoBox.contains(e.target))tierInfoBox.style.display='none';});
+tierInfoBtn.addEventListener('click',e=>{
+  e.stopPropagation();
+  const vis=tierInfoBox.style.display==='block';
+  if(!vis){document.getElementById('tierInfoView').style.display='';document.getElementById('tierInfoEdit').style.display='none';}
+  tierInfoBox.style.display=vis?'none':'block';
+});
+document.addEventListener('click',e=>{if(!tierInfoBox.contains(e.target)&&e.target!==tierInfoBtn)tierInfoBox.style.display='none';});
+document.getElementById('tierInfoEditBtn').addEventListener('click',()=>{
+  document.getElementById('ti-VF').value=S.tierThresholds.VF;
+  document.getElementById('ti-F').value=S.tierThresholds.F;
+  document.getElementById('ti-M').value=S.tierThresholds.M;
+  document.getElementById('tierInfoEditErr').style.display='none';
+  document.getElementById('tierInfoView').style.display='none';
+  document.getElementById('tierInfoEdit').style.display='';
+});
+document.getElementById('tierInfoCancelBtn').addEventListener('click',()=>{
+  document.getElementById('tierInfoEdit').style.display='none';
+  document.getElementById('tierInfoView').style.display='';
+});
+document.getElementById('tierInfoSaveBtn').addEventListener('click',()=>{
+  const vf=parseFloat(document.getElementById('ti-VF').value);
+  const f=parseFloat(document.getElementById('ti-F').value);
+  const m=parseFloat(document.getElementById('ti-M').value);
+  const err=validateTierInputs(vf,f,m);
+  if(err){document.getElementById('tierInfoEditErr').textContent=err;document.getElementById('tierInfoEditErr').style.display='';return;}
+  S.tierThresholds={VF:vf,F:f,M:m,S:0.001};
+  syncTierInfoBoxes();
+  S.styles.forEach(st=>{st.tier=getTier(st.ros);});
+  tierInfoBox.style.display='none';
+  renderTable();
+  if(document.getElementById('tab-overview').classList.contains('active'))renderOverview('onetimeview');
+});
+
+// Tier info popup — DB mode
+let _dbTierEditOpening=false;
+const dbTierInfoBtn=document.getElementById('dbTierInfoBtn'),dbTierInfoBox=document.getElementById('dbTierInfoBox');
+dbTierInfoBtn.addEventListener('click',e=>{
+  e.stopPropagation();
+  const vis=dbTierInfoBox.style.display==='block';
+  if(!vis){document.getElementById('dbTierInfoView').style.display='';document.getElementById('dbTierInfoEdit').style.display='none';}
+  dbTierInfoBox.style.display=vis?'none':'block';
+});
+document.addEventListener('click',e=>{
+  if(_dbTierEditOpening){_dbTierEditOpening=false;return;}
+  if(!dbTierInfoBox.contains(e.target)&&e.target!==dbTierInfoBtn)dbTierInfoBox.style.display='none';
+});
+document.getElementById('dbTierInfoEditBtn').addEventListener('click',()=>{
+  promptPassword(()=>{
+    _dbTierEditOpening=true;
+    document.getElementById('db-ti-VF').value=S.tierThresholds.VF;
+    document.getElementById('db-ti-F').value=S.tierThresholds.F;
+    document.getElementById('db-ti-M').value=S.tierThresholds.M;
+    document.getElementById('dbTierInfoEditErr').style.display='none';
+    document.getElementById('dbTierInfoView').style.display='none';
+    document.getElementById('dbTierInfoEdit').style.display='';
+    dbTierInfoBox.style.display='block';
+  });
+});
+document.getElementById('dbTierInfoCancelBtn').addEventListener('click',()=>{
+  document.getElementById('dbTierInfoEdit').style.display='none';
+  document.getElementById('dbTierInfoView').style.display='';
+});
+document.getElementById('dbTierInfoSaveBtn').addEventListener('click',async ()=>{
+  const vf=parseFloat(document.getElementById('db-ti-VF').value);
+  const f=parseFloat(document.getElementById('db-ti-F').value);
+  const m=parseFloat(document.getElementById('db-ti-M').value);
+  const err=validateTierInputs(vf,f,m);
+  if(err){document.getElementById('dbTierInfoEditErr').textContent=err;document.getElementById('dbTierInfoEditErr').style.display='';return;}
+  const saveBtn=document.getElementById('dbTierInfoSaveBtn');
+  saveBtn.disabled=true;saveBtn.textContent='Saving…';
+  try{
+    await saveTierThresholdsDB({VF:vf,F:f,M:m,S:0.001});
+    dbTierInfoBox.style.display='none';
+    renderDBScreen();
+  }catch(e){
+    document.getElementById('dbTierInfoEditErr').textContent='Save failed: '+e.message;
+    document.getElementById('dbTierInfoEditErr').style.display='';
+  }finally{
+    saveBtn.disabled=false;saveBtn.textContent='Save';
+  }
+});
 
 // ─── MANAGE FILES (ONE-TIME VIEW) ────────────────────────
 function renderManageFilesOverlay() {
