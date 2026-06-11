@@ -1033,6 +1033,7 @@ function processData() {
   }
   S.catalogueMap={};
   S.vanToSku={};
+  S.catMetaMap={};
   if (S.hasCatalogue) {
     catRows.forEach(r => {
       const sid=String(r['style id']||'').trim();
@@ -1041,6 +1042,12 @@ function processData() {
       const van=findRowVal(r,'vendor article number','vendor_article_number','van');
       const sku=findRowVal(r,'seller sku code','seller_sku_code','sku code','sku_code');
       if(van&&sku){const v=String(van).trim(),s=String(sku).trim();if(v&&s&&!S.vanToSku[v])S.vanToSku[v]=s;}
+      if(sid&&!S.catMetaMap[sid]){
+        const brand=(r['brand']||'').trim();
+        const styleName=(r['style name']||r['product name']||'').trim();
+        const articleType=(r['article type']||'').trim();
+        if(brand) S.catMetaMap[sid]={brand,styleName,articleType};
+      }
     });
   }
   const ms=new Set(); Object.values(S.catalogueMap).forEach(d=>{const m=parseDateToYYYYMM(d);if(m)ms.add(m);}); S.catalogueMonths=[...ms].sort();
@@ -1107,7 +1114,7 @@ function processData() {
   const allIds=new Set([...Object.keys(salesMap),...Object.keys(invMap)]);
   const rows=[]; const days=S.days;
   allIds.forEach(sid=>{
-    const sale=salesMap[sid]||{styleId:sid,brand:'',styleName:'',articleType:'',firstSku:'',units:0,revenue:0};
+    const sale=salesMap[sid]||(S.catMetaMap[sid]?{styleId:sid,...S.catMetaMap[sid],firstSku:'',units:0,revenue:0}:{styleId:sid,brand:'',styleName:'',articleType:'',firstSku:'',units:0,revenue:0});
     const units=sale.units, revenue=sale.revenue, rets=retMap[sid]||0;
     const retPct=units>0?(rets/units)*100:null;
     const ros=days>0?units/days:null, tier=getTier(ros);
