@@ -685,6 +685,17 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
           <div style="font-size:10px;color:#aaa;text-align:center;margin-top:8px;">Click a slice to see size breakdown</div>
         </div>
       </div>
+      <div class="chart-grid cols2" id="trendsRetGrid" style="display:none;margin-top:0;">
+        <div class="chart-card">
+          <div class="chart-card-title">Brand-wise Returns (Units)</div>
+          <div class="pie-wrap"><canvas id="chartTrendsBrandRet"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Article Type-wise Returns (Units)</div>
+          <div class="pie-wrap" style="cursor:pointer;"><canvas id="chartTrendsArtRet"></canvas></div>
+          <div style="font-size:10px;color:#aaa;text-align:center;margin-top:8px;">Click a slice to see size breakdown</div>
+        </div>
+      </div>
     </div>
   </div>
   <!-- STYLE TABLE TAB -->
@@ -861,7 +872,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <button class="sku-modal-close" id="sizeDrillClose">×</button>
     <div class="sku-modal-head">
       <div class="sku-modal-sid" id="sizeDrillTitle"></div>
-      <div class="sku-modal-name" style="font-size:12px;color:#aaa;">Size-wise Units Sold</div>
+      <div class="sku-modal-name" id="sizeDrillSubtitle" style="font-size:12px;color:#aaa;">Size-wise Units Sold</div>
     </div>
     <div style="padding:20px 24px 24px;">
       <div style="position:relative;height:300px;"><canvas id="sizeDrillCanvas"></canvas></div>
@@ -3571,41 +3582,73 @@ function renderTrends(){
   const filtered=getFilteredStyles();
   const filteredIds=new Set(filtered.map(s=>s.styleId));
 
-  // Aggregate brand-wise and article-type-wise units from S.styles (already computed)
-  const brandMap={}, artMap={};
+  const brandMap={}, artMap={}, brandRetMap={}, artRetMap={};
   filtered.forEach(s=>{
-    const brand=s.brand||'Unknown';
-    const art=s.articleType||'Unknown';
+    const brand=s.brand||'Unknown', art=s.articleType||'Unknown';
     brandMap[brand]=(brandMap[brand]||0)+s.units;
     artMap[art]=(artMap[art]||0)+s.units;
+    brandRetMap[brand]=(brandRetMap[brand]||0)+s.rets;
+    artRetMap[art]=(artRetMap[art]||0)+s.rets;
   });
 
   const PALETTE=['#818cf8','#34d399','#fb923c','#f472b6','#60a5fa','#a78bfa','#fbbf24','#4ade80','#f87171','#2dd4bf','#e879f9','#38bdf8'];
 
-  // Brand pie
+  // Sales pies
   const bLabels=Object.keys(brandMap).sort((a,b)=>brandMap[b]-brandMap[a]);
-  const bColors=PALETTE.slice(0,bLabels.length);
   destroyChart('chartTrendsBrand');
   makeChart('chartTrendsBrand','doughnut',bLabels,
-    [{data:bLabels.map(l=>brandMap[l]),backgroundColor:bColors,borderWidth:2,borderColor:'#fff'}],
+    [{data:bLabels.map(l=>brandMap[l]),backgroundColor:PALETTE.slice(0,bLabels.length),borderWidth:2,borderColor:'#fff'}],
     {legend:true});
 
-  // Article type pie with click handler
   const aLabels=Object.keys(artMap).sort((a,b)=>artMap[b]-artMap[a]);
-  const aColors=PALETTE.slice(0,aLabels.length);
   destroyChart('chartTrendsArt');
   makeChart('chartTrendsArt','doughnut',aLabels,
-    [{data:aLabels.map(l=>artMap[l]),backgroundColor:aColors,borderWidth:2,borderColor:'#fff'}],
+    [{data:aLabels.map(l=>artMap[l]),backgroundColor:PALETTE.slice(0,aLabels.length),borderWidth:2,borderColor:'#fff'}],
     {legend:true,extra:{onClick:(_e,els,chart)=>{
       if(!els||!els.length)return;
-      const artType=chart.data.labels[els[0].index];
-      showSizeDrillDown(artType,filteredIds);
+      showSizeDrillDown(chart.data.labels[els[0].index],filteredIds);
     }}});
+
+  // Returns pies
+  const hasRets=S.hasReturns&&filtered.some(s=>s.rets>0);
+  document.getElementById('trendsRetGrid').style.display=hasRets?'':'none';
+  if(hasRets){
+    const brLabels=Object.keys(brandRetMap).filter(k=>brandRetMap[k]>0).sort((a,b)=>brandRetMap[b]-brandRetMap[a]);
+    destroyChart('chartTrendsBrandRet');
+    makeChart('chartTrendsBrandRet','doughnut',brLabels,
+      [{data:brLabels.map(l=>brandRetMap[l]),backgroundColor:PALETTE.slice(0,brLabels.length),borderWidth:2,borderColor:'#fff'}],
+      {legend:true});
+
+    const arLabels=Object.keys(artRetMap).filter(k=>artRetMap[k]>0).sort((a,b)=>artRetMap[b]-artRetMap[a]);
+    destroyChart('chartTrendsArtRet');
+    makeChart('chartTrendsArtRet','doughnut',arLabels,
+      [{data:arLabels.map(l=>artRetMap[l]),backgroundColor:PALETTE.slice(0,arLabels.length),borderWidth:2,borderColor:'#fff'}],
+      {legend:true,extra:{onClick:(_e,els,chart)=>{
+        if(!els||!els.length)return;
+        showReturnsSizeDrillDown(chart.data.labels[els[0].index],filteredIds);
+      }}});
+  }
+}
+
+function _sizeDrillOpen(artType, subtitle, sizeMap){
+  const SIZE_ORDER=['XXS','XS','S','M','L','XL','XXL','XXXL','3XL','4XL'];
+  const PALETTE=['#818cf8','#34d399','#fb923c','#f472b6','#60a5fa','#a78bfa','#fbbf24','#4ade80','#f87171','#2dd4bf'];
+  const labels=Object.keys(sizeMap).sort((a,b)=>{
+    const ai=SIZE_ORDER.indexOf(a),bi=SIZE_ORDER.indexOf(b);
+    if(ai===-1&&bi===-1)return a.localeCompare(b);
+    if(ai===-1)return 1;if(bi===-1)return -1;
+    return ai-bi;
+  });
+  document.getElementById('sizeDrillTitle').textContent=artType;
+  document.getElementById('sizeDrillSubtitle').textContent=subtitle;
+  destroyChart('sizeDrillCanvas');
+  makeChart('sizeDrillCanvas','doughnut',labels,
+    [{data:labels.map(l=>sizeMap[l]),backgroundColor:PALETTE.slice(0,labels.length),borderWidth:2,borderColor:'#fff'}],
+    {legend:true});
+  document.getElementById('sizeDrillOverlay').classList.add('open');
 }
 
 function showSizeDrillDown(artType, filteredIds){
-  const SIZE_ORDER=['XXS','XS','S','M','L','XL','XXL','XXXL','3XL','4XL'];
-  // Build set of style IDs matching this article type within filtered styles
   const artStyleIds=new Set(
     S.styles.filter(s=>filteredIds.has(s.styleId)&&(s.articleType||'Unknown')===artType).map(s=>s.styleId)
   );
@@ -3616,21 +3659,22 @@ function showSizeDrillDown(artType, filteredIds){
     const sz=(r['size']||'').trim()||'Unknown';
     sizeMap[sz]=(sizeMap[sz]||0)+1;
   });
+  _sizeDrillOpen(artType,'Size-wise Units Sold',sizeMap);
+}
 
-  const PALETTE=['#818cf8','#34d399','#fb923c','#f472b6','#60a5fa','#a78bfa','#fbbf24','#4ade80','#f87171','#2dd4bf'];
-  const labels=Object.keys(sizeMap).sort((a,b)=>{
-    const ai=SIZE_ORDER.indexOf(a), bi=SIZE_ORDER.indexOf(b);
-    if(ai===-1&&bi===-1)return a.localeCompare(b);
-    if(ai===-1)return 1; if(bi===-1)return -1;
-    return ai-bi;
+function showReturnsSizeDrillDown(artType, filteredIds){
+  const artStyleIds=new Set(
+    S.styles.filter(s=>filteredIds.has(s.styleId)&&(s.articleType||'Unknown')===artType).map(s=>s.styleId)
+  );
+  const sizeMap={};
+  artStyleIds.forEach(sid=>{
+    Object.values(S.skusByStyle[sid]||{}).forEach(sku=>{
+      if(!sku.rets)return;
+      const sz=(sku.size||'').trim()||'Unknown';
+      sizeMap[sz]=(sizeMap[sz]||0)+sku.rets;
+    });
   });
-
-  document.getElementById('sizeDrillTitle').textContent=artType;
-  destroyChart('sizeDrillCanvas');
-  makeChart('sizeDrillCanvas','doughnut',labels,
-    [{data:labels.map(l=>sizeMap[l]),backgroundColor:PALETTE.slice(0,labels.length),borderWidth:2,borderColor:'#fff'}],
-    {legend:true});
-  document.getElementById('sizeDrillOverlay').classList.add('open');
+  _sizeDrillOpen(artType,'Size-wise Returns',sizeMap);
 }
 
 // ─── REPEAT PLAN DOWNLOAD ────────────────────────────────
