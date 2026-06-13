@@ -6,6 +6,7 @@
 <title>UTM × Myntra — Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -214,10 +215,14 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 .reasons-bar{height:6px;background:#7c3aed;border-radius:3px;}
 .reasons-count{font-size:11px;font-family:'DM Mono',monospace;color:#555;width:28px;text-align:right;flex-shrink:0;}
 .reasons-pct{font-size:10px;color:#aaa;width:38px;text-align:right;flex-shrink:0;}
+/* STYLE SUB-TABS */
+.style-subtab-bar{padding:10px 32px 0;display:flex;gap:6px;}
+.style-subtab{padding:5px 16px;border-radius:20px;border:1px solid #e5e7eb;background:#fff;font-size:11px;font-weight:500;color:#777;cursor:pointer;transition:all 0.15s;}
+.style-subtab.active{background:#818cf8;border-color:#818cf8;color:#fff;font-weight:600;}
 /* SKU MODAL */
 .sku-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;}
 .sku-overlay.open{display:flex;}
-.sku-modal{background:#fff;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,0.18);width:100%;max-width:1160px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.sku-modal{background:#fff;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,0.18);width:100%;max-width:1400px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;position:relative;}
 .sku-modal-head{padding:20px 24px 16px;border-bottom:1px solid #f0f0f0;flex-shrink:0;}
 .sku-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#bbb;line-height:1;padding:4px;}
 .sku-modal-close:hover{color:#111;}
@@ -572,6 +577,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
   <div class="main-tabs">
     <button class="mtab active" data-tab="overview">Overview</button>
     <button class="mtab" data-tab="styles">Style Table</button>
+    <button class="mtab" data-tab="trends">Trends</button>
   </div>
   <div class="filter-bar" id="filterBar">
     <span class="filter-label">Brand</span>
@@ -659,16 +665,38 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     </div>
     <div class="section" style="padding-top:0;">
       <div class="section-title">Article Type Breakdown</div>
-      <div class="chart-grid cols2">
+      <div class="chart-grid cols2" id="artTypeGrid">
         <div class="chart-card"><div class="chart-card-title">Units by Article Type</div><div class="chart-wrap"><canvas id="chartArticle"></canvas></div></div>
-        <div class="chart-card"><div class="chart-card-title">Revenue by Article Type</div><div class="chart-wrap"><canvas id="chartArticleRev"></canvas></div></div>
+        <div class="chart-card" id="artRetCard" style="display:none;"><div class="chart-card-title">Return % by Article Type</div><div class="chart-wrap"><canvas id="chartArticleRet"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+  <!-- TRENDS TAB -->
+  <div class="tab-panel" id="tab-trends">
+    <div class="section" style="padding-top:24px;">
+      <div class="chart-grid cols2">
+        <div class="chart-card">
+          <div class="chart-card-title">Brand-wise Sales (Units)</div>
+          <div class="pie-wrap"><canvas id="chartTrendsBrand"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Article Type-wise Sales (Units)</div>
+          <div class="pie-wrap" style="cursor:pointer;"><canvas id="chartTrendsArt"></canvas></div>
+          <div style="font-size:10px;color:#aaa;text-align:center;margin-top:8px;">Click a slice to see size breakdown</div>
+        </div>
       </div>
     </div>
   </div>
   <!-- STYLE TABLE TAB -->
   <div class="tab-panel" id="tab-styles">
+    <div class="style-subtab-bar" id="styleSubTabBar" style="display:none;">
+      <button class="style-subtab active" data-subtab="all">All</button>
+      <button class="style-subtab" data-subtab="old">Old</button>
+      <button class="style-subtab" data-subtab="new">New</button>
+    </div>
     <div class="search-wrap" style="padding:12px 32px 0;">
       <input class="search-input" id="otSearchInput" type="text" placeholder="Search style ID, SKU code, article type…">
+      <button id="repeatDownloadBtn" style="display:none;margin-left:10px;padding:7px 16px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;letter-spacing:0.03em;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Repeat Plan</button>
     </div>
     <div style="padding:6px 32px 0;display:flex;align-items:center;gap:12px;">
       <div class="row-count" id="rowCount"></div>
@@ -799,6 +827,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 <div class="sku-overlay" id="skuOverlay">
   <div class="sku-modal">
     <button class="sku-modal-close" id="skuModalClose">×</button>
+    <button id="skuChartBtn" style="display:none;position:absolute;top:14px;right:52px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:600;color:#7c3aed;cursor:pointer;">📈 Sales Trend</button>
     <div class="sku-modal-head">
       <div class="sku-modal-sid" id="smSid"></div>
       <div class="sku-modal-name" id="smName"></div>
@@ -808,6 +837,34 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <div class="sku-modal-body">
       <div class="sku-modal-section-title" id="smTableTitle"></div>
       <div class="sku-tbl-wrap"><table class="sku-tbl"><thead id="smThead"></thead><tbody id="smTbody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- STYLE CHART MODAL -->
+<div class="sku-overlay" id="styleChartOverlay" style="z-index:2500;">
+  <div class="sku-modal" style="max-width:800px;">
+    <button class="sku-modal-close" id="styleChartClose">×</button>
+    <div class="sku-modal-head">
+      <div class="sku-modal-sid" id="styleChartSid"></div>
+      <div class="sku-modal-name" id="styleChartName"></div>
+    </div>
+    <div style="padding:20px 24px 24px;">
+      <div style="position:relative;height:300px;"><canvas id="styleChartCanvas"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- SIZE DRILL-DOWN MODAL -->
+<div class="sku-overlay" id="sizeDrillOverlay" style="z-index:3000;">
+  <div class="sku-modal" style="max-width:500px;">
+    <button class="sku-modal-close" id="sizeDrillClose">×</button>
+    <div class="sku-modal-head">
+      <div class="sku-modal-sid" id="sizeDrillTitle"></div>
+      <div class="sku-modal-name" style="font-size:12px;color:#aaa;">Size-wise Units Sold</div>
+    </div>
+    <div style="padding:20px 24px 24px;">
+      <div style="position:relative;height:300px;"><canvas id="sizeDrillCanvas"></canvas></div>
     </div>
   </div>
 </div>
@@ -1023,7 +1080,7 @@ const S = {
   activeBrands: new Set(['All']),
   activeTiers: new Set(['VF','F','M','S','D']),
   activeCatalogueMonth: 'All',
-  sortKey: 'units_desc',
+  sortKey: 'units_desc', styleSubTab: 'all',
   hasReturns: false, hasInventory: false, hasCost: false, hasCatalogue: false,
   invDateLabel: '',
   charts: {},
@@ -1114,6 +1171,8 @@ function processData() {
   S.hasCost=costRows.length>0; S.hasCatalogue=catRows.length>0;
   if (!S.daysManual) { S.daysAuto=extractDaysFromSales(salesRows); S.days=S.daysAuto||1; }
   else S.days=S.daysManual;
+  // Store actual date range (YYYY-MM-DD strings) for catalogue-adjusted ROS
+  {const ds=[];salesRows.forEach(r=>{const d=(r['created on']||'').trim().split(' ')[0];if(/^\d{4}-\d{2}-\d{2}$/.test(d))ds.push(d);});ds.sort();S.firstDateStr=ds.length?ds[0]:null;S.lastDateStr=ds.length?ds[ds.length-1]:null;}
   if (S.hasInventory) { const t=new Date(); S.invDateLabel=`${String(t.getDate()).padStart(2,'0')}-${String(t.getMonth()+1).padStart(2,'0')}-${t.getFullYear()}`; }
   S.costMap={};
   if (S.hasCost) {
@@ -1193,9 +1252,10 @@ function processData() {
     }
     if(!sellerSku) return;
     if(!S.skusByStyle[sid]) S.skusByStyle[sid]={};
-    if(!S.skusByStyle[sid][sellerSku]) S.skusByStyle[sid][sellerSku]={sellerSkuCode:sellerSku,units:0,revenue:0,rets:0,inv:null};
+    if(!S.skusByStyle[sid][sellerSku]) S.skusByStyle[sid][sellerSku]={sellerSkuCode:sellerSku,units:0,revenue:0,rets:0,inv:null,size:''};
     S.skusByStyle[sid][sellerSku].units++;
     S.skusByStyle[sid][sellerSku].revenue+=parseFloat(r['seller price'])||0;
+    if(!S.skusByStyle[sid][sellerSku].size) S.skusByStyle[sid][sellerSku].size=(r['size']||'').trim();
   });
   // Assign returns and inventory per SKU
   Object.keys(S.skusByStyle).forEach(sid=>{
@@ -1210,14 +1270,28 @@ function processData() {
     const sale=salesMap[sid]||(S.catMetaMap[sid]?{styleId:sid,...S.catMetaMap[sid],firstSku:'',units:0,revenue:0}:{styleId:sid,brand:'',styleName:'',articleType:'',firstSku:'',units:0,revenue:0});
     const units=sale.units, revenue=sale.revenue, rets=retMap[sid]||0;
     const retPct=units>0?(rets/units)*100:null;
-    const ros=days>0?units/days:null, tier=getTier(ros);
+    const catalogueDate=S.hasCatalogue?(S.catalogueMap[sid]||null):null;
+    let effectiveDays=days, isNewListing=false;
+    if(catalogueDate&&S.firstDateStr&&S.lastDateStr){
+      const _MONS={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
+      const _raw=String(catalogueDate).trim();
+      let catYMD=null;
+      if(/^\d{4}-\d{2}-\d{2}$/.test(_raw)){catYMD=_raw;}
+      else if(/^\d{8}$/.test(_raw)){catYMD=`${_raw.slice(0,4)}-${_raw.slice(4,6)}-${_raw.slice(6,8)}`;}
+      else{const _m=_raw.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/);if(_m){const _mo=_MONS[_m[2].toLowerCase()];if(_mo)catYMD=`${_m[3]}-${_mo}-${_m[1].padStart(2,'0')}`;}}
+      if(catYMD&&catYMD>=S.firstDateStr&&catYMD<=S.lastDateStr){
+        isNewListing=true;
+        const _catUtc=new Date(catYMD+'T00:00:00Z'), _lastUtc=new Date(S.lastDateStr+'T00:00:00Z');
+        effectiveDays=Math.max(1,Math.round((_lastUtc-_catUtc)/86400000)+1);
+      }
+    }
+    const ros=effectiveDays>0?units/effectiveDays:null, tier=getTier(ros);
     const inv=S.hasInventory?(invMap[sid]!==undefined?invMap[sid]:null):null;
     const doh=(inv!==null&&ros!==null&&ros>0)?inv/ros:null;
     const unitCost=S.hasCost?(S.costMap[sid]!==undefined?S.costMap[sid]:null):null;
     const totalCost=(unitCost!==null&&units>0)?unitCost*units:null;
-    const catalogueDate=S.hasCatalogue?(S.catalogueMap[sid]||null):null;
     const avgSellerPrice=units>0?revenue/units:null;
-    rows.push({styleId:sid,brand:sale.brand,styleName:sale.styleName,articleType:sale.articleType,firstSku:sale.firstSku,units,revenue,avgSellerPrice,rets,retPct,ros,tier,inv,doh,unitCost,totalCost,catalogueDate});
+    rows.push({styleId:sid,brand:sale.brand,styleName:sale.styleName,articleType:sale.articleType,firstSku:sale.firstSku,units,revenue,avgSellerPrice,rets,retPct,ros,tier,inv,doh,unitCost,totalCost,catalogueDate,isNewListing});
   });
   S.styles=rows;
 }
@@ -1229,7 +1303,7 @@ function makeChart(id,type,labels,datasets,opts={}){
   const ctx=document.getElementById(id); if(!ctx) return;
   S.charts[id]=new Chart(ctx.getContext('2d'),{type,data:{labels,datasets},options:{
     responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:opts.legend||false,position:'right',labels:{font:{family:'DM Sans',size:10},boxWidth:10,padding:8}}},
+    plugins:{legend:{display:opts.legend||false,position:'right',labels:(()=>{const l={font:{family:'DM Sans',size:10},boxWidth:10,padding:8};if(opts.legend&&(type==='doughnut'||type==='pie')){l.generateLabels=function(chart){const d=chart.data,tot=d.datasets[0].data.reduce((a,b)=>a+(b||0),0);return d.labels.map((lbl,i)=>({text:`${lbl} (${tot>0?((d.datasets[0].data[i]||0)/tot*100).toFixed(1):0}%)`,fillStyle:d.datasets[0].backgroundColor[i],strokeStyle:'#fff',lineWidth:2,index:i,hidden:false}));};}return l;})()}},
     scales:type==='bar'||type==='line'?{
       x:{ticks:{font:{family:'DM Mono',size:10},color:'#999',maxRotation:45},grid:{display:false}},
       y:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{color:'#f0f0f0'}}
@@ -1374,17 +1448,27 @@ function renderOverview(mode='onetimeview') {
     </div>`;
   }).join('');
   const artMap={};
-  filtered.forEach(r=>{const at=r.articleType||'Other';if(!artMap[at])artMap[at]={units:0,revenue:0};artMap[at].units+=r.units;artMap[at].revenue+=r.revenue;});
+  filtered.forEach(r=>{const at=r.articleType||'Other';if(!artMap[at])artMap[at]={units:0,rets:0};artMap[at].units+=r.units;artMap[at].rets+=r.rets;});
   const arts=Object.keys(artMap).sort((a,b)=>artMap[b].units-artMap[a].units).slice(0,10);
   const artColors=['#818cf8','#34d399','#f59e0b','#f472b6','#60a5fa','#a78bfa','#fb923c','#4ade80','#e879f9','#38bdf8'];
   makeChart('chartArticle','bar',arts,[{data:arts.map(a=>artMap[a].units),backgroundColor:artColors,borderRadius:4}]);
-  makeChart('chartArticleRev','bar',arts,[{data:arts.map(a=>Math.round(artMap[a].revenue)),backgroundColor:artColors.map(c=>c+'bb'),borderRadius:4}]);
+  const artRetCard=document.getElementById('artRetCard'),artTypeGrid=document.getElementById('artTypeGrid');
+  if(S.hasReturns){
+    artRetCard.style.display='';artTypeGrid.classList.add('cols2');
+    makeChart('chartArticleRet','bar',arts,[{data:arts.map(a=>artMap[a].units>0?parseFloat((artMap[a].rets/artMap[a].units*100).toFixed(1)):0),backgroundColor:artColors.map(c=>c+'bb'),borderRadius:4}]);
+  } else {
+    artRetCard.style.display='none';artTypeGrid.classList.remove('cols2');
+  }
 }
 
 // ─── RENDER TABLE ────────────────────────────────────────
 function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={}) {
   if (!rows) {
     rows = getFilteredStyles();
+    if(!opts.isDB){
+      if(S.styleSubTab==='new') rows=rows.filter(r=>r.isNewListing);
+      else if(S.styleSubTab==='old') rows=rows.filter(r=>!r.isNewListing);
+    }
     const q = (document.getElementById('otSearchInput')?.value||'').trim().toLowerCase();
     if(q) rows = rows.filter(r=>
       (r.styleId||'').toLowerCase().includes(q)||
@@ -1420,8 +1504,9 @@ function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={
   hCols.push('Brand','Article Type','Units','Avg Seller Price','Revenue');
   if(S.hasCost) hCols.push('Unit Cost');
   hCols.push('ROS/day','Tier');
-  if(S.hasCatalogue) hCols.push('Catalogue Date');
   if(S.hasReturns){hCols.push('Returns','Return%','Top Return Reason');}
+  const showCatDate=!isDB&&S.styleSubTab==='new';
+  if(showCatDate) hCols.push('Catalogue Date');
   if(S.hasInventory){hCols.push(`Inventory (${S.invDateLabel})`);if(S.days)hCols.push('Days on Hand');}
   document.getElementById(theadId).innerHTML=`<tr>${hCols.map(h=>`<th>${h}</th>`).join('')}</tr>`;
   if(!rows.length){
@@ -1443,7 +1528,6 @@ function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={
     cells.push(`<td class="mono">${fINR(r.revenue)}</td>`);
     if(S.hasCost) cells.push(`<td class="mono">${r.unitCost!==null?fINR(r.unitCost):'<span class="na">—</span>'}</td>`);
     cells.push(`<td class="mono">${r.ros!==null?r.ros.toFixed(3):'<span class="na">—</span>'}</td>`,`<td><span class="tier-badge tb-${r.tier}">${r.tier}</span></td>`);
-    if(S.hasCatalogue) cells.push(`<td>${fCatDate(r.catalogueDate)}</td>`);
     if(S.hasReturns){
       cells.push(`<td class="mono">${r.rets>0?r.rets:'<span class="zero">0</span>'}</td>`);
       cells.push(`<td>${fRetPct(r.retPct)}</td>`);
@@ -1451,6 +1535,7 @@ function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={
       const top=getTopReason(reasonMap);
       cells.push(top?`<td><button class="ret-reason-btn" data-sid="${r.styleId}" data-mode="style">${top.reason}<span class="ret-reason-pct">${top.pct}%</span></button></td>`:`<td><span class="na">—</span></td>`);
     }
+    if(showCatDate) cells.push(`<td>${fCatDate(r.catalogueDate)}</td>`);
     if(S.hasInventory){cells.push(`<td class="mono">${r.inv!==null?r.inv.toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);if(S.days)cells.push(`<td class="mono">${r.doh!==null?Math.round(r.doh).toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);}
     tr.innerHTML=cells.join('');
     frag.appendChild(tr);
@@ -1573,19 +1658,24 @@ function showSkuModal(sid, dbSkus) {
     skus = Object.values(S.skusByStyle[sid]||{});
   }
 
-  // Columns: Seller SKU | Seller Price | Units | Revenue | Returns | Inventory | ROS/day | Cost Multiplier | DOH
+  // Columns: Seller SKU | Size | Seller Price | Units | Revenue | Returns | Inventory | ROS/day | Cost Multiplier | DOH | Repeat Qty
   const hasRets = isDB ? S.hasReturns : S.hasReturns;
   const hasInv  = !isDB && S.hasInventory;
   const hasCost = S.hasCost && style.unitCost !== null;
   const days = S.days || 1;
+  const hasSize = !isDB;
+  const hasRepeat = !isDB && S.hasInventory && style.ros !== null && style.ros >= 2 && style.doh !== null && style.doh <= 30;
 
   const hasSkuReasons = S.hasReturns;
-  const thCols = ['Seller SKU Code','Seller Price','Units Sold','Revenue'];
+  const thCols = ['Seller SKU Code'];
+  if(hasSize) thCols.push('Size');
+  thCols.push('Seller Price','Units Sold','Revenue');
   if(hasRets) thCols.push('Returns');
   if(hasInv)  thCols.push('Inventory');
   thCols.push('ROS/day');
   if(hasCost) thCols.push('Cost Multiplier');
   if(hasInv)  thCols.push('DOH');
+  if(hasRepeat) thCols.push('Repeat Qty');
   if(hasSkuReasons) thCols.push('Top Return Reason');
 
   document.getElementById('smTableTitle').textContent=`SKU Breakdown · ${skus.length} SKU${skus.length!==1?'s':''}`;
@@ -1599,17 +1689,22 @@ function showSkuModal(sid, dbSkus) {
       const skuRos   = days>0 ? s.units/days : null;
       const costMult = (hasCost&&style.unitCost&&avgPrice>0) ? avgPrice/style.unitCost : null;
       const skuDoh   = (hasInv&&s.inv!==null&&skuRos&&skuRos>0) ? s.inv/skuRos : null;
+      const repeatQty = hasRepeat && skuRos ? Math.max(0,Math.round(skuRos*(60-(s.inv!==null?s.inv/skuRos:0)))) : null;
       let cells=[
         `<td class="mono" style="font-size:10px;">${s.sellerSkuCode||'—'}</td>`,
+      ];
+      if(hasSize) cells.push(`<td class="mono">${s.size||'<span class="na">—</span>'}</td>`);
+      cells.push(
         `<td class="mono">${avgPrice>0?'₹'+Math.round(avgPrice).toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`,
         `<td class="mono">${s.units>0?s.units.toLocaleString('en-IN'):'<span class="zero">0</span>'}</td>`,
         `<td class="mono">${s.revenue>0?'₹'+Math.round(s.revenue).toLocaleString('en-IN'):'<span class="zero">₹0</span>'}</td>`
-      ];
+      );
       if(hasRets) cells.push(`<td class="mono">${s.rets>0?s.rets:'<span class="zero">0</span>'}</td>`);
       if(hasInv)  cells.push(`<td class="mono">${s.inv!==null?s.inv.toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);
       cells.push(`<td class="mono">${skuRos!==null?skuRos.toFixed(3):'<span class="na">—</span>'}</td>`);
       if(hasCost) cells.push(`<td class="mono">${costMult!==null?costMult.toFixed(2)+'×':'<span class="na">—</span>'}</td>`);
       if(hasInv)  cells.push(`<td class="mono">${skuDoh!==null?Math.round(skuDoh).toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);
+      if(hasRepeat) cells.push(`<td class="mono" style="color:#7c3aed;font-weight:700;">${repeatQty!==null?repeatQty.toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);
       if(hasSkuReasons){
         const skuReasonMap=S.retReasonsBySku[s.sellerSkuCode]||{};
         const topSku=getTopReason(skuReasonMap);
@@ -1620,6 +1715,9 @@ function showSkuModal(sid, dbSkus) {
       return `<tr>${cells.join('')}</tr>`;
     }).join('');
   }
+  const chartBtn=document.getElementById('skuChartBtn');
+  if(!isDB&&S.data.sales.length>0){chartBtn.style.display='block';chartBtn.dataset.sid=sid;}
+  else{chartBtn.style.display='none';}
   document.getElementById('skuOverlay').classList.add('open');
 }
 
@@ -1631,9 +1729,14 @@ function showDashboard() {
   document.getElementById('dashMeta').innerHTML=`<span>${sc.toLocaleString('en-IN')} sales rows</span> &nbsp;·&nbsp; <span>${S.days} days</span> &nbsp;·&nbsp; <span style="color:#555;">${S.files.filter(f=>f.type!='unknown').length} files</span>`;
   document.getElementById('topStatus').textContent=`${sc.toLocaleString('en-IN')} sales rows loaded`;
   document.getElementById('topStatus').classList.add('loaded');
+  document.getElementById('repeatDownloadBtn').style.display=S.hasInventory?'inline-block':'none';
+  S.styleSubTab='all';
+  const _stBar=document.getElementById('styleSubTabBar');
+  _stBar.style.display=S.hasCatalogue?'flex':'none';
+  _stBar.querySelectorAll('.style-subtab').forEach(b=>b.classList.toggle('active',b.dataset.subtab==='all'));
   const brands=[...new Set(S.styles.map(r=>r.brand).filter(Boolean))].sort();
-  renderBrandPills('brandPills', brands, S.activeBrands, ()=>{renderTable();if(document.getElementById('tab-overview').classList.contains('active'))renderOverview();});
-  renderTierPills('tierPills', S.activeTiers, ()=>{renderTable();if(document.getElementById('tab-overview').classList.contains('active'))renderOverview();});
+  renderBrandPills('brandPills', brands, S.activeBrands, ()=>{renderTable();if(document.getElementById('tab-overview').classList.contains('active'))renderOverview();if(document.getElementById('tab-trends')?.classList.contains('active'))renderTrends();});
+  renderTierPills('tierPills', S.activeTiers, ()=>{renderTable();if(document.getElementById('tab-overview').classList.contains('active'))renderOverview();if(document.getElementById('tab-trends')?.classList.contains('active'))renderTrends();});
   renderCatalogueFilter();
   document.getElementById('sortGroup').style.display='none';
   document.getElementById('sortSep').style.display='none';
@@ -3100,6 +3203,7 @@ document.querySelectorAll('.mtab').forEach(btn=>btn.addEventListener('click',()=
   document.getElementById('sortGroup').style.display=isStyles?'':'none';
   document.getElementById('sortSep').style.display=isStyles?'':'none';
   if(tab==='overview') renderOverview('onetimeview');
+  if(tab==='trends') renderTrends();
 }));
 
 // Sort + catalogue filter (one-time)
@@ -3291,7 +3395,13 @@ document.getElementById('manageFilesOverlay').addEventListener('click',e=>{if(e.
 // SKU modal
 document.getElementById('skuModalClose').addEventListener('click',()=>document.getElementById('skuOverlay').classList.remove('open'));
 document.getElementById('skuOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('skuOverlay'))document.getElementById('skuOverlay').classList.remove('open');});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('skuOverlay').classList.remove('open');document.getElementById('reasonsOverlay').classList.remove('open');document.getElementById('manageFilesOverlay').classList.remove('open');document.getElementById('pwOverlay').classList.remove('open');document.getElementById('confirmOverlay').classList.remove('open');document.getElementById('dbupOverlay').classList.remove('open');}});
+document.getElementById('skuChartBtn').addEventListener('click',()=>showStyleChart(document.getElementById('skuChartBtn').dataset.sid));
+document.getElementById('styleChartClose').addEventListener('click',()=>{document.getElementById('styleChartOverlay').classList.remove('open');if(S.charts['styleChart']){S.charts['styleChart'].destroy();delete S.charts['styleChart'];}});
+document.getElementById('styleChartOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('styleChartOverlay')){document.getElementById('styleChartOverlay').classList.remove('open');if(S.charts['styleChart']){S.charts['styleChart'].destroy();delete S.charts['styleChart'];}}});
+// Size drill-down modal
+document.getElementById('sizeDrillClose').addEventListener('click',()=>{document.getElementById('sizeDrillOverlay').classList.remove('open');if(S.charts['sizeDrillCanvas']){S.charts['sizeDrillCanvas'].destroy();delete S.charts['sizeDrillCanvas'];}});
+document.getElementById('sizeDrillOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('sizeDrillOverlay')){document.getElementById('sizeDrillOverlay').classList.remove('open');if(S.charts['sizeDrillCanvas']){S.charts['sizeDrillCanvas'].destroy();delete S.charts['sizeDrillCanvas'];}}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('skuOverlay').classList.remove('open');document.getElementById('styleChartOverlay').classList.remove('open');document.getElementById('sizeDrillOverlay').classList.remove('open');document.getElementById('reasonsOverlay').classList.remove('open');document.getElementById('manageFilesOverlay').classList.remove('open');document.getElementById('pwOverlay').classList.remove('open');document.getElementById('confirmOverlay').classList.remove('open');document.getElementById('dbupOverlay').classList.remove('open');}});
 // Return reasons popup
 document.getElementById('reasonsModalClose').addEventListener('click',()=>document.getElementById('reasonsOverlay').classList.remove('open'));
 document.getElementById('reasonsOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('reasonsOverlay'))document.getElementById('reasonsOverlay').classList.remove('open');});
@@ -3391,6 +3501,199 @@ dbupDz.addEventListener('dragover',e=>{e.preventDefault();dbupDz.classList.add('
 dbupDz.addEventListener('dragleave',()=>dbupDz.classList.remove('drag-over'));
 dbupDz.addEventListener('drop',e=>{e.preventDefault();dbupDz.classList.remove('drag-over');if(e.dataTransfer.files[0])handleDBUploadFile(e.dataTransfer.files[0]);});
 document.getElementById('dbupFileInput').addEventListener('change',e=>{if(e.target.files[0])handleDBUploadFile(e.target.files[0]);e.target.value='';});
+document.getElementById('repeatDownloadBtn').addEventListener('click',downloadRepeatPlan);
+document.getElementById('styleSubTabBar').querySelectorAll('.style-subtab').forEach(btn=>btn.addEventListener('click',()=>{
+  document.getElementById('styleSubTabBar').querySelectorAll('.style-subtab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  S.styleSubTab=btn.dataset.subtab;
+  renderTable();
+}));
+
+// ─── STYLE SALES TREND CHART ─────────────────────────────
+function showStyleChart(sid){
+  const style=S.styles.find(s=>s.styleId===sid);
+  if(!style)return;
+  document.getElementById('styleChartSid').textContent=`Style ID: ${sid}`;
+  document.getElementById('styleChartName').textContent=style.styleName||sid;
+
+  const rows=S.data.sales.filter(r=>String(r['style id']||'').trim()===sid);
+  const allDates=[...new Set(rows.map(r=>(r['created on']||'').trim().split(' ')[0]).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)))].sort();
+
+  let chartType,labels,data;
+  if(allDates.length>62){
+    const wMap={};
+    rows.forEach(r=>{
+      const d=(r['created on']||'').trim().split(' ')[0];
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;
+      const dt=new Date(d),day=dt.getDay(),mon=new Date(dt);
+      mon.setDate(dt.getDate()-(day===0?6:day-1));
+      const wk=mon.toISOString().slice(0,10);
+      if(!wMap[wk])wMap[wk]=0;wMap[wk]++;
+    });
+    const wks=Object.keys(wMap).sort();
+    labels=wks.map(w=>{const d=new Date(w);return `${d.getDate()} ${d.toLocaleString('en',{month:'short'})}`;});
+    data=wks.map(w=>wMap[w]);
+    chartType='bar';
+  } else {
+    const dMap={};
+    rows.forEach(r=>{
+      const d=(r['created on']||'').trim().split(' ')[0];
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;
+      if(!dMap[d])dMap[d]=0;dMap[d]++;
+    });
+    const dates=Object.keys(dMap).sort();
+    labels=dates.map(d=>{const dt=new Date(d);return `${dt.getDate()} ${dt.toLocaleString('en',{month:'short'})}`;});
+    data=dates.map(d=>dMap[d]);
+    chartType='line';
+  }
+
+  if(S.charts['styleChart']){S.charts['styleChart'].destroy();delete S.charts['styleChart'];}
+  const ctx=document.getElementById('styleChartCanvas').getContext('2d');
+  S.charts['styleChart']=new Chart(ctx,{
+    type:chartType,
+    data:{labels,datasets:[{
+      data,
+      backgroundColor:chartType==='bar'?'#818cf8':'rgba(129,140,248,0.1)',
+      borderColor:'#818cf8',
+      borderRadius:chartType==='bar'?4:undefined,
+      tension:0.3,
+      fill:chartType==='line'?true:undefined,
+      pointRadius:chartType==='line'?2:undefined
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}
+  });
+  document.getElementById('styleChartOverlay').classList.add('open');
+}
+
+// ─── TRENDS TAB ──────────────────────────────────────────
+function renderTrends(){
+  if(!S.data)return;
+  const filtered=getFilteredStyles();
+  const filteredIds=new Set(filtered.map(s=>s.styleId));
+
+  // Aggregate brand-wise and article-type-wise units from S.styles (already computed)
+  const brandMap={}, artMap={};
+  filtered.forEach(s=>{
+    const brand=s.brand||'Unknown';
+    const art=s.articleType||'Unknown';
+    brandMap[brand]=(brandMap[brand]||0)+s.units;
+    artMap[art]=(artMap[art]||0)+s.units;
+  });
+
+  const PALETTE=['#818cf8','#34d399','#fb923c','#f472b6','#60a5fa','#a78bfa','#fbbf24','#4ade80','#f87171','#2dd4bf','#e879f9','#38bdf8'];
+
+  // Brand pie
+  const bLabels=Object.keys(brandMap).sort((a,b)=>brandMap[b]-brandMap[a]);
+  const bColors=PALETTE.slice(0,bLabels.length);
+  destroyChart('chartTrendsBrand');
+  makeChart('chartTrendsBrand','doughnut',bLabels,
+    [{data:bLabels.map(l=>brandMap[l]),backgroundColor:bColors,borderWidth:2,borderColor:'#fff'}],
+    {legend:true});
+
+  // Article type pie with click handler
+  const aLabels=Object.keys(artMap).sort((a,b)=>artMap[b]-artMap[a]);
+  const aColors=PALETTE.slice(0,aLabels.length);
+  destroyChart('chartTrendsArt');
+  makeChart('chartTrendsArt','doughnut',aLabels,
+    [{data:aLabels.map(l=>artMap[l]),backgroundColor:aColors,borderWidth:2,borderColor:'#fff'}],
+    {legend:true,extra:{onClick:(_e,els,chart)=>{
+      if(!els||!els.length)return;
+      const artType=chart.data.labels[els[0].index];
+      showSizeDrillDown(artType,filteredIds);
+    }}});
+}
+
+function showSizeDrillDown(artType, filteredIds){
+  const SIZE_ORDER=['XXS','XS','S','M','L','XL','XXL','XXXL','3XL','4XL'];
+  // Build set of style IDs matching this article type within filtered styles
+  const artStyleIds=new Set(
+    S.styles.filter(s=>filteredIds.has(s.styleId)&&(s.articleType||'Unknown')===artType).map(s=>s.styleId)
+  );
+  const sizeMap={};
+  (S.data.sales||[]).forEach(r=>{
+    const sid=String(r['style id']||'').trim();
+    if(!artStyleIds.has(sid))return;
+    const sz=(r['size']||'').trim()||'Unknown';
+    sizeMap[sz]=(sizeMap[sz]||0)+1;
+  });
+
+  const PALETTE=['#818cf8','#34d399','#fb923c','#f472b6','#60a5fa','#a78bfa','#fbbf24','#4ade80','#f87171','#2dd4bf'];
+  const labels=Object.keys(sizeMap).sort((a,b)=>{
+    const ai=SIZE_ORDER.indexOf(a), bi=SIZE_ORDER.indexOf(b);
+    if(ai===-1&&bi===-1)return a.localeCompare(b);
+    if(ai===-1)return 1; if(bi===-1)return -1;
+    return ai-bi;
+  });
+
+  document.getElementById('sizeDrillTitle').textContent=artType;
+  destroyChart('sizeDrillCanvas');
+  makeChart('sizeDrillCanvas','doughnut',labels,
+    [{data:labels.map(l=>sizeMap[l]),backgroundColor:PALETTE.slice(0,labels.length),borderWidth:2,borderColor:'#fff'}],
+    {legend:true});
+  document.getElementById('sizeDrillOverlay').classList.add('open');
+}
+
+// ─── REPEAT PLAN DOWNLOAD ────────────────────────────────
+function downloadRepeatPlan(){
+  if(typeof XLSX==='undefined'){alert('Excel library not loaded. Check your internet connection.');return;}
+  const SIZE_ORDER=['XXS','XS','S','M','L','XL','XXL','XXXL','3XL','4XL'];
+  const days=S.days||1;
+
+  // Eligible styles: ROS >= 2 AND DoH <= 30
+  const eligible=S.styles.filter(st=>st.ros!==null&&st.ros>=2&&st.doh!==null&&st.doh<=30);
+  if(!eligible.length){alert('No styles meet the repeat criteria (Style ROS ≥ 2 and DoH ≤ 30).');return;}
+
+  // Collect all sizes across eligible styles
+  const sizeSet=new Set();
+  eligible.forEach(st=>{
+    Object.values(S.skusByStyle[st.styleId]||{}).forEach(sku=>{if(sku.size)sizeSet.add(sku.size.trim());});
+  });
+
+  // Sort sizes: known order first, then alphabetical
+  const sizes=[...sizeSet].sort((a,b)=>{
+    const ai=SIZE_ORDER.indexOf(a.toUpperCase());
+    const bi=SIZE_ORDER.indexOf(b.toUpperCase());
+    if(ai!==-1&&bi!==-1)return ai-bi;
+    if(ai!==-1)return -1;
+    if(bi!==-1)return 1;
+    return a.localeCompare(b);
+  });
+
+  // Build Excel rows
+  const excelRows=eligible.map(st=>{
+    const skus=Object.values(S.skusByStyle[st.styleId]||{});
+    const row={'Style ID':st.styleId,'Brand':st.brand||'—','Article Type':st.articleType||'—','First SKU':st.firstSku||'—'};
+    let total=0;
+    sizes.forEach(sz=>{
+      const sku=skus.find(s=>(s.size||'').trim().toUpperCase()===sz.toUpperCase());
+      if(!sku){
+        row[sz]='-';
+      } else {
+        const skuRos=days>0?sku.units/days:0;
+        const inv=sku.inv!==null?sku.inv:0;
+        const skuDoh=skuRos>0?inv/skuRos:0;
+        const qty=Math.max(0,Math.round(skuRos*(60-skuDoh)));
+        row[sz]=qty;
+        total+=qty;
+      }
+    });
+    row['Total Repeat Qty']=total;
+    return row;
+  });
+
+  const ws=XLSX.utils.json_to_sheet(excelRows);
+
+  // Add hyperlinks to Style ID column (column A)
+  const range=XLSX.utils.decode_range(ws['!ref']);
+  for(let r=range.s.r+1;r<=range.e.r;r++){
+    const cellAddr=XLSX.utils.encode_cell({r,c:0});
+    if(ws[cellAddr]) ws[cellAddr].l={Target:`https://www.myntra.com/${ws[cellAddr].v}`};
+  }
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Repeat Plan');
+  XLSX.writeFile(wb,'repeat_plan.xlsx');
+}
 </script>
 </body>
 </html>
