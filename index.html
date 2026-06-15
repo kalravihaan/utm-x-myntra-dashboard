@@ -688,12 +688,13 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
       <div class="chart-grid cols2" id="trendsRetGrid" style="display:none;margin-top:0;">
         <div class="chart-card">
           <div class="chart-card-title">Brand-wise Returns (Units)</div>
-          <div class="pie-wrap"><canvas id="chartTrendsBrandRet"></canvas></div>
+          <div class="pie-wrap" style="cursor:pointer;"><canvas id="chartTrendsBrandRet"></canvas></div>
+          <div style="font-size:10px;color:#aaa;text-align:center;margin-top:8px;">Click a slice to see return reasons</div>
         </div>
         <div class="chart-card">
           <div class="chart-card-title">Article Type-wise Returns (Units)</div>
           <div class="pie-wrap" style="cursor:pointer;"><canvas id="chartTrendsArtRet"></canvas></div>
-          <div style="font-size:10px;color:#aaa;text-align:center;margin-top:8px;">Click a slice to see size breakdown</div>
+          <div style="font-size:10px;color:#aaa;text-align:center;margin-top:8px;">Click a slice to see size & reasons</div>
         </div>
       </div>
     </div>
@@ -749,6 +750,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <div class="db-tabs" id="dbTabBar" style="display:none;">
       <button class="db-tab active" data-dbtab="db-overview">Overview</button>
       <button class="db-tab" data-dbtab="db-styles">Style Table</button>
+      <button class="db-tab" data-dbtab="db-trends">Trends</button>
     </div>
     <!-- DB FILTER BAR -->
     <div class="filter-bar" id="dbFilterBar" style="display:none;">
@@ -807,6 +809,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
   <div id="dbContentArea">
     <!-- DB tab panels -->
     <div class="db-tab-panel active" id="db-overview"></div>
+    <div class="db-tab-panel" id="db-trends"></div>
     <div class="db-tab-panel" id="db-styles">
       <div class="search-wrap" style="padding:12px 28px 0;">
         <input class="search-input" id="dbSearchInput" type="text" placeholder="Search style ID, SKU code, article type…">
@@ -877,6 +880,40 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <div style="padding:20px 24px 24px;">
       <div style="position:relative;height:300px;"><canvas id="sizeDrillCanvas"></canvas></div>
     </div>
+  </div>
+</div>
+
+<!-- ARTICLE TYPE RETURNS DRILL MODAL -->
+<div class="sku-overlay" id="artRetDrillOverlay" style="z-index:3000;">
+  <div class="sku-modal" style="max-width:780px;width:90vw;">
+    <button class="sku-modal-close" id="artRetDrillClose">×</button>
+    <div class="sku-modal-head">
+      <div class="sku-modal-sid" id="artRetDrillTitle"></div>
+      <div class="sku-modal-name" style="font-size:12px;color:#aaa;">Returns Breakdown</div>
+    </div>
+    <div style="padding:20px 24px 24px;display:flex;gap:24px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;font-weight:600;color:#666;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Size-wise Returns</div>
+        <div style="font-size:10px;color:#aaa;margin-bottom:8px;">Click a size to see reasons</div>
+        <div style="position:relative;height:280px;"><canvas id="artRetSizeCanvas"></canvas></div>
+      </div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
+        <div style="font-size:11px;font-weight:600;color:#666;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Return Reasons</div>
+        <div style="flex:1;overflow-y:auto;" id="artRetReasonsBody"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIZE-LEVEL REASONS POPUP (on top of article drill) -->
+<div class="reasons-overlay" id="sizeReasonsOverlay" style="z-index:3500;">
+  <div class="reasons-modal" style="position:relative;">
+    <button class="reasons-modal-close" id="sizeReasonsClose">×</button>
+    <div class="reasons-modal-head">
+      <div class="reasons-modal-title" id="sizeReasonsTitle">Return Reasons</div>
+      <div class="reasons-modal-sub" id="sizeReasonsSub"></div>
+    </div>
+    <div class="reasons-modal-body" id="sizeReasonsBody"></div>
   </div>
 </div>
 
@@ -1414,27 +1451,37 @@ function renderOverview(mode='onetimeview') {
 
   // Trend charts
   const allDates=[...new Set(salesRows.map(r=>(r['created on']||'').trim().split(' ')[0]).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)))].sort();
+  const _MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   if(allDates.length>62){
+    const mMap={};
+    salesRows.forEach(r=>{
+      const d=(r['created on']||'').trim().split(' ')[0];
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;
+      const mo=d.slice(0,7);
+      if(!mMap[mo])mMap[mo]={units:0,revenue:0};
+      mMap[mo].units++;mMap[mo].revenue+=parseFloat(r['seller price'])||0;
+    });
+    const mos=Object.keys(mMap).sort();
+    const lbl=mos.map(m=>{const[y,mo]=m.split('-');return `${_MO[+mo-1]} ${y}`;});
+    makeChart('chartUnits','bar',lbl,[{data:mos.map(m=>mMap[m].units),backgroundColor:'#818cf8',borderRadius:4}]);
+    makeChart('chartRevenue','bar',lbl,[{data:mos.map(m=>Math.round(mMap[m].revenue)),backgroundColor:'#34d399',borderRadius:4}]);
+  } else {
+    const _fd=new Date(allDates[0]+'T00:00:00Z');
     const wMap={};
     salesRows.forEach(r=>{
       const d=(r['created on']||'').trim().split(' ')[0];
-      if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
-      const dt=new Date(d),day=dt.getDay(),mon=new Date(dt);mon.setDate(dt.getDate()-(day===0?6:day-1));
-      const wk=mon.toISOString().slice(0,10);
-      if(!wMap[wk])wMap[wk]={units:0,revenue:0};
-      wMap[wk].units++;wMap[wk].revenue+=parseFloat(r['seller price'])||0;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;
+      const wi=Math.floor((new Date(d+'T00:00:00Z')-_fd)/604800000);
+      if(!wMap[wi])wMap[wi]={units:0,revenue:0};
+      wMap[wi].units++;wMap[wi].revenue+=parseFloat(r['seller price'])||0;
     });
-    const wks=Object.keys(wMap).sort();
-    const lbl=wks.map(w=>{const d=new Date(w);return `${d.getDate()} ${d.toLocaleString('en',{month:'short'})}`;});
-    makeChart('chartUnits','bar',lbl,[{data:wks.map(w=>wMap[w].units),backgroundColor:'#818cf8',borderRadius:4}]);
-    makeChart('chartRevenue','bar',lbl,[{data:wks.map(w=>Math.round(wMap[w].revenue)),backgroundColor:'#34d399',borderRadius:4}]);
-  } else {
-    const dMap={};
-    salesRows.forEach(r=>{const d=(r['created on']||'').trim().split(' ')[0];if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;if(!dMap[d])dMap[d]={units:0,revenue:0};dMap[d].units++;dMap[d].revenue+=parseFloat(r['seller price'])||0;});
-    const dates=Object.keys(dMap).sort();
-    const lbl=dates.map(d=>{const dt=new Date(d);return `${dt.getDate()} ${dt.toLocaleString('en',{month:'short'})}`;});
-    makeChart('chartUnits','line',lbl,[{data:dates.map(d=>dMap[d].units),borderColor:'#818cf8',backgroundColor:'rgba(129,140,248,0.1)',tension:0.3,fill:true,pointRadius:2}]);
-    makeChart('chartRevenue','line',lbl,[{data:dates.map(d=>Math.round(dMap[d].revenue)),borderColor:'#34d399',backgroundColor:'rgba(52,211,153,0.1)',tension:0.3,fill:true,pointRadius:2}]);
+    const wks=Object.keys(wMap).map(Number).sort((a,b)=>a-b);
+    const lbl=wks.map(wi=>{
+      const s=new Date(_fd.getTime()+wi*604800000),e=new Date(_fd.getTime()+(wi*7+6)*86400000);
+      return `${s.getUTCDate()} ${_MO[s.getUTCMonth()]} – ${e.getUTCDate()} ${_MO[e.getUTCMonth()]}`;
+    });
+    makeChart('chartUnits','line',lbl,[{data:wks.map(wi=>wMap[wi].units),borderColor:'#818cf8',backgroundColor:'rgba(129,140,248,0.1)',tension:0.3,fill:true,pointRadius:2}]);
+    makeChart('chartRevenue','line',lbl,[{data:wks.map(wi=>Math.round(wMap[wi].revenue)),borderColor:'#34d399',backgroundColor:'rgba(52,211,153,0.1)',tension:0.3,fill:true,pointRadius:2}]);
   }
   const brands=[...new Set(filtered.map(r=>r.brand).filter(Boolean))].sort();
   const bColors=brands.map(b=>BRAND_COLORS[b]||'#94a3b8');
@@ -1633,6 +1680,79 @@ function showReturnReasonsPopup(title, sub, reasonMap) {
   document.getElementById('reasonsOverlay').classList.add('open');
 }
 
+function _reasonsListHTML(reasonMap){
+  const entries=Object.entries(reasonMap||{}).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length)return'<div style="color:#aaa;font-size:12px;padding:16px 0;">No return reason data</div>';
+  const total=entries.reduce((a,[,c])=>a+c,0);
+  const maxCount=entries[0][1];
+  return entries.map(([reason,count])=>{
+    const pct=total>0?Math.round(count/total*100):0;
+    const barW=Math.round(count/maxCount*100);
+    return`<div class="reasons-row"><div class="reasons-label">${reason}</div><div class="reasons-bar-wrap"><div class="reasons-bar" style="width:${barW}%"></div></div><div class="reasons-count">${count}</div><div class="reasons-pct">${pct}%</div></div>`;
+  }).join('');
+}
+
+function showBrandRetReasons(brand, filteredIds){
+  const brandStyleIds=new Set(S.styles.filter(s=>filteredIds.has(s.styleId)&&(s.brand||'Unknown')===brand).map(s=>s.styleId));
+  const reasonMap={};
+  brandStyleIds.forEach(sid=>{
+    Object.entries(S.retReasonsByStyle[sid]||{}).forEach(([r,c])=>{reasonMap[r]=(reasonMap[r]||0)+c;});
+  });
+  showReturnReasonsPopup(`Return Reasons — ${brand}`,'Brand level',reasonMap);
+}
+
+function showArtRetDrill(artType, filteredIds){
+  const artStyleIds=new Set(S.styles.filter(s=>filteredIds.has(s.styleId)&&(s.articleType||'Unknown')===artType).map(s=>s.styleId));
+  const SIZE_ORDER=['XXS','XS','S','M','L','XL','XXL','XXXL','3XL','4XL'];
+  const PALETTE=['#818cf8','#34d399','#fb923c','#f472b6','#60a5fa','#a78bfa','#fbbf24','#4ade80','#f87171','#2dd4bf'];
+  // Build size map from skusByStyle
+  const sizeMap={};
+  artStyleIds.forEach(sid=>{
+    Object.values(S.skusByStyle[sid]||{}).forEach(sku=>{
+      if(!sku.rets)return;
+      const sz=(sku.size||'').trim()||'Unknown';
+      sizeMap[sz]=(sizeMap[sz]||0)+sku.rets;
+    });
+  });
+  const sLabels=Object.keys(sizeMap).sort((a,b)=>{
+    const ai=SIZE_ORDER.indexOf(a),bi=SIZE_ORDER.indexOf(b);
+    if(ai===-1&&bi===-1)return a.localeCompare(b);
+    if(ai===-1)return 1;if(bi===-1)return -1;
+    return ai-bi;
+  });
+  document.getElementById('artRetDrillTitle').textContent=artType;
+  destroyChart('artRetSizeCanvas');
+  makeChart('artRetSizeCanvas','doughnut',sLabels,
+    [{data:sLabels.map(l=>sizeMap[l]),backgroundColor:PALETTE.slice(0,sLabels.length),borderWidth:2,borderColor:'#fff'}],
+    {legend:true,extra:{onClick:(_e,els,chart)=>{
+      if(!els||!els.length)return;
+      showSizeRetReasons(chart.data.labels[els[0].index],artStyleIds);
+    }}});
+  // Aggregate reasons for this article type
+  const reasonMap={};
+  artStyleIds.forEach(sid=>{
+    Object.entries(S.retReasonsByStyle[sid]||{}).forEach(([r,c])=>{reasonMap[r]=(reasonMap[r]||0)+c;});
+  });
+  document.getElementById('artRetReasonsBody').innerHTML=_reasonsListHTML(reasonMap);
+  document.getElementById('artRetDrillOverlay').classList.add('open');
+}
+
+function showSizeRetReasons(size, artStyleIds){
+  const reasonMap={};
+  artStyleIds.forEach(sid=>{
+    Object.values(S.skusByStyle[sid]||{}).forEach(sku=>{
+      if(!sku.rets)return;
+      const sz=(sku.size||'').trim()||'Unknown';
+      if(sz!==size)return;
+      Object.entries(S.retReasonsBySku[sku.sellerSkuCode]||{}).forEach(([r,c])=>{reasonMap[r]=(reasonMap[r]||0)+c;});
+    });
+  });
+  document.getElementById('sizeReasonsTitle').textContent=`Return Reasons — Size ${size}`;
+  document.getElementById('sizeReasonsSub').textContent='Size level';
+  document.getElementById('sizeReasonsBody').innerHTML=_reasonsListHTML(reasonMap);
+  document.getElementById('sizeReasonsOverlay').classList.add('open');
+}
+
 // ─── SKU MODAL ───────────────────────────────────────────
 function showSkuModal(sid, dbSkus) {
   // dbSkus: optional array for DB mode (pre-built). If absent, use one-time S state.
@@ -1786,7 +1906,7 @@ async function loadFirestoreData() {
   document.getElementById('dbFyBar').style.display='none';
   document.getElementById('monthTimeline').style.display='none';
   document.getElementById('dbTabBar').style.display='none';
-  ['db-overview','db-styles','db-manage','db-compare'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.display='none';el.classList.remove('active');}});
+  ['db-overview','db-styles','db-trends','db-manage','db-compare'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.display='none';el.classList.remove('active');}});
   document.getElementById('dbManageBtn').classList.remove('active');
   document.getElementById('dbFilterBar').style.display='none';
   try {
@@ -1805,6 +1925,10 @@ async function loadFirestoreData() {
       if(typeof o.sellerReturns==='string') o.sellerReturns=JSON.parse(o.sellerReturns);
       if(typeof o.retReasonsByStyle==='string') o.retReasonsByStyle=JSON.parse(o.retReasonsByStyle);
       if(typeof o.retReasonsBySku==='string') o.retReasonsBySku=JSON.parse(o.retReasonsBySku);
+      if(typeof o.artTypeSizes==='string') o.artTypeSizes=JSON.parse(o.artTypeSizes);
+      if(typeof o.skuSizeMap==='string') o.skuSizeMap=JSON.parse(o.skuSizeMap);
+      if(typeof o.artTypeRetSizes==='string') o.artTypeRetSizes=JSON.parse(o.artTypeRetSizes);
+      if(typeof o.artTypeRetSizeReasons==='string') o.artTypeRetSizeReasons=JSON.parse(o.artTypeRetSizeReasons);
       return o;
     }
     DB.salesMonths={};
@@ -1829,7 +1953,7 @@ async function saveSalesMonth(month, rows) {
   const isSJIT = newSellerId === '30377';
   const vanToSku = DB.listingsMaster.vanToSku || {};
   // Build new style map from uploaded rows
-  const newStyleMap={};
+  const newStyleMap={}, newArtTypeSizes={}, newSkuSizeMap={};
   rows.forEach(r=>{
     const sid=String(r['style id']||'').trim(); if(!sid) return;
     let sku;
@@ -1846,7 +1970,15 @@ async function saveSalesMonth(month, rows) {
       if(!newStyleMap[sid].skus[sku]) newStyleMap[sid].skus[sku]={units:0,revenue:0};
       newStyleMap[sid].skus[sku].units++; newStyleMap[sid].skus[sku].revenue+=price;
     }
+    const artType=(r['article type']||'').trim()||'Unknown';
+    const size=(r['size']||'').trim();
+    if(size){
+      if(!newArtTypeSizes[artType])newArtTypeSizes[artType]={};
+      newArtTypeSizes[artType][size]=(newArtTypeSizes[artType][size]||0)+1;
+      if(sku)newSkuSizeMap[sku]=size;
+    }
   });
+  const mergeATS=(base,incoming)=>{const out=JSON.parse(JSON.stringify(base||{}));Object.entries(incoming||{}).forEach(([at,sizes])=>{if(!out[at])out[at]={};Object.entries(sizes).forEach(([sz,c])=>{out[at][sz]=(out[at][sz]||0)+c;});});return out;};
   const existing = DB.salesMonths[month];
   // Existing docs without 'sellers' field are treated as MDirect (backward compat)
   const existingSellers = existing?.sellers || (existing ? ['18724'] : []);
@@ -1882,17 +2014,27 @@ async function saveSalesMonth(month, rows) {
   const totalUnits=Object.values(finalStyleMap).reduce((a,s)=>a+s.units,0);
   const totalRevenue=Object.values(finalStyleMap).reduce((a,s)=>a+s.revenue,0);
   const fy=getFY(month);
+  const prevATS=typeof existing?.artTypeSizes==='string'?JSON.parse(existing.artTypeSizes):(existing?.artTypeSizes||{});
+  const prevSSM=typeof existing?.skuSizeMap==='string'?JSON.parse(existing.skuSizeMap):(existing?.skuSizeMap||{});
+  const finalArtTypeSizes=mergeATS(prevATS,newArtTypeSizes);
+  const finalSkuSizeMap={...prevSSM,...newSkuSizeMap};
   // sellerStyles stored as JSON string to avoid Firestore 40k index-entry limit
-  const memPayload={month,fy,styles:finalStyleMap,sellerStyles,totalUnits,totalRevenue,sellers,uploadedAt:new Date().toISOString()};
-  const fsPayload={...memPayload,styles:JSON.stringify(finalStyleMap),sellerStyles:JSON.stringify(sellerStyles)};
+  const memPayload={month,fy,styles:finalStyleMap,sellerStyles,totalUnits,totalRevenue,sellers,artTypeSizes:finalArtTypeSizes,skuSizeMap:finalSkuSizeMap,uploadedAt:new Date().toISOString()};
+  const fsPayload={...memPayload,styles:JSON.stringify(finalStyleMap),sellerStyles:JSON.stringify(sellerStyles),artTypeSizes:JSON.stringify(finalArtTypeSizes),skuSizeMap:JSON.stringify(finalSkuSizeMap)};
   await setDoc(doc(fsDb,'sales_monthly',month),fsPayload);
   DB.salesMonths[month]=memPayload;
 }
 
 async function saveReturnsMonths(rows) {
   const newSellerId = getSellerFromRows(rows);
+  // Build lookup maps from already-loaded sales data for size cross-referencing
+  const globalSkuSizeMap={};
+  Object.values(DB.salesMonths).forEach(m=>{Object.entries(m.skuSizeMap||{}).forEach(([sku,sz])=>{if(!globalSkuSizeMap[sku])globalSkuSizeMap[sku]=sz;});});
+  const styleArtTypeMap={};
+  Object.values(DB.salesMonths).forEach(m=>{Object.entries(m.styles||{}).forEach(([sid,s])=>{if(s.articleType&&!styleArtTypeMap[sid])styleArtTypeMap[sid]=s.articleType;});});
   // Group by order month
   const byMonth={}, byMonthSkuRets={}, byMonthReasonsByStyle={}, byMonthReasonsBySku={};
+  const byMonthArtTypeRetSizes={}, byMonthArtTypeRetSizeReasons={};
   rows.forEach(r=>{
     const sid=String(r['style_id']||'').trim(); if(!sid) return;
     const skuCode=(r['seller_sku_code']||r['sku_code']||r['seller sku code']||'').trim();
@@ -1914,6 +2056,17 @@ async function saveReturnsMonths(rows) {
       if(!byMonthReasonsBySku[month][skuCode]) byMonthReasonsBySku[month][skuCode]={};
       byMonthReasonsBySku[month][skuCode][reason]=(byMonthReasonsBySku[month][skuCode][reason]||0)+1;
     }
+    const artType=styleArtTypeMap[sid]||null;
+    const size=skuCode?(globalSkuSizeMap[skuCode]||null):null;
+    if(artType&&size){
+      if(!byMonthArtTypeRetSizes[month])byMonthArtTypeRetSizes[month]={};
+      if(!byMonthArtTypeRetSizes[month][artType])byMonthArtTypeRetSizes[month][artType]={};
+      byMonthArtTypeRetSizes[month][artType][size]=(byMonthArtTypeRetSizes[month][artType][size]||0)+1;
+      if(!byMonthArtTypeRetSizeReasons[month])byMonthArtTypeRetSizeReasons[month]={};
+      if(!byMonthArtTypeRetSizeReasons[month][artType])byMonthArtTypeRetSizeReasons[month][artType]={};
+      if(!byMonthArtTypeRetSizeReasons[month][artType][size])byMonthArtTypeRetSizeReasons[month][artType][size]={};
+      byMonthArtTypeRetSizeReasons[month][artType][size][reason]=(byMonthArtTypeRetSizeReasons[month][artType][size][reason]||0)+1;
+    }
   });
   // Helper to merge nested reason maps: { key: { reason: count } }
   const mergeReasons=(base,incoming)=>{
@@ -1924,6 +2077,27 @@ async function saveReturnsMonths(rows) {
     });
     return out;
   };
+  // Helper to merge 3-level map: { artType: { size: { reason: count } } }
+  const merge3Level=(base,incoming)=>{
+    const out=JSON.parse(JSON.stringify(base||{}));
+    Object.entries(incoming||{}).forEach(([at,sizes])=>{
+      if(!out[at])out[at]={};
+      Object.entries(sizes).forEach(([sz,reasons])=>{
+        if(!out[at][sz])out[at][sz]={};
+        Object.entries(reasons).forEach(([r,c])=>{out[at][sz][r]=(out[at][sz][r]||0)+c;});
+      });
+    });
+    return out;
+  };
+  // Helper to merge 2-level map: { artType: { size: count } }
+  const merge2Level=(base,incoming)=>{
+    const out=JSON.parse(JSON.stringify(base||{}));
+    Object.entries(incoming||{}).forEach(([at,sizes])=>{
+      if(!out[at])out[at]={};
+      Object.entries(sizes).forEach(([sz,c])=>{out[at][sz]=(out[at][sz]||0)+c;});
+    });
+    return out;
+  };
   for(const [month,styles] of Object.entries(byMonth)){
     const existing=DB.returnsMonths[month];
     const existingSellers=existing?.sellers||(existing?['18724']:[]);
@@ -1931,7 +2105,9 @@ async function saveReturnsMonths(rows) {
     const newSkuRets=byMonthSkuRets[month]||{};
     const newReasonsByStyle=byMonthReasonsByStyle[month]||{};
     const newReasonsBySku=byMonthReasonsBySku[month]||{};
-    let finalStyles, finalSkuRets, finalReasonsByStyle, finalReasonsBySku, sellerReturns;
+    const newArtTypeRetSizes=byMonthArtTypeRetSizes[month]||{};
+    const newArtTypeRetSizeReasons=byMonthArtTypeRetSizeReasons[month]||{};
+    let finalStyles, finalSkuRets, finalReasonsByStyle, finalReasonsBySku, finalArtTypeRetSizes, finalArtTypeRetSizeReasons, sellerReturns;
     if(existing){
       // Always accumulate — settlement cycles mean multiple uploads per month per seller
       finalStyles={...existing.styles};
@@ -1942,6 +2118,10 @@ async function saveReturnsMonths(rows) {
       const prevRBSku = typeof existing.retReasonsBySku==='string'?JSON.parse(existing.retReasonsBySku):(existing.retReasonsBySku||{});
       finalReasonsByStyle=mergeReasons(prevRBS,newReasonsByStyle);
       finalReasonsBySku=mergeReasons(prevRBSku,newReasonsBySku);
+      const prevARS=typeof existing.artTypeRetSizes==='string'?JSON.parse(existing.artTypeRetSizes):(existing.artTypeRetSizes||{});
+      const prevARSR=typeof existing.artTypeRetSizeReasons==='string'?JSON.parse(existing.artTypeRetSizeReasons):(existing.artTypeRetSizeReasons||{});
+      finalArtTypeRetSizes=merge2Level(prevARS,newArtTypeRetSizes);
+      finalArtTypeRetSizeReasons=merge3Level(prevARSR,newArtTypeRetSizeReasons);
       const prevSR=typeof existing.sellerReturns==='string'?JSON.parse(existing.sellerReturns):(existing.sellerReturns||{});
       const prevSlice=prevSR[newSellerId]||{styles:{},skuRets:{},retReasonsByStyle:{},retReasonsBySku:{}};
       const accSellerStyles={...prevSlice.styles};
@@ -1954,12 +2134,13 @@ async function saveReturnsMonths(rows) {
     } else {
       finalStyles=styles; finalSkuRets=newSkuRets;
       finalReasonsByStyle=newReasonsByStyle; finalReasonsBySku=newReasonsBySku;
+      finalArtTypeRetSizes=newArtTypeRetSizes; finalArtTypeRetSizeReasons=newArtTypeRetSizeReasons;
       sellerReturns={[newSellerId]:{styles,skuRets:newSkuRets,retReasonsByStyle:newReasonsByStyle,retReasonsBySku:newReasonsBySku}};
     }
     const totalRets=Object.values(finalStyles).reduce((a,b)=>a+b,0);
     const sellers=[...new Set([...existingSellers,newSellerId])];
-    const memPayload={month,fy,styles:finalStyles,skuRets:finalSkuRets,retReasonsByStyle:finalReasonsByStyle,retReasonsBySku:finalReasonsBySku,sellerReturns,totalRets,sellers,uploadedAt:new Date().toISOString()};
-    const fsPayload={...memPayload,styles:JSON.stringify(finalStyles),skuRets:JSON.stringify(finalSkuRets),retReasonsByStyle:JSON.stringify(finalReasonsByStyle),retReasonsBySku:JSON.stringify(finalReasonsBySku),sellerReturns:JSON.stringify(sellerReturns)};
+    const memPayload={month,fy,styles:finalStyles,skuRets:finalSkuRets,retReasonsByStyle:finalReasonsByStyle,retReasonsBySku:finalReasonsBySku,artTypeRetSizes:finalArtTypeRetSizes,artTypeRetSizeReasons:finalArtTypeRetSizeReasons,sellerReturns,totalRets,sellers,uploadedAt:new Date().toISOString()};
+    const fsPayload={...memPayload,styles:JSON.stringify(finalStyles),skuRets:JSON.stringify(finalSkuRets),retReasonsByStyle:JSON.stringify(finalReasonsByStyle),retReasonsBySku:JSON.stringify(finalReasonsBySku),artTypeRetSizes:JSON.stringify(finalArtTypeRetSizes),artTypeRetSizeReasons:JSON.stringify(finalArtTypeRetSizeReasons),sellerReturns:JSON.stringify(sellerReturns)};
     await setDoc(doc(fsDb,'returns_monthly',month),fsPayload);
     DB.returnsMonths[month]=memPayload;
   }
@@ -2410,7 +2591,7 @@ function renderDBFYView() {
   document.getElementById('dbTabBar').style.display = 'flex';
   document.getElementById('db-compare').style.display = 'none';
   document.getElementById('dbManageBtn').classList.remove('active');
-  ['db-overview','db-styles','db-manage'].forEach(id => {
+  ['db-overview','db-styles','db-trends','db-manage'].forEach(id => {
     document.getElementById(id).classList.remove('active');
     document.getElementById(id).style.display = 'none';
   });
@@ -2445,6 +2626,7 @@ function renderDBFYView() {
   document.getElementById('dbSortSelect').value = DB.dbSortKey;
   if (activeTab === 'db-overview') renderDBOverview(selMonths);
   if (activeTab === 'db-styles') renderDBTable();
+  if (activeTab === 'db-trends') renderDBTrends(selMonths);
   if (activeTab === 'db-manage') renderDBManage();
 }
 
@@ -2452,6 +2634,7 @@ function refreshDBView(selMonths, fy, allFYMonths, fyMonths) {
   const activeTab = document.querySelector('.db-tab.active')?.dataset?.dbtab || 'db-overview';
   if (activeTab === 'db-overview') renderDBOverview(selMonths);
   if (activeTab === 'db-styles') renderDBTable();
+  if (activeTab === 'db-trends') renderDBTrends(selMonths);
 }
 
 // ─── MONTH TIMELINE ──────────────────────────────────────
@@ -2557,9 +2740,9 @@ function renderDBOverview(selMonths) {
     </div>
     <div class="section" style="padding-top:0;">
       <div class="section-title">Article Type Breakdown</div>
-      <div class="chart-grid cols2">
+      <div class="chart-grid cols2" id="dbArtTypeGrid">
         <div class="chart-card"><div class="chart-card-title">Units by Article Type</div><div class="chart-wrap"><canvas id="dbChartArticle"></canvas></div></div>
-        <div class="chart-card"><div class="chart-card-title">Revenue by Article Type</div><div class="chart-wrap"><canvas id="dbChartArticleRev"></canvas></div></div>
+        <div class="chart-card" id="dbArtRetCard"><div class="chart-card-title">Return % by Article Type</div><div class="chart-wrap"><canvas id="dbChartArticleRet"></canvas></div></div>
       </div>
     </div>`;
   const filtered = getDBFiltered();
@@ -2616,11 +2799,150 @@ function renderDBOverview(selMonths) {
   }).join('');
   // Article type
   const artMap={};
-  filtered.forEach(r=>{const at=r.articleType||'Other';if(!artMap[at])artMap[at]={units:0,revenue:0};artMap[at].units+=r.units;artMap[at].revenue+=r.revenue;});
+  filtered.forEach(r=>{const at=r.articleType||'Other';if(!artMap[at])artMap[at]={units:0,revenue:0,rets:0};artMap[at].units+=r.units;artMap[at].revenue+=r.revenue;artMap[at].rets+=(r.rets||0);});
   const arts=Object.keys(artMap).sort((a,b)=>artMap[b].units-artMap[a].units).slice(0,10);
   const artColors=['#818cf8','#34d399','#f59e0b','#f472b6','#60a5fa','#a78bfa','#fb923c','#4ade80','#e879f9','#38bdf8'];
   makeDBChart('dbChartArticle','bar',arts,[{data:arts.map(a=>artMap[a].units),backgroundColor:artColors,borderRadius:4}]);
-  makeDBChart('dbChartArticleRev','bar',arts,[{data:arts.map(a=>Math.round(artMap[a].revenue)),backgroundColor:artColors.map(c=>c+'bb'),borderRadius:4}]);
+  if(S.hasReturns){
+    document.getElementById('dbArtRetCard').style.display='';
+    document.getElementById('dbArtTypeGrid').classList.add('cols2');
+    makeDBChart('dbChartArticleRet','bar',arts,[{data:arts.map(a=>artMap[a].units>0?parseFloat((artMap[a].rets/artMap[a].units*100).toFixed(1)):0),backgroundColor:artColors.map(c=>c+'bb'),borderRadius:4}]);
+  } else {
+    document.getElementById('dbArtRetCard').style.display='none';
+    document.getElementById('dbArtTypeGrid').classList.remove('cols2');
+  }
+}
+
+// ─── DB TRENDS ───────────────────────────────────────────
+function renderDBTrends(selMonths) {
+  const el = document.getElementById('db-trends');
+  el.innerHTML = `
+    <div class="section">
+      <div class="section-title">Sales Distribution</div>
+      <div class="chart-grid cols2">
+        <div class="chart-card"><div class="chart-card-title">Brand-wise Sales (Units)</div><div class="pie-wrap"><canvas id="dbTrendsBrandPie"></canvas></div></div>
+        <div class="chart-card"><div class="chart-card-title">Article Type-wise Sales (Units)</div><div class="pie-wrap"><canvas id="dbTrendsArtPie"></canvas></div></div>
+      </div>
+    </div>
+    <div class="section" style="padding-top:0;" id="dbTrendsRetGrid">
+      <div class="section-title">Returns Distribution</div>
+      <div class="chart-grid cols2">
+        <div class="chart-card"><div class="chart-card-title">Brand-wise Returns</div><div class="pie-wrap"><canvas id="dbTrendsBrandRetPie"></canvas></div></div>
+        <div class="chart-card"><div class="chart-card-title">Article Type-wise Returns</div><div class="pie-wrap"><canvas id="dbTrendsArtRetPie"></canvas></div></div>
+      </div>
+    </div>`;
+
+  const filtered = getDBFiltered();
+  const PALETTE = ['#818cf8','#34d399','#fb923c','#f472b6','#60a5fa','#a78bfa','#fbbf24','#4ade80','#f87171','#2dd4bf','#e879f9','#38bdf8'];
+
+  const brandMap={}, brandRetMap={}, artMap={}, artRetMap={};
+  filtered.forEach(s=>{
+    const brand=s.brand||'Unknown', art=s.articleType||'Unknown';
+    brandMap[brand]=(brandMap[brand]||0)+s.units;
+    brandRetMap[brand]=(brandRetMap[brand]||0)+(s.rets||0);
+    artMap[art]=(artMap[art]||0)+s.units;
+    artRetMap[art]=(artRetMap[art]||0)+(s.rets||0);
+  });
+
+  const bLabels=Object.keys(brandMap).sort((a,b)=>brandMap[b]-brandMap[a]);
+  makeDBChart('dbTrendsBrandPie','doughnut',bLabels,
+    [{data:bLabels.map(l=>brandMap[l]),backgroundColor:PALETTE.slice(0,bLabels.length),borderWidth:2,borderColor:'#fff'}],
+    {legend:true});
+
+  const aLabels=Object.keys(artMap).sort((a,b)=>artMap[b]-artMap[a]);
+  makeDBChart('dbTrendsArtPie','doughnut',aLabels,
+    [{data:aLabels.map(l=>artMap[l]),backgroundColor:PALETTE.slice(0,aLabels.length),borderWidth:2,borderColor:'#fff'}],
+    {legend:true,extra:{onClick:(_e,els,chart)=>{
+      if(!els||!els.length)return;
+      showDBArtSizeDrill(chart.data.labels[els[0].index],selMonths);
+    }}});
+
+  const hasRets=S.hasReturns&&filtered.some(s=>(s.rets||0)>0);
+  document.getElementById('dbTrendsRetGrid').style.display=hasRets?'':'none';
+  if(hasRets){
+    const brLabels=Object.keys(brandRetMap).filter(k=>brandRetMap[k]>0).sort((a,b)=>brandRetMap[b]-brandRetMap[a]);
+    makeDBChart('dbTrendsBrandRetPie','doughnut',brLabels,
+      [{data:brLabels.map(l=>brandRetMap[l]),backgroundColor:PALETTE.slice(0,brLabels.length),borderWidth:2,borderColor:'#fff'}],
+      {legend:true,extra:{onClick:(_e,els,chart)=>{
+        if(!els||!els.length)return;
+        showDBBrandRetReasons(chart.data.labels[els[0].index],selMonths,filtered);
+      }}});
+
+    const arLabels=Object.keys(artRetMap).filter(k=>artRetMap[k]>0).sort((a,b)=>artRetMap[b]-artRetMap[a]);
+    makeDBChart('dbTrendsArtRetPie','doughnut',arLabels,
+      [{data:arLabels.map(l=>artRetMap[l]),backgroundColor:PALETTE.slice(0,arLabels.length),borderWidth:2,borderColor:'#fff'}],
+      {legend:true,extra:{onClick:(_e,els,chart)=>{
+        if(!els||!els.length)return;
+        showDBArtRetDrill(chart.data.labels[els[0].index],selMonths,filtered);
+      }}});
+  }
+}
+
+function showDBArtSizeDrill(artType, selMonths) {
+  const sizeMap={};
+  selMonths.forEach(m=>{
+    const ats=DB.salesMonths[m]?.artTypeSizes?.[artType]||{};
+    Object.entries(ats).forEach(([sz,c])=>{sizeMap[sz]=(sizeMap[sz]||0)+c;});
+  });
+  _sizeDrillOpen(artType,'Size-wise Units Sold',sizeMap);
+}
+
+function showDBBrandRetReasons(brand, selMonths, filtered) {
+  const brandStyleIds=new Set(filtered.filter(s=>(s.brand||'Unknown')===brand).map(s=>s.styleId));
+  const reasonMap={};
+  selMonths.forEach(m=>{
+    const rbs=DB.returnsMonths[m]?.retReasonsByStyle||{};
+    brandStyleIds.forEach(sid=>{
+      Object.entries(rbs[sid]||{}).forEach(([r,c])=>{reasonMap[r]=(reasonMap[r]||0)+c;});
+    });
+  });
+  showReturnReasonsPopup(`Return Reasons — ${brand}`,'Brand level',reasonMap);
+}
+
+function showDBArtRetDrill(artType, selMonths, filtered) {
+  const artStyleIds=new Set(filtered.filter(s=>(s.articleType||'Unknown')===artType).map(s=>s.styleId));
+  const SIZE_ORDER=['XXS','XS','S','M','L','XL','XXL','XXXL','3XL','4XL'];
+  const PALETTE=['#818cf8','#34d399','#fb923c','#f472b6','#60a5fa','#a78bfa','#fbbf24','#4ade80','#f87171','#2dd4bf'];
+  const sizeMap={};
+  selMonths.forEach(m=>{
+    const ars=DB.returnsMonths[m]?.artTypeRetSizes?.[artType]||{};
+    Object.entries(ars).forEach(([sz,c])=>{sizeMap[sz]=(sizeMap[sz]||0)+c;});
+  });
+  const sLabels=Object.keys(sizeMap).sort((a,b)=>{
+    const ai=SIZE_ORDER.indexOf(a),bi=SIZE_ORDER.indexOf(b);
+    if(ai===-1&&bi===-1)return a.localeCompare(b);
+    if(ai===-1)return 1;if(bi===-1)return -1;
+    return ai-bi;
+  });
+  document.getElementById('artRetDrillTitle').textContent=artType;
+  destroyChart('artRetSizeCanvas');
+  makeChart('artRetSizeCanvas','doughnut',sLabels,
+    [{data:sLabels.map(l=>sizeMap[l]),backgroundColor:PALETTE.slice(0,sLabels.length),borderWidth:2,borderColor:'#fff'}],
+    {legend:true,extra:{onClick:(_e,els,chart)=>{
+      if(!els||!els.length)return;
+      showDBSizeRetReasons(artType,chart.data.labels[els[0].index],selMonths);
+    }}});
+  const reasonMap={};
+  selMonths.forEach(m=>{
+    const rbs=DB.returnsMonths[m]?.retReasonsByStyle||{};
+    artStyleIds.forEach(sid=>{
+      Object.entries(rbs[sid]||{}).forEach(([r,c])=>{reasonMap[r]=(reasonMap[r]||0)+c;});
+    });
+  });
+  document.getElementById('artRetReasonsBody').innerHTML=_reasonsListHTML(reasonMap);
+  document.getElementById('artRetDrillOverlay').classList.add('open');
+}
+
+function showDBSizeRetReasons(artType, size, selMonths) {
+  const reasonMap={};
+  selMonths.forEach(m=>{
+    const sizeReasons=DB.returnsMonths[m]?.artTypeRetSizeReasons?.[artType]?.[size]||{};
+    Object.entries(sizeReasons).forEach(([r,c])=>{reasonMap[r]=(reasonMap[r]||0)+c;});
+  });
+  document.getElementById('sizeReasonsTitle').textContent=`Return Reasons — Size ${size}`;
+  document.getElementById('sizeReasonsSub').textContent='Size level';
+  document.getElementById('sizeReasonsBody').innerHTML=_reasonsListHTML(reasonMap);
+  document.getElementById('sizeReasonsOverlay').classList.add('open');
 }
 
 // ─── DB TABLE ────────────────────────────────────────────
@@ -3412,7 +3734,13 @@ document.getElementById('styleChartOverlay').addEventListener('click',e=>{if(e.t
 // Size drill-down modal
 document.getElementById('sizeDrillClose').addEventListener('click',()=>{document.getElementById('sizeDrillOverlay').classList.remove('open');if(S.charts['sizeDrillCanvas']){S.charts['sizeDrillCanvas'].destroy();delete S.charts['sizeDrillCanvas'];}});
 document.getElementById('sizeDrillOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('sizeDrillOverlay')){document.getElementById('sizeDrillOverlay').classList.remove('open');if(S.charts['sizeDrillCanvas']){S.charts['sizeDrillCanvas'].destroy();delete S.charts['sizeDrillCanvas'];}}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('skuOverlay').classList.remove('open');document.getElementById('styleChartOverlay').classList.remove('open');document.getElementById('sizeDrillOverlay').classList.remove('open');document.getElementById('reasonsOverlay').classList.remove('open');document.getElementById('manageFilesOverlay').classList.remove('open');document.getElementById('pwOverlay').classList.remove('open');document.getElementById('confirmOverlay').classList.remove('open');document.getElementById('dbupOverlay').classList.remove('open');}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('skuOverlay').classList.remove('open');document.getElementById('styleChartOverlay').classList.remove('open');document.getElementById('sizeDrillOverlay').classList.remove('open');document.getElementById('sizeReasonsOverlay').classList.remove('open');document.getElementById('artRetDrillOverlay').classList.remove('open');destroyChart('artRetSizeCanvas');document.getElementById('reasonsOverlay').classList.remove('open');document.getElementById('manageFilesOverlay').classList.remove('open');document.getElementById('pwOverlay').classList.remove('open');document.getElementById('confirmOverlay').classList.remove('open');document.getElementById('dbupOverlay').classList.remove('open');}});
+// Article type returns drill modal
+document.getElementById('artRetDrillClose').addEventListener('click',()=>{document.getElementById('artRetDrillOverlay').classList.remove('open');destroyChart('artRetSizeCanvas');});
+document.getElementById('artRetDrillOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('artRetDrillOverlay')){document.getElementById('artRetDrillOverlay').classList.remove('open');destroyChart('artRetSizeCanvas');}});
+// Size-level reasons popup
+document.getElementById('sizeReasonsClose').addEventListener('click',()=>document.getElementById('sizeReasonsOverlay').classList.remove('open'));
+document.getElementById('sizeReasonsOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('sizeReasonsOverlay'))document.getElementById('sizeReasonsOverlay').classList.remove('open');});
 // Return reasons popup
 document.getElementById('reasonsModalClose').addEventListener('click',()=>document.getElementById('reasonsOverlay').classList.remove('open'));
 document.getElementById('reasonsOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('reasonsOverlay'))document.getElementById('reasonsOverlay').classList.remove('open');});
@@ -3464,12 +3792,13 @@ document.querySelectorAll('.db-tab').forEach(btn=>btn.addEventListener('click',(
   document.querySelectorAll('.db-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   const tab=btn.dataset.dbtab;
-  ['db-overview','db-styles'].forEach(id=>{document.getElementById(id).style.display='none';document.getElementById(id).classList.remove('active');});
+  ['db-overview','db-styles','db-trends'].forEach(id=>{document.getElementById(id).style.display='none';document.getElementById(id).classList.remove('active');});
   document.getElementById(tab).style.display='block';
   document.getElementById(tab).classList.add('active');
   const selMonths=(DB.fyMonths[DB.activeFY]||[]).filter(m=>DB.selectedMonths.has(m));
   if(tab==='db-overview') renderDBOverview(selMonths);
   else if(tab==='db-styles') renderDBTable();
+  else if(tab==='db-trends') renderDBTrends(selMonths);
   document.getElementById('dbFilterBar').style.display='flex';
 }));
 
@@ -3488,7 +3817,7 @@ document.getElementById('dbManageBtn').addEventListener('click',()=>{
     document.getElementById('dbFilterBar').style.display='flex';
   } else {
     // Open manage panel
-    ['db-overview','db-styles'].forEach(id=>{document.getElementById(id).style.display='none';document.getElementById(id).classList.remove('active');});
+    ['db-overview','db-styles','db-trends'].forEach(id=>{document.getElementById(id).style.display='none';document.getElementById(id).classList.remove('active');});
     document.getElementById('dbFilterBar').style.display='none';
     manageEl.style.display='block';
     manageEl.classList.add('active');
@@ -3531,30 +3860,34 @@ function showStyleChart(sid){
   const allDates=[...new Set(rows.map(r=>(r['created on']||'').trim().split(' ')[0]).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)))].sort();
 
   let chartType,labels,data;
+  const _MOS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   if(allDates.length>62){
+    const mMap={};
+    rows.forEach(r=>{
+      const d=(r['created on']||'').trim().split(' ')[0];
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;
+      const mo=d.slice(0,7);
+      mMap[mo]=(mMap[mo]||0)+1;
+    });
+    const mos=Object.keys(mMap).sort();
+    labels=mos.map(m=>{const[y,mo]=m.split('-');return `${_MOS[+mo-1]} ${y}`;});
+    data=mos.map(m=>mMap[m]);
+    chartType='bar';
+  } else {
+    const _fd=new Date(allDates[0]+'T00:00:00Z');
     const wMap={};
     rows.forEach(r=>{
       const d=(r['created on']||'').trim().split(' ')[0];
       if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;
-      const dt=new Date(d),day=dt.getDay(),mon=new Date(dt);
-      mon.setDate(dt.getDate()-(day===0?6:day-1));
-      const wk=mon.toISOString().slice(0,10);
-      if(!wMap[wk])wMap[wk]=0;wMap[wk]++;
+      const wi=Math.floor((new Date(d+'T00:00:00Z')-_fd)/604800000);
+      wMap[wi]=(wMap[wi]||0)+1;
     });
-    const wks=Object.keys(wMap).sort();
-    labels=wks.map(w=>{const d=new Date(w);return `${d.getDate()} ${d.toLocaleString('en',{month:'short'})}`;});
-    data=wks.map(w=>wMap[w]);
-    chartType='bar';
-  } else {
-    const dMap={};
-    rows.forEach(r=>{
-      const d=(r['created on']||'').trim().split(' ')[0];
-      if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;
-      if(!dMap[d])dMap[d]=0;dMap[d]++;
+    const wks=Object.keys(wMap).map(Number).sort((a,b)=>a-b);
+    labels=wks.map(wi=>{
+      const s=new Date(_fd.getTime()+wi*604800000),e=new Date(_fd.getTime()+(wi*7+6)*86400000);
+      return `${s.getUTCDate()} ${_MOS[s.getUTCMonth()]} – ${e.getUTCDate()} ${_MOS[e.getUTCMonth()]}`;
     });
-    const dates=Object.keys(dMap).sort();
-    labels=dates.map(d=>{const dt=new Date(d);return `${dt.getDate()} ${dt.toLocaleString('en',{month:'short'})}`;});
-    data=dates.map(d=>dMap[d]);
+    data=wks.map(wi=>wMap[wi]);
     chartType='line';
   }
 
@@ -3617,7 +3950,10 @@ function renderTrends(){
     destroyChart('chartTrendsBrandRet');
     makeChart('chartTrendsBrandRet','doughnut',brLabels,
       [{data:brLabels.map(l=>brandRetMap[l]),backgroundColor:PALETTE.slice(0,brLabels.length),borderWidth:2,borderColor:'#fff'}],
-      {legend:true});
+      {legend:true,extra:{onClick:(_e,els,chart)=>{
+        if(!els||!els.length)return;
+        showBrandRetReasons(chart.data.labels[els[0].index],filteredIds);
+      }}});
 
     const arLabels=Object.keys(artRetMap).filter(k=>artRetMap[k]>0).sort((a,b)=>artRetMap[b]-artRetMap[a]);
     destroyChart('chartTrendsArtRet');
@@ -3625,7 +3961,7 @@ function renderTrends(){
       [{data:arLabels.map(l=>artRetMap[l]),backgroundColor:PALETTE.slice(0,arLabels.length),borderWidth:2,borderColor:'#fff'}],
       {legend:true,extra:{onClick:(_e,els,chart)=>{
         if(!els||!els.length)return;
-        showReturnsSizeDrillDown(chart.data.labels[els[0].index],filteredIds);
+        showArtRetDrill(chart.data.labels[els[0].index],filteredIds);
       }}});
   }
 }
