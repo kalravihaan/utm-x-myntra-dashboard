@@ -59,6 +59,14 @@ body{font-family:'DM Sans',sans-serif;background:#f1f5f9;color:#111;font-size:13
 .fc-type{font-size:10px;font-weight:700;letter-spacing:0.08em;padding:2px 8px;border-radius:20px;color:#fff;text-transform:uppercase;flex-shrink:0;}
 .fc-type.sales{background:#10b981;}.fc-type.returns{background:#f59e0b;}.fc-type.inventory{background:#6366f1;}.fc-type.unknown{background:#ef4444;}
 .fc-type.itemmaster{background:#7c3aed;}.fc-type.catalogue{background:#0891b2;}
+.fc-type.listinghealth{background:#06b6d4;}.fc-type.listingstatus{background:#f97316;}
+.listing-filter-bar{display:flex;align-items:center;gap:10px;padding:12px 32px 4px;flex-wrap:wrap;}
+.listing-filter-bar input[type=text]{padding:5px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;outline:none;width:240px;color:#111;background:#fff;}
+.listing-filter-bar input[type=text]:focus{border-color:#6366f1;}
+.listing-filter-bar select{padding:5px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;outline:none;background:#fff;color:#111;cursor:pointer;}
+.listing-filter-bar select:focus{border-color:#6366f1;}
+.ic-mrp{background:#fef3c7;color:#92400e;}
+.ic-platform{background:#ede9fe;color:#5b21b6;}
 .fc-name{color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .fc-rows{font-family:'DM Mono',monospace;font-size:10px;color:#aaa;white-space:nowrap;}
 .fc-remove{margin-left:auto;background:none;border:none;cursor:pointer;color:#ccc;font-size:14px;line-height:1;padding:2px 4px;flex-shrink:0;}
@@ -219,6 +227,30 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
 .style-subtab-bar{padding:10px 32px 0;display:flex;gap:6px;}
 .style-subtab{padding:5px 16px;border-radius:20px;border:1px solid #e5e7eb;background:#fff;font-size:11px;font-weight:500;color:#777;cursor:pointer;transition:all 0.15s;}
 .style-subtab.active{background:#818cf8;border-color:#818cf8;color:#fff;font-weight:600;}
+/* LISTINGS TAB */
+.listing-subtab-bar{padding:10px 32px 0;display:flex;gap:6px;}
+.lq-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.03em;}
+.lq-good{background:#dcfce7;color:#166534;}
+.lq-average{background:#fef9c3;color:#854d0e;}
+.lq-bad{background:#fee2e2;color:#991b1b;}
+.lq-worst{background:#7f1d1d;color:#fff;}
+.lq-unclassified{background:#f3f4f6;color:#6b7280;}
+.action-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.03em;}
+.ab-normal{background:#f0fdf4;color:#15803d;}
+.ab-warning{background:#fff7ed;color:#c2410c;}
+.ab-suppression{background:#fef2f2;color:#dc2626;}
+.ab-ihc{background:#450a0a;color:#fca5a5;}
+.issue-chip{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;margin:1px 2px;}
+.ic-inactive{background:#fee2e2;color:#991b1b;}
+.ic-rejected{background:#fef3c7;color:#92400e;}
+.ic-pending{background:#ede9fe;color:#5b21b6;}
+.ic-nosell{background:#f1f5f9;color:#475569;}
+.listings-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.listings-tbl th{background:#f9fafb;padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em;border-bottom:2px solid #e5e7eb;white-space:nowrap;}
+.listings-tbl td{padding:8px 12px;border-bottom:1px solid #f3f4f6;vertical-align:middle;}
+.listings-tbl tr:hover td{background:#fafafa;}
+.vs-above{color:#16a34a;font-weight:600;}
+.vs-below{color:#dc2626;font-weight:600;}
 /* SKU MODAL */
 .sku-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;}
 .sku-overlay.open{display:flex;}
@@ -595,6 +627,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <button class="mtab active" data-tab="overview">Overview</button>
     <button class="mtab" data-tab="styles">Style Table</button>
     <button class="mtab" data-tab="trends">Trends</button>
+    <button class="mtab" data-tab="listings" id="listingsTabBtn" style="display:none;">Listings</button>
   </div>
   <div class="filter-bar" id="filterBar">
     <span class="filter-label">Brand</span>
@@ -604,7 +637,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <div class="tier-filter-wrap" id="tierPills"></div>
     <div style="position:relative;margin-left:4px;">
       <button style="background:none;border:none;cursor:pointer;font-size:10px;color:#aaa;padding:2px 4px;" id="tierInfoBtn">ⓘ</button>
-      <div id="tierInfoBox" style="display:none;position:absolute;top:24px;left:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;z-index:999;width:240px;box-shadow:0 4px 12px rgba(0,0,0,0.1);font-size:11px;">
+      <div id="tierInfoBox" style="display:none;position:absolute;top:24px;right:0;left:auto;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;z-index:999;width:240px;box-shadow:0 4px 12px rgba(0,0,0,0.1);font-size:11px;">
         <div id="tierInfoView">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
             <div style="font-weight:700;color:#111;">Tier Classification</div>
@@ -733,6 +766,43 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     </div>
     <div class="table-wrap">
       <div class="tw"><table id="mainTable"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
+    </div>
+  </div>
+  <!-- LISTINGS TAB -->
+  <div class="tab-panel" id="tab-listings">
+    <div class="listing-subtab-bar" id="listingSubTabBar" style="display:none;">
+      <button class="style-subtab active" data-lstab="health" id="lstabHealth">Health</button>
+      <button class="style-subtab" data-lstab="status" id="lstabStatus">Listing Status</button>
+    </div>
+    <div id="listingHealthPanel">
+      <div class="listing-filter-bar">
+        <input type="text" id="lhSearch" placeholder="Search style ID, brand, article type…">
+        <select id="lhQualityFilter">
+          <option value="All">All Quality</option>
+          <option>Good</option><option>Average</option><option>Bad</option><option>Worst</option><option>Unclassified</option>
+        </select>
+        <select id="lhActionFilter">
+          <option value="All">All Actions</option>
+          <option>Normal</option><option>Warning</option><option>Suppression</option><option value="IHC Block">IHC Block</option>
+        </select>
+      </div>
+      <div class="row-count" id="listingHealthCount" style="padding:0 32px 4px;"></div>
+      <div class="table-wrap" style="padding:0 0 0 0;margin-top:4px;">
+        <div class="tw"><table class="listings-tbl"><thead id="lhHead"></thead><tbody id="lhBody"></tbody></table></div>
+      </div>
+    </div>
+    <div id="listingStatusPanel" style="display:none;">
+      <div class="listing-filter-bar">
+        <input type="text" id="lsSearch" placeholder="Search style ID, brand, article type…">
+        <select id="lsIssueFilter">
+          <option value="All">All Issues</option>
+          <option>De-Active</option><option>MRP Delist</option><option>Platform Delist</option>
+        </select>
+      </div>
+      <div class="row-count" id="listingStatusCount" style="padding:0 32px 4px;"></div>
+      <div class="table-wrap" style="margin-top:4px;">
+        <div class="tw"><table class="listings-tbl"><thead id="lsHead"></thead><tbody id="lsBody"></tbody></table></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1140,13 +1210,17 @@ const TIER_DEFS = [
 const S = {
   files: [], errors: [],
   days: null, daysAuto: null, daysManual: null,
-  data: { sales:[], returns:[], inventory:[], itemmaster:[], catalogue:[] },
+  data: { sales:[], returns:[], inventory:[], itemmaster:[], catalogue:[], listinghealth:[], listingstatus:[] },
   styles: [], skusByStyle: {},
   activeBrands: new Set(['All']),
   activeTiers: new Set(['VF','F','M','S','D']),
   activeCatalogueMonth: 'All',
   sortKey: 'units_desc', styleSubTab: 'all',
-  hasReturns: false, hasInventory: false, hasCost: false, hasCatalogue: false,
+  hasReturns: false, hasInventory: false, hasCost: false, hasCatalogue: false, hasListingHealth: false, hasListingStatus: false,
+  listingHealthStyles: [], listingStatusStyles: [],
+  firstSkuByStyle: {},
+  lhFilter: {quality:'All', action:'All', search:''},
+  lsFilter: {issue:'All', search:''},
   customerReturns: false,
   invDateLabel: '',
   charts: {},
@@ -1182,6 +1256,8 @@ function detectType(cols) {
   if (c.includes('inventory count') && c.includes('sellable inventory count')) return 'inventory';
   if (c.some(col => col.includes('catalogued') || col.includes('catalogue') || (col.includes('listing') && col.includes('date')))) return 'catalogue';
   if (c.includes('ean') && c.some(col => col.includes('cost'))) return 'itemmaster';
+  if (c.includes('listing quality') && c.some(col => col.includes('benchmark pq returns'))) return 'listinghealth';
+  if (c.includes('listing status') && c.includes('overall sellability') && c.some(col => col.includes('sellerskucode'))) return 'listingstatus';
   return 'unknown';
 }
 function parseCSV(file) {
@@ -1196,6 +1272,45 @@ function parseCSV(file) {
       error(e) { res({ name:file.name, type:'unknown', rows:[], rowCount:0, cols:[], parseError:e.message }); }
     });
   });
+}
+function parseFile(file) {
+  if(/\.xlsx$/i.test(file.name)) {
+    return new Promise(res => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          // Some XLSX exports (e.g. Myntra StyleDashboardExport) have a wrong
+          // <dimension> tag (e.g. A1:Q2) so SheetJS only returns 2 rows.
+          // Rescan all real cell addresses to rebuild the correct !ref.
+          {
+            const ck=Object.keys(ws).filter(k=>/^[A-Z]+\d+$/.test(k));
+            if(ck.length){
+              let mR=0,mC=0;
+              for(const k of ck){const d=XLSX.utils.decode_cell(k);if(d.r>mR)mR=d.r;if(d.c>mC)mC=d.c;}
+              ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:mR,c:mC}});
+            }
+          }
+          const rawRows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+          const cols = rawRows.length > 0 ? rawRows[0].map(v=>String(v||'')) : [];
+          // Build named-object rows from data rows (skip header row and any fully-empty rows)
+          const rows = rawRows.slice(1)
+            .filter(r => r.some(v => v !== ''))
+            .map(r => {
+              const obj = {};
+              cols.forEach((col, i) => { obj[col] = r[i] !== undefined ? r[i] : ''; });
+              return obj;
+            });
+          res({name:file.name, type:detectType(cols), rows, rowCount:rows.length, cols});
+        } catch(err) {
+          res({name:file.name, type:'unknown', rows:[], rowCount:0, cols:[], parseError:err.message});
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+  return parseCSV(file);
 }
 
 // ─── AUTO DAYS ───────────────────────────────────────────
@@ -1229,12 +1344,140 @@ function recomputeAuto() {
   else { note.style.display='none'; lbl.textContent=''; }
 }
 
+// ─── LISTING DATA ────────────────────────────────────────
+function processListingData() {
+  // Health (CSV — style-level)
+  S.listingHealthStyles = S.data.listinghealth.map(r => ({
+    styleId: String(r['Style ID']||'').trim(),
+    brand: (r['Brand']||'').trim(),
+    articleType: (r['Article Type']||'').trim(),
+    listingQuality: (r['Listing Quality']||'').trim(),
+    action: (r['Action']||'').trim(),
+    ratingL90: parseFloat(r['Ratings (L90)'])||0,
+    benchmarkRating: parseFloat(r['Avg. Benchmark Rating (L90)'])||0,
+    overallRating: parseFloat(r['Overall Ratings (Historical)'])||0,
+    pqRetPct: parseFloat(r['PQ Returns Quantity% (L90)'])||0,
+    benchmarkPqRet: parseFloat(r['Benchmark PQ Returns% (L90)'])||0,
+    retGmvPct: parseFloat(r['Returns GMV% (L90)'])||0,
+    benchmarkRetGmv: parseFloat(r['Benchmark Returns GMV% (L90)'])||0,
+  })).filter(r=>r.styleId);
+
+  // Listing Status (XLSX — SKU-level, rolled up to style)
+  // One issue type per style: De-Active, MRP Delist, or Platform Delist
+  // Also builds S.firstSkuByStyle for use by the Health table
+  const styleMap={};
+  const fskMap={};
+  S.data.listingstatus.forEach(r=>{
+    const sid=String(r['Style Id']||r['style id']||r['Style ID']||'').trim();
+    if(!sid) return;
+    const sku=(r['SellerSkuCode']||r['sellerSkuCode']||r['Seller Sku Code']||'').trim();
+    if(sku&&!fskMap[sid]) fskMap[sid]=sku;
+    if(!styleMap[sid]) styleMap[sid]={
+      styleId:sid,
+      brand:(r['Brand Name']||r['brand name']||'').trim(),
+      articleType:(r['Article Type']||r['article type']||'').trim(),
+      issueSet:new Set()
+    };
+    const st=styleMap[sid];
+    const ls=(r['Listing Status']||r['listing status']||'').trim();
+    const lsL=ls.toLowerCase();
+    if(lsL&&lsL!=='active'){
+      if(lsL.includes('mrp')) st.issueSet.add('MRP Delist');
+      else if(lsL.includes('platform')) st.issueSet.add('Platform Delist');
+      else st.issueSet.add('De-Active');
+    }
+  });
+  S.firstSkuByStyle=fskMap;
+  S.listingStatusStyles=Object.values(styleMap)
+    .map(st=>({styleId:st.styleId,brand:st.brand,articleType:st.articleType,issues:[...st.issueSet],firstSku:fskMap[st.styleId]||''}))
+    .filter(st=>st.issues.length>0);
+}
+
+function _lqBadge(q) {
+  const map={Good:'lq-good',Average:'lq-average',Bad:'lq-bad',Worst:'lq-worst',Unclassified:'lq-unclassified'};
+  return `<span class="lq-badge ${map[q]||'lq-unclassified'}">${q||'—'}</span>`;
+}
+function _abBadge(a) {
+  const map={Normal:'ab-normal',Warning:'ab-warning',Suppression:'ab-suppression','IHC Block':'ab-ihc'};
+  return `<span class="action-badge ${map[a]||'ab-normal'}">${a||'—'}</span>`;
+}
+function _vsCell(val, bench) {
+  if(!val&&val!==0) return '<td class="mono">—</td><td>—</td>';
+  const cls=val<=bench?'vs-above':'vs-below';
+  const arrow=val<=bench?'▼':'▲';
+  return `<td class="mono">${val.toFixed(1)}%</td><td class="${cls}">${arrow} ${Math.abs(val-bench).toFixed(1)}%</td>`;
+}
+
+function renderListingHealth() {
+  const {quality,action,search}=S.lhFilter;
+  const srch=search.toLowerCase().trim();
+  let rows=S.listingHealthStyles;
+  if(!S.activeBrands.has('All')) rows=rows.filter(r=>S.activeBrands.has(r.brand));
+  if(quality!=='All') rows=rows.filter(r=>r.listingQuality===quality);
+  if(action!=='All') rows=rows.filter(r=>r.action===action);
+  if(srch) rows=rows.filter(r=>r.styleId.toLowerCase().includes(srch)||r.brand.toLowerCase().includes(srch)||r.articleType.toLowerCase().includes(srch));
+  const total=S.listingHealthStyles.length;
+  document.getElementById('listingHealthCount').textContent=`${rows.length}${rows.length!==total?' of '+total:''} style${total!==1?'s':''}`;
+  document.getElementById('lhHead').innerHTML=`<tr>
+    <th>Style ID</th><th>SKU</th><th>Brand</th><th>Article Type</th>
+    <th>Listing Quality</th><th>Action</th>
+    <th>Rating L90</th><th>vs Benchmark</th>
+    <th>PQ Return%</th><th>vs Benchmark</th>
+    <th>Return GMV%</th><th>vs Benchmark</th>
+  </tr>`;
+  document.getElementById('lhBody').innerHTML=rows.length?rows.map(r=>{
+    const sku=S.firstSkuByStyle[r.styleId]||Object.values(S.skusByStyle[r.styleId]||{})[0]?.sellerSkuCode||'—';
+    const ratingCls=r.ratingL90>0?(r.ratingL90>=r.benchmarkRating?'vs-above':'vs-below'):'';
+    const ratingArrow=r.ratingL90>0?(r.ratingL90>=r.benchmarkRating?'▲':'▼'):'';
+    return `<tr>
+      <td><a href="https://www.myntra.com/${r.styleId}" target="_blank" style="color:#4f46e5;font-weight:600;">${r.styleId}</a></td>
+      <td class="mono" style="font-size:10px;">${sku}</td>
+      <td>${r.brand||'—'}</td><td>${r.articleType||'—'}</td>
+      <td>${_lqBadge(r.listingQuality)}</td>
+      <td>${_abBadge(r.action)}</td>
+      <td class="mono ${ratingCls}">${r.ratingL90>0?r.ratingL90.toFixed(2):'<span class="na">No ratings</span>'}</td>
+      <td class="${ratingCls}">${r.ratingL90>0&&r.benchmarkRating>0?`${ratingArrow} ${Math.abs(r.ratingL90-r.benchmarkRating).toFixed(2)}`:'—'}</td>
+      ${_vsCell(r.pqRetPct,r.benchmarkPqRet)}
+      ${_vsCell(r.retGmvPct,r.benchmarkRetGmv)}
+    </tr>`;
+  }).join(''):`<tr><td colspan="12" style="text-align:center;padding:24px;color:#aaa;">No styles match the current filters</td></tr>`;
+}
+
+function renderListingStatus() {
+  const {issue,search}=S.lsFilter;
+  const srch=search.toLowerCase().trim();
+  let rows=S.listingStatusStyles;
+  if(!S.activeBrands.has('All')) rows=rows.filter(r=>S.activeBrands.has(r.brand));
+  if(issue!=='All') rows=rows.filter(r=>r.issues.includes(issue));
+  if(srch) rows=rows.filter(r=>r.styleId.toLowerCase().includes(srch)||r.brand.toLowerCase().includes(srch)||r.articleType.toLowerCase().includes(srch));
+  const total=S.listingStatusStyles.length;
+  document.getElementById('listingStatusCount').textContent=`${rows.length}${rows.length!==total?' of '+total:''} style${total!==1?'s':''} with issues`;
+  document.getElementById('lsHead').innerHTML=`<tr>
+    <th>Style ID</th><th>SKU</th><th>Brand</th><th>Article Type</th><th>Issue</th>
+  </tr>`;
+  document.getElementById('lsBody').innerHTML=rows.length?rows.map(r=>{
+    const sku=r.firstSku||Object.values(S.skusByStyle[r.styleId]||{})[0]?.sellerSkuCode||'—';
+    const chips=r.issues.map(iss=>{
+      const cls=iss==='MRP Delist'?'ic-mrp':iss==='Platform Delist'?'ic-platform':'ic-inactive';
+      return `<span class="issue-chip ${cls}">${iss}</span>`;
+    }).join('');
+    return `<tr>
+      <td><a href="https://www.myntra.com/${r.styleId}" target="_blank" style="color:#4f46e5;font-weight:600;">${r.styleId}</a></td>
+      <td class="mono" style="font-size:10px;">${sku}</td>
+      <td>${r.brand||'—'}</td><td>${r.articleType||'—'}</td>
+      <td>${chips}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="5" style="text-align:center;padding:24px;color:#aaa;">No styles match the current filters</td></tr>`;
+}
+
 // ─── PROCESS DATA (one-time) ─────────────────────────────
 function processData() {
   const salesRows=S.data.sales, returnRows=S.data.returns, invRows=S.data.inventory;
   const costRows=S.data.itemmaster, catRows=S.data.catalogue;
   S.hasReturns=returnRows.length>0; S.hasInventory=invRows.length>0;
   S.hasCost=costRows.length>0; S.hasCatalogue=catRows.length>0;
+  S.hasListingHealth=S.data.listinghealth.length>0; S.hasListingStatus=S.data.listingstatus.length>0;
+  processListingData();
   if (!S.daysManual) { S.daysAuto=extractDaysFromSales(salesRows); S.days=S.daysAuto||1; }
   else S.days=S.daysManual;
   // Store actual date range (YYYY-MM-DD strings) for catalogue-adjusted ROS
@@ -1929,7 +2172,15 @@ function showDashboard() {
   _stBar.style.display=S.hasCatalogue?'flex':'none';
   _stBar.querySelectorAll('.style-subtab').forEach(b=>b.classList.toggle('active',b.dataset.subtab==='all'));
   const brands=[...new Set(S.styles.map(r=>r.brand).filter(Boolean))].sort();
-  renderBrandPills('brandPills', brands, S.activeBrands, ()=>{renderTable();if(document.getElementById('tab-overview').classList.contains('active'))renderOverview();if(document.getElementById('tab-trends')?.classList.contains('active'))renderTrends();});
+  renderBrandPills('brandPills', brands, S.activeBrands, ()=>{
+    renderTable();
+    if(document.getElementById('tab-overview').classList.contains('active'))renderOverview();
+    if(document.getElementById('tab-trends')?.classList.contains('active'))renderTrends();
+    if(document.getElementById('tab-listings')?.classList.contains('active')){
+      if(document.getElementById('listingHealthPanel').style.display!=='none'&&S.hasListingHealth)renderListingHealth();
+      if(document.getElementById('listingStatusPanel').style.display!=='none'&&S.hasListingStatus)renderListingStatus();
+    }
+  });
   renderTierPills('tierPills', S.activeTiers, ()=>{renderTable();if(document.getElementById('tab-overview').classList.contains('active'))renderOverview();if(document.getElementById('tab-trends')?.classList.contains('active'))renderTrends();});
   renderCatalogueFilter();
   document.getElementById('sortGroup').style.display='none';
@@ -1941,6 +2192,30 @@ function showDashboard() {
     S.customerReturns=false;
     document.getElementById('retModeLabelGross').classList.remove('active');
     document.getElementById('retModeLabelCust').classList.remove('active');
+  }
+  // Reset listing filters on each fresh build
+  S.lhFilter={quality:'All',action:'All',search:''};
+  S.lsFilter={issue:'All',search:''};
+  document.getElementById('lhSearch').value='';document.getElementById('lhQualityFilter').value='All';document.getElementById('lhActionFilter').value='All';
+  document.getElementById('lsSearch').value='';document.getElementById('lsIssueFilter').value='All';
+  // Listings tab visibility
+  const hasListings=S.hasListingHealth||S.hasListingStatus;
+  document.getElementById('listingsTabBtn').style.display=hasListings?'':'none';
+  const lsBar=document.getElementById('listingSubTabBar');
+  const showBoth=S.hasListingHealth&&S.hasListingStatus;
+  lsBar.style.display=showBoth?'flex':'none';
+  document.getElementById('listingHealthPanel').style.display=S.hasListingHealth?'':'none';
+  document.getElementById('listingStatusPanel').style.display=(!S.hasListingHealth&&S.hasListingStatus)?'':'none';
+  if(S.hasListingHealth){document.getElementById('lstabHealth').classList.add('active');document.getElementById('lstabStatus').classList.remove('active');}
+  // If no sales data, auto-activate Listings tab
+  if(!S.data.sales.length && hasListings) {
+    document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('listingsTabBtn').classList.add('active');
+    document.getElementById('tab-listings').classList.add('active');
+    if(S.hasListingHealth) renderListingHealth();
+    else renderListingStatus();
+    return;
   }
   renderOverview('onetimeview'); renderTable();
 }
@@ -3504,7 +3779,7 @@ function promptPassword(callback) {
 function renderFileList() {
   const list=document.getElementById('fileList');
   if(!S.files.length){list.innerHTML='';return;}
-  const labels={sales:'Sales',returns:'Returns',inventory:'Inventory',itemmaster:'Item Master',catalogue:'Listings',unknown:'Unknown'};
+  const labels={sales:'Sales',returns:'Returns',inventory:'Inventory',itemmaster:'Item Master',catalogue:'Listings',listinghealth:'Listing Health',listingstatus:'Listing Status',unknown:'Unknown'};
   list.innerHTML=S.files.map((f,i)=>`<div class="file-chip"><span class="fc-type ${f.type}">${labels[f.type]||f.type}</span><span class="fc-name">${f.name}</span><span class="fc-rows">${f.rowCount.toLocaleString('en-IN')} rows</span><button class="fc-remove" data-idx="${i}">✕</button></div>`).join('');
   list.querySelectorAll('.fc-remove').forEach(btn=>btn.addEventListener('click',()=>{S.files.splice(parseInt(btn.dataset.idx),1);recomputeAuto();renderFileList();validateGo();}));
 }
@@ -3514,9 +3789,9 @@ function renderErrors() {
   box.style.display='block';
   document.getElementById('errorList').innerHTML=S.errors.map(e=>`<div class="err-item">• ${e}</div>`).join('');
 }
-function validateGo(){document.getElementById('goBtn').disabled=!S.files.some(f=>f.type==='sales');}
+function validateGo(){document.getElementById('goBtn').disabled=!S.files.some(f=>f.type==='sales'||f.type==='listinghealth'||f.type==='listingstatus');}
 async function addFiles(fileList) {
-  const parsed=await Promise.all(Array.from(fileList).map(parseCSV));
+  const parsed=await Promise.all(Array.from(fileList).map(parseFile));
   S.errors=[];
   parsed.forEach(pf=>{
     if(pf.parseError){S.errors.push(`"${pf.name}" could not be read.`);return;}
@@ -3554,7 +3829,8 @@ document.getElementById('backToModeBtn').addEventListener('click', () => {
   document.getElementById('topStatus').classList.remove('loaded');
   // Reset one-time state
   Object.values(S.charts).forEach(c=>c.destroy());
-  Object.assign(S,{files:[],errors:[],days:null,daysAuto:null,daysManual:null,data:{sales:[],returns:[],inventory:[],itemmaster:[],catalogue:[]},styles:[],skusByStyle:{},retReasonsByStyle:{},retReasonsBySku:{},activeBrands:new Set(['All']),activeTiers:new Set(['VF','F','M','S','D']),activeCatalogueMonth:'All',sortKey:'units_desc',hasReturns:false,hasInventory:false,hasCost:false,hasCatalogue:false,invDateLabel:'',charts:{},costMap:{},catalogueMap:{},catalogueMonths:[]});
+  Object.assign(S,{files:[],errors:[],days:null,daysAuto:null,daysManual:null,data:{sales:[],returns:[],inventory:[],itemmaster:[],catalogue:[],listinghealth:[],listingstatus:[]},styles:[],skusByStyle:{},retReasonsByStyle:{},retReasonsBySku:{},activeBrands:new Set(['All']),activeTiers:new Set(['VF','F','M','S','D']),activeCatalogueMonth:'All',sortKey:'units_desc',hasReturns:false,hasInventory:false,hasCost:false,hasCatalogue:false,hasListingHealth:false,hasListingStatus:false,listingHealthStyles:[],listingStatusStyles:[],firstSkuByStyle:{},lhFilter:{quality:'All',action:'All',search:''},lsFilter:{issue:'All',search:''},invDateLabel:'',charts:{},costMap:{},catalogueMap:{},catalogueMonths:[]});
+  document.getElementById('listingsTabBtn').style.display='none';
   document.getElementById('daysInput').value='';
   document.getElementById('daysAutoLabel').textContent='';
   document.getElementById('daysNote').style.display='none';
@@ -3577,6 +3853,8 @@ document.getElementById('goBtn').addEventListener('click',()=>{
   S.data.inventory=S.files.filter(f=>f.type==='inventory').flatMap(f=>f.rows);
   S.data.itemmaster=S.files.filter(f=>f.type==='itemmaster').flatMap(f=>f.rows);
   S.data.catalogue=S.files.filter(f=>f.type==='catalogue').flatMap(f=>f.rows);
+  S.data.listinghealth=S.files.filter(f=>f.type==='listinghealth').flatMap(f=>f.rows);
+  S.data.listingstatus=S.files.filter(f=>f.type==='listingstatus').flatMap(f=>f.rows);
   const manual=parseInt(document.getElementById('daysInput').value);
   S.daysManual=manual>0?manual:null;
   S.tierThresholds={VF:parseFloat(document.getElementById('te-VF').value)||1.5,F:parseFloat(document.getElementById('te-F').value)||0.7,M:parseFloat(document.getElementById('te-M').value)||0.3,S:parseFloat(document.getElementById('te-S').value)||0.001};
@@ -3591,7 +3869,12 @@ document.getElementById('resetBtn').addEventListener('click',()=>{
   document.getElementById('uploadScreen').style.display='flex';
   document.getElementById('topStatus').textContent='Drop your files to get started';
   document.getElementById('topStatus').classList.remove('loaded');
-  Object.assign(S,{files:[],errors:[],days:null,daysAuto:null,daysManual:null,data:{sales:[],returns:[],inventory:[],itemmaster:[],catalogue:[]},styles:[],skusByStyle:{},retReasonsByStyle:{},retReasonsBySku:{},activeBrands:new Set(['All']),activeTiers:new Set(['VF','F','M','S','D']),activeCatalogueMonth:'All',sortKey:'units_desc',hasReturns:false,hasInventory:false,hasCost:false,hasCatalogue:false,invDateLabel:'',charts:{},costMap:{},catalogueMap:{},catalogueMonths:[],customerReturns:false});
+  Object.assign(S,{files:[],errors:[],days:null,daysAuto:null,daysManual:null,data:{sales:[],returns:[],inventory:[],itemmaster:[],catalogue:[],listinghealth:[],listingstatus:[]},styles:[],skusByStyle:{},retReasonsByStyle:{},retReasonsBySku:{},activeBrands:new Set(['All']),activeTiers:new Set(['VF','F','M','S','D']),activeCatalogueMonth:'All',sortKey:'units_desc',hasReturns:false,hasInventory:false,hasCost:false,hasCatalogue:false,hasListingHealth:false,hasListingStatus:false,listingHealthStyles:[],listingStatusStyles:[],firstSkuByStyle:{},lhFilter:{quality:'All',action:'All',search:''},lsFilter:{issue:'All',search:''},invDateLabel:'',charts:{},costMap:{},catalogueMap:{},catalogueMonths:[],customerReturns:false});
+  ['lhSearch','lsSearch'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('lhQualityFilter').value='All';
+  document.getElementById('lhActionFilter').value='All';
+  document.getElementById('lsIssueFilter').value='All';
+  document.getElementById('listingsTabBtn').style.display='none';
   document.getElementById('retModeToggle').checked=false;
   document.getElementById('retModeWrap').style.display='none';
   document.getElementById('retModeLabelGross').classList.remove('active');
@@ -3612,7 +3895,35 @@ document.querySelectorAll('.mtab').forEach(btn=>btn.addEventListener('click',()=
   document.getElementById('sortSep').style.display=isStyles?'':'none';
   if(tab==='overview') renderOverview('onetimeview');
   if(tab==='trends') renderTrends();
+  if(tab==='listings'){
+    if(S.hasListingHealth) renderListingHealth();
+    if(S.hasListingStatus&&!S.hasListingHealth) renderListingStatus();
+  }
 }));
+
+// Listing sub-tabs
+document.getElementById('lstabHealth').addEventListener('click',()=>{
+  document.getElementById('lstabHealth').classList.add('active');
+  document.getElementById('lstabStatus').classList.remove('active');
+  document.getElementById('listingHealthPanel').style.display='';
+  document.getElementById('listingStatusPanel').style.display='none';
+  renderListingHealth();
+});
+document.getElementById('lstabStatus').addEventListener('click',()=>{
+  document.getElementById('lstabStatus').classList.add('active');
+  document.getElementById('lstabHealth').classList.remove('active');
+  document.getElementById('listingStatusPanel').style.display='';
+  document.getElementById('listingHealthPanel').style.display='none';
+  renderListingStatus();
+});
+
+// Listing Health filters
+document.getElementById('lhSearch').addEventListener('input',e=>{S.lhFilter.search=e.target.value;renderListingHealth();});
+document.getElementById('lhQualityFilter').addEventListener('change',e=>{S.lhFilter.quality=e.target.value;renderListingHealth();});
+document.getElementById('lhActionFilter').addEventListener('change',e=>{S.lhFilter.action=e.target.value;renderListingHealth();});
+// Listing Status filters
+document.getElementById('lsSearch').addEventListener('input',e=>{S.lsFilter.search=e.target.value;renderListingStatus();});
+document.getElementById('lsIssueFilter').addEventListener('change',e=>{S.lsFilter.issue=e.target.value;renderListingStatus();});
 
 // Sort + catalogue filter (one-time)
 document.getElementById('sortSelect').addEventListener('change',e=>{S.sortKey=e.target.value;renderTable();});
@@ -3729,7 +4040,7 @@ document.getElementById('dbTierInfoSaveBtn').addEventListener('click',async ()=>
 
 // ─── MANAGE FILES (ONE-TIME VIEW) ────────────────────────
 function renderManageFilesOverlay() {
-  const labels={sales:'Sales',returns:'Returns',inventory:'Inventory',itemmaster:'Item Master',catalogue:'Listings',unknown:'Unknown'};
+  const labels={sales:'Sales',returns:'Returns',inventory:'Inventory',itemmaster:'Item Master',catalogue:'Listings',listinghealth:'Listing Health',listingstatus:'Listing Status',unknown:'Unknown'};
   const validCount=S.files.filter(f=>f.type!=='unknown').length;
   document.getElementById('manageFilesSub').textContent=`${validCount} file${validCount!==1?'s':''} loaded`;
   const salesCount=S.files.filter(f=>f.type==='sales').length;
@@ -3766,7 +4077,7 @@ function renderManageFilesOverlay() {
 }
 
 async function addFilesToDashboard(fileList) {
-  const parsed=await Promise.all(Array.from(fileList).map(parseCSV));
+  const parsed=await Promise.all(Array.from(fileList).map(parseFile));
   parsed.forEach(pf=>{
     if(pf.parseError) return;
     if(S.files.find(f=>f.name===pf.name)) return;
@@ -3782,6 +4093,8 @@ function rebuildDashboardFromFiles() {
   S.data.inventory=S.files.filter(f=>f.type==='inventory').flatMap(f=>f.rows);
   S.data.itemmaster=S.files.filter(f=>f.type==='itemmaster').flatMap(f=>f.rows);
   S.data.catalogue=S.files.filter(f=>f.type==='catalogue').flatMap(f=>f.rows);
+  S.data.listinghealth=S.files.filter(f=>f.type==='listinghealth').flatMap(f=>f.rows);
+  S.data.listingstatus=S.files.filter(f=>f.type==='listingstatus').flatMap(f=>f.rows);
   Object.values(S.charts).forEach(c=>c.destroy());
   S.charts={};
   processData();
