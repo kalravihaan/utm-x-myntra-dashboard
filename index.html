@@ -860,6 +860,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
       <button class="db-tab active" data-dbtab="db-overview">Overview</button>
       <button class="db-tab" data-dbtab="db-styles">Style Table</button>
       <button class="db-tab" data-dbtab="db-trends">Trends</button>
+      <button class="db-tab" data-dbtab="db-summary">Summary</button>
     </div>
     <!-- DB FILTER BAR -->
     <div class="filter-bar" id="dbFilterBar" style="display:none;">
@@ -912,6 +913,15 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
         <option value="cost_desc">Total Cost ↓</option>
       </select>
     </div>
+    <div class="filter-sep" id="dbRetModeSep" style="display:none;"></div>
+    <div class="ret-mode-wrap" id="dbRetModeWrap" style="display:none;">
+      <span class="ret-mode-label active" id="dbRetModeLabelGross">Gross</span>
+      <label class="ret-mode-switch">
+        <input type="checkbox" id="dbRetModeToggle">
+        <span class="ret-mode-slider"></span>
+      </label>
+      <span class="ret-mode-label" id="dbRetModeLabelCust">Customer</span>
+    </div>
     </div><!-- end #dbFilterBar -->
   </div><!-- end #dbStickyHeader -->
   <!-- Scrollable content area -->
@@ -928,6 +938,12 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
       </div>
       <div class="table-wrap">
         <div class="tw"><table id="dbMainTable"><thead id="dbTableHead"></thead><tbody id="dbTableBody"></tbody></table></div>
+      </div>
+    </div>
+    <div class="db-tab-panel" id="db-summary">
+      <div class="section" style="padding-top:24px;">
+        <div class="row-count" id="dbSummaryCount"></div>
+        <div class="tw"><table id="dbSummaryTable"><thead id="dbSummaryHead"></thead><tbody id="dbSummaryBody"></tbody></table></div>
       </div>
     </div>
     <div class="db-tab-panel" id="db-manage"></div>
@@ -1672,6 +1688,18 @@ function applyReturnMode() {
   });
 }
 
+function applyDBReturnMode() {
+  const isCust=DB.customerReturns;
+  DB.dbStyles.forEach(st=>{
+    const rto=isCust?(st.rtoRets||0):0;
+    st.units=Math.max(0,st.grossUnits-rto);
+    st.rets=Math.max(0,st.grossRets-rto);
+    st.retPct=st.units>0?(st.rets/st.units*100):null;
+    st.ros=S.days>0?st.units/S.days:null;
+    st.tier=getTierDB(st.ros);
+  });
+}
+
 // ─── CHART HELPER ────────────────────────────────────────
 function destroyChart(id){if(S.charts[id]){S.charts[id].destroy();delete S.charts[id];}}
 function makeChart(id,type,labels,datasets,opts={}){
@@ -1923,7 +1951,7 @@ function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={
     if(S.hasReturns){
       cells.push(`<td class="mono">${r.rets>0?r.rets:'<span class="zero">0</span>'}</td>`);
       cells.push(`<td>${fRetPct(r.retPct)}</td>`);
-      const reasonMap=Object.assign({},S.retReasonsByStyle[r.styleId]||{});if(S.customerReturns)delete reasonMap['RTO'];
+      const reasonMap=Object.assign({},S.retReasonsByStyle[r.styleId]||{});if(isDB?DB.customerReturns:S.customerReturns)delete reasonMap['RTO'];
       const top=getTopReason(reasonMap);
       cells.push(top?`<td><button class="ret-reason-btn" data-sid="${r.styleId}" data-mode="style">${top.reason}<span class="ret-reason-pct">${top.pct}%</span></button></td>`:`<td><span class="na">—</span></td>`);
     }
@@ -2032,7 +2060,7 @@ function showBrandRetReasons(brand, filteredIds){
   brandStyleIds.forEach(sid=>{
     Object.entries(S.retReasonsByStyle[sid]||{}).forEach(([r,c])=>{reasonMap[r]=(reasonMap[r]||0)+c;});
   });
-  if(S.customerReturns) delete reasonMap['RTO'];
+  const _dbVisB=document.getElementById('dbScreen').style.display!=='none';if(_dbVisB?DB.customerReturns:S.customerReturns) delete reasonMap['RTO'];
   showReturnReasonsPopup(`Return Reasons — ${brand}`,'Brand level',reasonMap);
 }
 
@@ -2068,7 +2096,7 @@ function showArtRetDrill(artType, filteredIds){
   artStyleIds.forEach(sid=>{
     Object.entries(S.retReasonsByStyle[sid]||{}).forEach(([r,c])=>{reasonMap[r]=(reasonMap[r]||0)+c;});
   });
-  if(S.customerReturns) delete reasonMap['RTO'];
+  const _dbVisA=document.getElementById('dbScreen').style.display!=='none';if(_dbVisA?DB.customerReturns:S.customerReturns) delete reasonMap['RTO'];
   document.getElementById('artRetReasonsBody').innerHTML=_reasonsListHTML(reasonMap);
   document.getElementById('artRetDrillOverlay').classList.add('open');
 }
@@ -2083,7 +2111,7 @@ function showSizeRetReasons(size, artStyleIds){
       Object.entries(S.retReasonsBySku[sku.sellerSkuCode]||{}).forEach(([r,c])=>{reasonMap[r]=(reasonMap[r]||0)+c;});
     });
   });
-  if(S.customerReturns) delete reasonMap['RTO'];
+  const _dbVisS=document.getElementById('dbScreen').style.display!=='none';if(_dbVisS?DB.customerReturns:S.customerReturns) delete reasonMap['RTO'];
   document.getElementById('sizeReasonsTitle').textContent=`Return Reasons — Size ${size}`;
   document.getElementById('sizeReasonsSub').textContent='Size level';
   document.getElementById('sizeReasonsBody').innerHTML=_reasonsListHTML(reasonMap);
@@ -2111,7 +2139,7 @@ function showSkuModal(sid, dbSkus) {
     <div class="smk"><div class="smk-val"><span class="tier-badge tb-${style.tier}">${style.tier}</span></div><div class="smk-lbl">Tier</div></div>`;
   if(S.hasReturns){
     kh+=`<div class="smk c-amber"><div class="smk-val">${style.rets}</div><div class="smk-lbl">Returns</div></div><div class="smk c-rose"><div class="smk-val">${style.retPct!==null?style.retPct.toFixed(1)+'%':'—'}</div><div class="smk-lbl">Return %</div></div>`;
-    const _rm=Object.assign({},S.retReasonsByStyle[sid]||{});if(S.customerReturns)delete _rm['RTO'];const topR=getTopReason(_rm);
+    const _rm=Object.assign({},S.retReasonsByStyle[sid]||{});if(isDB?DB.customerReturns:S.customerReturns)delete _rm['RTO'];const topR=getTopReason(_rm);
     if(topR) kh+=`<div class="smk smk-reason-trigger" data-sid="${sid}" style="cursor:pointer;border-color:#ede9fe;"><div class="smk-val" style="font-size:10px;color:#7c3aed;font-family:'DM Sans',sans-serif;">${topR.reason}</div><div class="smk-lbl">Top Return Reason · ${topR.pct}%</div></div>`;
   }
   if(!isDB&&S.hasInventory&&style.inv!==null) kh+=`<div class="smk c-teal"><div class="smk-val">${style.inv.toLocaleString('en-IN')}</div><div class="smk-lbl">Total Inventory</div></div>`;
@@ -2178,7 +2206,7 @@ function showSkuModal(sid, dbSkus) {
       if(hasInv)  cells.push(`<td class="mono">${skuDoh!==null?Math.round(skuDoh).toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);
       if(hasRepeat) cells.push(`<td class="mono" style="color:#7c3aed;font-weight:700;">${repeatQty!==null?repeatQty.toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);
       if(hasSkuReasons){
-        const skuReasonMap=Object.assign({},S.retReasonsBySku[s.sellerSkuCode]||{});if(S.customerReturns)delete skuReasonMap['RTO'];
+        const skuReasonMap=Object.assign({},S.retReasonsBySku[s.sellerSkuCode]||{});if(isDB?DB.customerReturns:S.customerReturns)delete skuReasonMap['RTO'];
         const topSku=getTopReason(skuReasonMap);
         cells.push(topSku
           ?`<td><button class="ret-reason-btn" data-sku="${s.sellerSkuCode.replace(/"/g,'&quot;')}">${topSku.reason}<span class="ret-reason-pct">${topSku.pct}%</span></button></td>`
@@ -2279,6 +2307,7 @@ const DB = {
   dbActiveTiers: new Set(['VF','F','M','S','D']),
   dbSortKey: 'units_desc',
   dbStyles: [],       // aggregated style array for current DB view
+  customerReturns: false,
 };
 
 // ─── FIREBASE CRUD ───────────────────────────────────────
@@ -2903,7 +2932,8 @@ function aggregateDBStyles(months) {
     const unitCost = costs[st.styleId] !== undefined ? costs[st.styleId] : null;
     const totalCost = unitCost !== null && st.units > 0 ? unitCost * st.units : null;
     const catalogueDate = listings[st.styleId] || null;
-    return {...st, ros, tier, retPct, avgSellerPrice, inv:null, doh:null, unitCost, totalCost, catalogueDate};
+    const rtoRets = retReasonsByStyle[st.styleId]?.['RTO'] || 0;
+    return {...st, ros, tier, retPct, avgSellerPrice, inv:null, doh:null, unitCost, totalCost, catalogueDate, grossUnits:st.units, grossRets:st.rets, rtoRets};
   });
   return {styles, totalDays, retReasonsByStyle, retReasonsBySku};
 }
@@ -2973,7 +3003,7 @@ function renderDBFYView() {
   document.getElementById('dbTabBar').style.display = 'flex';
   document.getElementById('db-compare').style.display = 'none';
   document.getElementById('dbManageBtn').classList.remove('active');
-  ['db-overview','db-styles','db-trends','db-manage'].forEach(id => {
+  ['db-overview','db-styles','db-trends','db-summary','db-manage'].forEach(id => {
     document.getElementById(id).classList.remove('active');
     document.getElementById(id).style.display = 'none';
   });
@@ -2994,6 +3024,14 @@ function renderDBFYView() {
   S.retReasonsBySku = retReasonsBySku;
   S.daysManual = null;
   S.hasReturns = selMonths.some(m => DB.returnsMonths[m]);
+  // Build global color maps for DB mode
+  S.brandColorMap={};S.artTypeColorMap={};let bci=0,aci=0;
+  styles.forEach(st=>{
+    if(st.brand&&!S.brandColorMap[st.brand]){S.brandColorMap[st.brand]=GLOBAL_PALETTE[bci%GLOBAL_PALETTE.length];bci++;}
+    if(st.articleType&&!S.artTypeColorMap[st.articleType]){S.artTypeColorMap[st.articleType]=GLOBAL_PALETTE[aci%GLOBAL_PALETTE.length];aci++;}
+  });
+  // Apply DB return mode toggle to gross baselines
+  applyDBReturnMode();
   S.hasCost = Object.keys(DB.costMaster.costs||{}).length > 0;
   S.hasCatalogue = Object.keys(DB.listingsMaster.listings||{}).length > 0;
   S.hasInventory = false;
@@ -3006,9 +3044,16 @@ function renderDBFYView() {
   renderBrandPills('dbBrandPills', brands, DB.dbActiveBrands, ()=>{ refreshDBView(selMonths, fy, allFYMonths, fyMonths); });
   renderTierPills('dbTierPills', DB.dbActiveTiers, ()=>{ refreshDBView(selMonths, fy, allFYMonths, fyMonths); });
   document.getElementById('dbSortSelect').value = DB.dbSortKey;
+  const hasRets = S.hasReturns;
+  document.getElementById('dbRetModeWrap').style.display = hasRets ? 'flex' : 'none';
+  document.getElementById('dbRetModeSep').style.display = hasRets ? 'block' : 'none';
+  if (!hasRets) { DB.customerReturns=false; document.getElementById('dbRetModeToggle').checked=false; }
+  document.getElementById('dbRetModeLabelGross').classList.toggle('active', !DB.customerReturns);
+  document.getElementById('dbRetModeLabelCust').classList.toggle('active', DB.customerReturns);
   if (activeTab === 'db-overview') renderDBOverview(selMonths);
   if (activeTab === 'db-styles') renderDBTable();
   if (activeTab === 'db-trends') renderDBTrends(selMonths);
+  if (activeTab === 'db-summary') renderDBSummary();
   if (activeTab === 'db-manage') renderDBManage();
 }
 
@@ -3017,6 +3062,7 @@ function refreshDBView(selMonths, fy, allFYMonths, fyMonths) {
   if (activeTab === 'db-overview') renderDBOverview(selMonths);
   if (activeTab === 'db-styles') renderDBTable();
   if (activeTab === 'db-trends') renderDBTrends(selMonths);
+  if (activeTab === 'db-summary') renderDBSummary();
 }
 
 // ─── MONTH TIMELINE ──────────────────────────────────────
@@ -3145,7 +3191,7 @@ function renderDBOverview(selMonths) {
   document.getElementById('dbKpiStrip').innerHTML = kh;
   // Pie charts
   const brands = [...new Set(filtered.map(r=>r.brand).filter(Boolean))].sort();
-  const bColors = brands.map(b => BRAND_COLORS[b] || PIE_FALLBACK[brands.indexOf(b) % PIE_FALLBACK.length]);
+  const bColors = brands.map(b => S.brandColorMap[b] || GLOBAL_PALETTE[0]);
   const salesPieData = brands.map(b => filtered.filter(r=>r.brand===b).reduce((a,r)=>a+r.units,0));
   makeDBChart('dbChartPie1','doughnut',brands,[{data:salesPieData,backgroundColor:bColors,borderWidth:2,borderColor:'#fff'}],{legend:true});
   if (S.hasReturns) {
@@ -3168,7 +3214,7 @@ function renderDBOverview(selMonths) {
   makeDBChart('dbChartUnits','bar',trendLabels,[{data:trendUnits,backgroundColor:'#818cf8',borderRadius:4}]);
   makeDBChart('dbChartRevenue','bar',trendLabels,[{data:trendRev.map(v=>Math.round(v)),backgroundColor:'#34d399',borderRadius:4}]);
   // Brand bar charts
-  const bColors2 = brands.map(b=>BRAND_COLORS[b]||'#94a3b8');
+  const bColors2 = brands.map(b=>S.brandColorMap[b]||GLOBAL_PALETTE[0]);
   makeDBChart('dbChartBrandUnits','bar',brands,[{data:brands.map(b=>filtered.filter(r=>r.brand===b).reduce((a,r)=>a+r.units,0)),backgroundColor:bColors2,borderRadius:4}]);
   if(S.hasReturns) makeDBChart('dbChartBrandRet','bar',brands,[{data:brands.map(b=>{const br=filtered.filter(r=>r.brand===b),u=br.reduce((a,r)=>a+r.units,0),rt=br.reduce((a,r)=>a+r.rets,0);return u>0?parseFloat((rt/u*100).toFixed(1)):0;}),backgroundColor:bColors2.map(c=>c+'99'),borderRadius:4}]);
   // Brand cards
@@ -3183,7 +3229,7 @@ function renderDBOverview(selMonths) {
   const artMap={};
   filtered.forEach(r=>{const at=r.articleType||'Other';if(!artMap[at])artMap[at]={units:0,revenue:0,rets:0};artMap[at].units+=r.units;artMap[at].revenue+=r.revenue;artMap[at].rets+=(r.rets||0);});
   const arts=Object.keys(artMap).sort((a,b)=>artMap[b].units-artMap[a].units).slice(0,10);
-  const artColors=['#818cf8','#34d399','#f59e0b','#f472b6','#60a5fa','#a78bfa','#fb923c','#4ade80','#e879f9','#38bdf8'];
+  const artColors=arts.map(a=>S.artTypeColorMap[a]||GLOBAL_PALETTE[0]);
   makeDBChart('dbChartArticle','bar',arts,[{data:arts.map(a=>artMap[a].units),backgroundColor:artColors,borderRadius:4}]);
   if(S.hasReturns){
     document.getElementById('dbArtRetCard').style.display='';
@@ -3215,7 +3261,6 @@ function renderDBTrends(selMonths) {
     </div>`;
 
   const filtered = getDBFiltered();
-  const PALETTE = ['#818cf8','#34d399','#fb923c','#f472b6','#60a5fa','#a78bfa','#fbbf24','#4ade80','#f87171','#2dd4bf','#e879f9','#38bdf8'];
 
   const brandMap={}, brandRetMap={}, artMap={}, artRetMap={};
   filtered.forEach(s=>{
@@ -3228,12 +3273,12 @@ function renderDBTrends(selMonths) {
 
   const bLabels=Object.keys(brandMap).sort((a,b)=>brandMap[b]-brandMap[a]);
   makeDBChart('dbTrendsBrandPie','doughnut',bLabels,
-    [{data:bLabels.map(l=>brandMap[l]),backgroundColor:PALETTE.slice(0,bLabels.length),borderWidth:2,borderColor:'#fff'}],
+    [{data:bLabels.map(l=>brandMap[l]),backgroundColor:bLabels.map(l=>S.brandColorMap[l]||GLOBAL_PALETTE[0]),borderWidth:2,borderColor:'#fff'}],
     {legend:true});
 
   const aLabels=Object.keys(artMap).sort((a,b)=>artMap[b]-artMap[a]);
   makeDBChart('dbTrendsArtPie','doughnut',aLabels,
-    [{data:aLabels.map(l=>artMap[l]),backgroundColor:PALETTE.slice(0,aLabels.length),borderWidth:2,borderColor:'#fff'}],
+    [{data:aLabels.map(l=>artMap[l]),backgroundColor:aLabels.map(l=>S.artTypeColorMap[l]||GLOBAL_PALETTE[0]),borderWidth:2,borderColor:'#fff'}],
     {legend:true,extra:{onClick:(_e,els,chart)=>{
       if(!els||!els.length)return;
       showDBArtSizeDrill(chart.data.labels[els[0].index],selMonths);
@@ -3244,7 +3289,7 @@ function renderDBTrends(selMonths) {
   if(hasRets){
     const brLabels=Object.keys(brandRetMap).filter(k=>brandRetMap[k]>0).sort((a,b)=>brandRetMap[b]-brandRetMap[a]);
     makeDBChart('dbTrendsBrandRetPie','doughnut',brLabels,
-      [{data:brLabels.map(l=>brandRetMap[l]),backgroundColor:PALETTE.slice(0,brLabels.length),borderWidth:2,borderColor:'#fff'}],
+      [{data:brLabels.map(l=>brandRetMap[l]),backgroundColor:brLabels.map(l=>S.brandColorMap[l]||GLOBAL_PALETTE[0]),borderWidth:2,borderColor:'#fff'}],
       {legend:true,extra:{onClick:(_e,els,chart)=>{
         if(!els||!els.length)return;
         showDBBrandRetReasons(chart.data.labels[els[0].index],selMonths,filtered);
@@ -3252,7 +3297,7 @@ function renderDBTrends(selMonths) {
 
     const arLabels=Object.keys(artRetMap).filter(k=>artRetMap[k]>0).sort((a,b)=>artRetMap[b]-artRetMap[a]);
     makeDBChart('dbTrendsArtRetPie','doughnut',arLabels,
-      [{data:arLabels.map(l=>artRetMap[l]),backgroundColor:PALETTE.slice(0,arLabels.length),borderWidth:2,borderColor:'#fff'}],
+      [{data:arLabels.map(l=>artRetMap[l]),backgroundColor:arLabels.map(l=>S.artTypeColorMap[l]||GLOBAL_PALETTE[0]),borderWidth:2,borderColor:'#fff'}],
       {legend:true,extra:{onClick:(_e,els,chart)=>{
         if(!els||!els.length)return;
         showDBArtRetDrill(chart.data.labels[els[0].index],selMonths,filtered);
@@ -3325,6 +3370,42 @@ function showDBSizeRetReasons(artType, size, selMonths) {
   document.getElementById('sizeReasonsSub').textContent='Size level';
   document.getElementById('sizeReasonsBody').innerHTML=_reasonsListHTML(reasonMap);
   document.getElementById('sizeReasonsOverlay').classList.add('open');
+}
+
+// ─── DB SUMMARY ──────────────────────────────────────────
+function renderDBSummary() {
+  const filtered = getDBFiltered();
+  const rowMap = {};
+  filtered.forEach(s=>{
+    const key = s.brand||'—';
+    if(!rowMap[key]) rowMap[key]={brand:key,units:0,rets:0};
+    rowMap[key].units += s.units;
+    rowMap[key].rets  += s.rets||0;
+  });
+  const rows = Object.values(rowMap).sort((a,b)=>b.units-a.units);
+  const showRet = S.hasReturns;
+  document.getElementById('dbSummaryCount').textContent = `${rows.length} brand${rows.length!==1?'s':''}`;
+  let hCols = ['Brand','Sales'];
+  if(showRet) hCols.push('Returns','Return %');
+  document.getElementById('dbSummaryHead').innerHTML =
+    `<tr>${hCols.map(c=>`<th>${c}</th>`).join('')}</tr>`;
+  const totUnits=rows.reduce((a,r)=>a+r.units,0);
+  const totRets=rows.reduce((a,r)=>a+r.rets,0);
+  const totRetPct=totUnits>0?(totRets/totUnits*100):null;
+  document.getElementById('dbSummaryBody').innerHTML = rows.map(r=>{
+    const retPct = r.units>0?(r.rets/r.units*100):null;
+    let cells = `<td>${r.brand}</td>`;
+    cells += `<td class="mono">${r.units.toLocaleString('en-IN')}</td>`;
+    if(showRet){
+      cells += `<td class="mono">${r.rets>0?r.rets.toLocaleString('en-IN'):'<span class="zero">0</span>'}</td>`;
+      cells += `<td>${retPct!==null?retPct.toFixed(1)+'%':'—'}</td>`;
+    }
+    return `<tr>${cells}</tr>`;
+  }).join('') + (()=>{
+    let tc=`<td><strong>Total</strong></td><td class="mono"><strong>${totUnits.toLocaleString('en-IN')}</strong></td>`;
+    if(showRet){tc+=`<td class="mono"><strong>${totRets.toLocaleString('en-IN')}</strong></td><td><strong>${totRetPct!==null?totRetPct.toFixed(1)+'%':'—'}</strong></td>`;}
+    return `<tr style="border-top:2px solid #e5e7eb;">${tc}</tr>`;
+  })();
 }
 
 // ─── DB TABLE ────────────────────────────────────────────
@@ -3865,7 +3946,7 @@ document.getElementById('backToModeBtn').addEventListener('click', () => {
   document.getElementById('topStatus').classList.remove('loaded');
   // Reset one-time state
   Object.values(S.charts).forEach(c=>c.destroy());
-  Object.assign(S,{files:[],errors:[],days:null,daysAuto:null,daysManual:null,data:{sales:[],returns:[],inventory:[],itemmaster:[],catalogue:[],listinghealth:[],listingstatus:[]},styles:[],skusByStyle:{},retReasonsByStyle:{},retReasonsBySku:{},activeBrands:new Set(['All']),activeTiers:new Set(['VF','F','M','S','D']),activeCatalogueMonth:'All',sortKey:'units_desc',hasReturns:false,hasInventory:false,hasCost:false,hasCatalogue:false,hasListingHealth:false,hasListingStatus:false,listingHealthStyles:[],listingStatusStyles:[],firstSkuByStyle:{},lhFilter:{quality:'All',action:'All',search:''},lsFilter:{issue:'All',search:''},invDateLabel:'',charts:{},costMap:{},catalogueMap:{},catalogueMonths:[]});
+  Object.assign(S,{files:[],errors:[],days:null,daysAuto:null,daysManual:null,data:{sales:[],returns:[],inventory:[],itemmaster:[],catalogue:[],listinghealth:[],listingstatus:[]},styles:[],skusByStyle:{},retReasonsByStyle:{},retReasonsBySku:{},activeBrands:new Set(['All']),activeTiers:new Set(['VF','F','M','S','D']),activeCatalogueMonth:'All',sortKey:'units_desc',hasReturns:false,hasInventory:false,hasCost:false,hasCatalogue:false,hasListingHealth:false,hasListingStatus:false,listingHealthStyles:[],listingStatusStyles:[],firstSkuByStyle:{},lhFilter:{quality:'All',action:'All',search:''},lsFilter:{issue:'All',search:''},customerReturns:false,invDateLabel:'',charts:{},costMap:{},catalogueMap:{},catalogueMonths:[]});
   document.getElementById('listingsTabBtn').style.display='none';
   document.getElementById('daysInput').value='';
   document.getElementById('daysAutoLabel').textContent='';
@@ -4150,6 +4231,7 @@ document.getElementById('dashAddFilesBtn').addEventListener('click',()=>{
 document.getElementById('manageFilesClose').addEventListener('click',()=>document.getElementById('manageFilesOverlay').classList.remove('open'));
 document.getElementById('manageFilesOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('manageFilesOverlay'))document.getElementById('manageFilesOverlay').classList.remove('open');});
 document.getElementById('retModeToggle').addEventListener('change',function(){
+  if(document.getElementById('dashboard').style.display==='none') return;
   S.customerReturns=this.checked;
   document.getElementById('retModeLabelGross').classList.toggle('active',!this.checked);
   document.getElementById('retModeLabelCust').classList.toggle('active',this.checked);
@@ -4159,6 +4241,19 @@ document.getElementById('retModeToggle').addEventListener('change',function(){
   else if(activeTab==='styles') renderTable();
   else if(activeTab==='trends') renderTrends();
   else if(activeTab==='summary') renderSummary();
+});
+
+document.getElementById('dbRetModeToggle').addEventListener('change',function(){
+  DB.customerReturns=this.checked;
+  document.getElementById('dbRetModeLabelGross').classList.toggle('active',!this.checked);
+  document.getElementById('dbRetModeLabelCust').classList.toggle('active',this.checked);
+  applyDBReturnMode();
+  const selMonths=(DB.fyMonths[DB.activeFY]||[]).filter(m=>DB.selectedMonths.has(m));
+  const activeTab=document.querySelector('.db-tab.active')?.dataset?.dbtab;
+  if(activeTab==='db-overview') renderDBOverview(selMonths);
+  else if(activeTab==='db-styles') renderDBTable();
+  else if(activeTab==='db-trends') renderDBTrends(selMonths);
+  else if(activeTab==='db-summary') renderDBSummary();
 });
 
 // SKU modal
@@ -4190,7 +4285,7 @@ document.getElementById('smTbody').addEventListener('click',e=>{
   const btn=e.target.closest('.ret-reason-btn');
   if(!btn) return;
   const sku=btn.dataset.sku;
-  const rm=Object.assign({},S.retReasonsBySku[sku]||{});if(S.customerReturns)delete rm['RTO'];
+  const rm=Object.assign({},S.retReasonsBySku[sku]||{});const _dbVis=document.getElementById('dbScreen').style.display!=='none';if(_dbVis?DB.customerReturns:S.customerReturns)delete rm['RTO'];
   showReturnReasonsPopup(`Return Reasons — ${sku}`,'SKU level',rm);
 });
 document.getElementById('smKpis').addEventListener('click',e=>{
@@ -4198,7 +4293,7 @@ document.getElementById('smKpis').addEventListener('click',e=>{
   if(!chip) return;
   const sid=chip.dataset.sid;
   const style=S.styles.find(s=>s.styleId===sid);
-  const rm=Object.assign({},S.retReasonsByStyle[sid]||{});if(S.customerReturns)delete rm['RTO'];
+  const rm=Object.assign({},S.retReasonsByStyle[sid]||{});const _dbVis2=document.getElementById('dbScreen').style.display!=='none';if(_dbVis2?DB.customerReturns:S.customerReturns)delete rm['RTO'];
   showReturnReasonsPopup(`Return Reasons — ${sid}`,style?.styleName||sid,rm);
 });
 // DB view: SKU drill — shows aggregated SKU data from DB
@@ -4230,13 +4325,14 @@ document.querySelectorAll('.db-tab').forEach(btn=>btn.addEventListener('click',(
   document.querySelectorAll('.db-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   const tab=btn.dataset.dbtab;
-  ['db-overview','db-styles','db-trends'].forEach(id=>{document.getElementById(id).style.display='none';document.getElementById(id).classList.remove('active');});
+  ['db-overview','db-styles','db-trends','db-summary'].forEach(id=>{document.getElementById(id).style.display='none';document.getElementById(id).classList.remove('active');});
   document.getElementById(tab).style.display='block';
   document.getElementById(tab).classList.add('active');
   const selMonths=(DB.fyMonths[DB.activeFY]||[]).filter(m=>DB.selectedMonths.has(m));
   if(tab==='db-overview') renderDBOverview(selMonths);
   else if(tab==='db-styles') renderDBTable();
   else if(tab==='db-trends') renderDBTrends(selMonths);
+  else if(tab==='db-summary') renderDBSummary();
   document.getElementById('dbFilterBar').style.display='flex';
 }));
 
@@ -4255,7 +4351,7 @@ document.getElementById('dbManageBtn').addEventListener('click',()=>{
     document.getElementById('dbFilterBar').style.display='flex';
   } else {
     // Open manage panel
-    ['db-overview','db-styles','db-trends'].forEach(id=>{document.getElementById(id).style.display='none';document.getElementById(id).classList.remove('active');});
+    ['db-overview','db-styles','db-trends','db-summary'].forEach(id=>{document.getElementById(id).style.display='none';document.getElementById(id).classList.remove('active');});
     document.getElementById('dbFilterBar').style.display='none';
     manageEl.style.display='block';
     manageEl.classList.add('active');
@@ -4455,7 +4551,7 @@ function renderSummary(){
     const ros=days>0?r.units/days:null;
     const doh=(r.hasInv&&ros&&ros>0)?r.inv/ros:null;
     let cells=[
-      `<td><span class="brand-tag bt-${(r.brand||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,6)}">${r.brand}</span></td>`,
+      `<td>${r.brand}</td>`,
       `<td class="mono">${r.units>0?r.units.toLocaleString('en-IN'):'<span class="zero">0</span>'}</td>`,
     ];
     if(showRet){
@@ -4469,6 +4565,25 @@ function renderSummary(){
     tr.innerHTML=cells.join('');
     frag.appendChild(tr);
   });
+  const totUnits=rows.reduce((a,r)=>a+r.units,0);
+  const totRets=rows.reduce((a,r)=>a+r.rets,0);
+  const totRetPct=totUnits>0?(totRets/totUnits*100):null;
+  const totInv=showInv?rows.reduce((a,r)=>a+(r.hasInv?r.inv:0),0):null;
+  const totRos=days>0?totUnits/days:null;
+  const totDoh=(totInv!==null&&totRos&&totRos>0)?totInv/totRos:null;
+  const totTr=document.createElement('tr');
+  totTr.style.borderTop='2px solid #e5e7eb';
+  let totCells=[`<td><strong>Total</strong></td>`,`<td class="mono"><strong>${totUnits.toLocaleString('en-IN')}</strong></td>`];
+  if(showRet){
+    totCells.push(`<td class="mono"><strong>${totRets.toLocaleString('en-IN')}</strong></td>`);
+    totCells.push(`<td class="mono"><strong>${totRetPct!==null?totRetPct.toFixed(1)+'%':'—'}</strong></td>`);
+  }
+  if(showInv){
+    totCells.push(`<td class="mono"><strong>${totInv!==null?totInv.toLocaleString('en-IN'):'—'}</strong></td>`);
+    totCells.push(`<td class="mono"><strong>${totDoh!==null?Math.round(totDoh).toLocaleString('en-IN'):'—'}</strong></td>`);
+  }
+  totTr.innerHTML=totCells.join('');
+  frag.appendChild(totTr);
   document.getElementById('summaryBody').innerHTML='';
   document.getElementById('summaryBody').appendChild(frag);
 }
