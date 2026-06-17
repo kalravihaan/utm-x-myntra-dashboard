@@ -627,6 +627,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <button class="mtab active" data-tab="overview">Overview</button>
     <button class="mtab" data-tab="styles">Style Table</button>
     <button class="mtab" data-tab="trends">Trends</button>
+    <button class="mtab" data-tab="summary">Summary</button>
     <button class="mtab" data-tab="listings" id="listingsTabBtn" style="display:none;">Listings</button>
   </div>
   <div class="filter-bar" id="filterBar">
@@ -677,9 +678,13 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
         <option value="ros_desc">ROS ↓</option>
         <option value="ros_asc">ROS ↑</option>
         <option value="returns_desc">Returns ↓</option>
+        <option value="returns_asc">Returns ↑</option>
         <option value="retpct_desc">Return% ↓</option>
+        <option value="retpct_asc">Return% ↑</option>
         <option value="inv_desc">Inventory ↓</option>
+        <option value="inv_asc">Inventory ↑</option>
         <option value="doh_desc">Days on Hand ↓</option>
+        <option value="doh_asc">Days on Hand ↑</option>
         <option value="cost_desc">Total Cost ↓</option>
         <option value="cost_asc">Total Cost ↑</option>
         <option value="catdate_desc">Cat. Date Latest</option>
@@ -735,6 +740,16 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
           <div style="font-size:10px;color:#aaa;text-align:center;margin-top:8px;">Click a slice to see size breakdown</div>
         </div>
       </div>
+      <div class="chart-grid cols2" id="trendsInvGrid" style="display:none;margin-top:0;">
+        <div class="chart-card">
+          <div class="chart-card-title">Brand-wise Inventory (Units)</div>
+          <div class="pie-wrap"><canvas id="chartTrendsBrandInv"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Article Type-wise Inventory (Units)</div>
+          <div class="pie-wrap"><canvas id="chartTrendsArtInv"></canvas></div>
+        </div>
+      </div>
       <div class="chart-grid cols2" id="trendsRetGrid" style="display:none;margin-top:0;">
         <div class="chart-card">
           <div class="chart-card-title">Brand-wise Returns (Units)</div>
@@ -747,6 +762,13 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
           <div style="font-size:10px;color:#aaa;text-align:center;margin-top:8px;">Click a slice to see size & reasons</div>
         </div>
       </div>
+    </div>
+  </div>
+  <!-- SUMMARY TAB -->
+  <div class="tab-panel" id="tab-summary">
+    <div class="section" style="padding-top:24px;">
+      <div class="row-count" id="summaryCount"></div>
+      <div class="tw"><table id="summaryTable"><thead id="summaryHead"></thead><tbody id="summaryBody"></tbody></table></div>
     </div>
   </div>
   <!-- STYLE TABLE TAB -->
@@ -1201,6 +1223,7 @@ const BRAND_COLORS = {
   'Anouk':'#ea580c','Anouk Rustic':'#c2510e','DressBerry':'#0891b2'
 };
 const PIE_FALLBACK = ['#818cf8','#34d399','#f59e0b','#f472b6','#60a5fa','#a78bfa','#fb923c','#4ade80','#e879f9','#38bdf8'];
+const GLOBAL_PALETTE = ['#e6194b','#3cb44b','#4363d8','#f58231','#911eb4','#00b4d8','#f032e6','#ffbe0b','#2a9d8f','#9A6324','#06d6a0','#0077b6','#6a0572','#3a0ca3','#7209b7','#f77f00','#4cc9f0','#023e8a','#e76f51','#264653'];
 const TIER_DEFS = [
   {id:'VF',label:'Very Fast'},{id:'F',label:'Fast'},
   {id:'M',label:'Medium'},{id:'S',label:'Slow'},{id:'D',label:'Dead'}
@@ -1617,6 +1640,14 @@ function processData() {
       sku.rtoRets=S.retReasonsBySku[sku.sellerSkuCode]?.['RTO']||0;
     });
   });
+  // Build global color maps (assigned once, used everywhere)
+  S.brandColorMap={};
+  S.artTypeColorMap={};
+  let bci=0,aci=0;
+  S.styles.forEach(st=>{
+    if(st.brand&&!S.brandColorMap[st.brand]){S.brandColorMap[st.brand]=GLOBAL_PALETTE[bci%GLOBAL_PALETTE.length];bci++;}
+    if(st.articleType&&!S.artTypeColorMap[st.articleType]){S.artTypeColorMap[st.articleType]=GLOBAL_PALETTE[aci%GLOBAL_PALETTE.length];aci++;}
+  });
 }
 
 // ─── RETURN MODE TOGGLE ──────────────────────────────────
@@ -1648,7 +1679,7 @@ function makeChart(id,type,labels,datasets,opts={}){
   const ctx=document.getElementById(id); if(!ctx) return;
   S.charts[id]=new Chart(ctx.getContext('2d'),{type,data:{labels,datasets},options:{
     responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:opts.legend||false,position:'right',labels:(()=>{const l={font:{family:'DM Sans',size:10},boxWidth:10,padding:8};if(opts.legend&&(type==='doughnut'||type==='pie')){l.generateLabels=function(chart){const d=chart.data,tot=d.datasets[0].data.reduce((a,b)=>a+(b||0),0);return d.labels.map((lbl,i)=>({text:`${lbl} (${tot>0?((d.datasets[0].data[i]||0)/tot*100).toFixed(1):0}%)`,fillStyle:d.datasets[0].backgroundColor[i],strokeStyle:'#fff',lineWidth:2,index:i,hidden:false}));};}return l;})()}},
+    plugins:{legend:{display:opts.legend||false,position:'right',labels:(()=>{const l={font:{family:'DM Sans',size:10},boxWidth:10,padding:8};if(opts.legend&&(type==='doughnut'||type==='pie')){l.generateLabels=function(chart){const d=chart.data,tot=d.datasets[0].data.reduce((a,b)=>a+(b||0),0);return d.labels.map((lbl,i)=>{const val=d.datasets[0].data[i]||0;return{text:`${lbl} — ${val.toLocaleString('en-IN')} (${tot>0?(val/tot*100).toFixed(1):0}%)`,fillStyle:d.datasets[0].backgroundColor[i],strokeStyle:'#fff',lineWidth:2,index:i,hidden:false};});};}return l;})()}},
     scales:type==='bar'||type==='line'?{
       x:{ticks:{font:{family:'DM Mono',size:10},color:'#999',maxRotation:45},grid:{display:false}},
       y:{ticks:{font:{family:'DM Mono',size:10},color:'#999'},grid:{color:'#f0f0f0'}}
@@ -1669,7 +1700,7 @@ function getFilteredStyles() {
 function renderPieCharts(filtered, mode) {
   // mode: 'onetimeview' or 'db'
   const brands = [...new Set(filtered.map(r=>r.brand).filter(Boolean))].sort();
-  const bColors = brands.map(b => BRAND_COLORS[b] || PIE_FALLBACK[brands.indexOf(b) % PIE_FALLBACK.length]);
+  const bColors = brands.map(b => S.brandColorMap[b] || GLOBAL_PALETTE[0]);
   // Pie 1: Brand-wise Sales (always)
   const salesData = brands.map(b => filtered.filter(r=>r.brand===b).reduce((a,r)=>a+r.units,0));
   makeChart('chartPie1','doughnut',brands,[{data:salesData,backgroundColor:bColors,borderWidth:2,borderColor:'#fff'}],{legend:true});
@@ -1807,7 +1838,7 @@ function renderOverview(mode='onetimeview') {
   const artMap={};
   filtered.forEach(r=>{const at=r.articleType||'Other';if(!artMap[at])artMap[at]={units:0,rets:0};artMap[at].units+=r.units;artMap[at].rets+=r.rets;});
   const arts=Object.keys(artMap).sort((a,b)=>artMap[b].units-artMap[a].units).slice(0,10);
-  const artColors=['#818cf8','#34d399','#f59e0b','#f472b6','#60a5fa','#a78bfa','#fb923c','#4ade80','#e879f9','#38bdf8'];
+  const artColors=arts.map(a=>S.artTypeColorMap[a]||GLOBAL_PALETTE[0]);
   makeChart('chartArticle','bar',arts,[{data:arts.map(a=>artMap[a].units),backgroundColor:artColors,borderRadius:4}]);
   const artRetCard=document.getElementById('artRetCard'),artTypeGrid=document.getElementById('artTypeGrid');
   if(S.hasReturns){
@@ -1843,9 +1874,13 @@ function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={
     if(sk==='ros_desc') return (b.ros||0)-(a.ros||0);
     if(sk==='ros_asc') return (a.ros||0)-(b.ros||0);
     if(sk==='returns_desc') return b.rets-a.rets;
+    if(sk==='returns_asc') return a.rets-b.rets;
     if(sk==='retpct_desc') return (b.retPct||0)-(a.retPct||0);
+    if(sk==='retpct_asc') return (a.retPct||0)-(b.retPct||0);
     if(sk==='inv_desc') return (b.inv||0)-(a.inv||0);
+    if(sk==='inv_asc') return (a.inv||0)-(b.inv||0);
     if(sk==='doh_desc') return (b.doh||0)-(a.doh||0);
+    if(sk==='doh_asc') return (a.doh||0)-(b.doh||0);
     if(sk==='cost_desc') return (b.totalCost||0)-(a.totalCost||0);
     if(sk==='cost_asc') return (a.totalCost||0)-(b.totalCost||0);
     if(sk==='catdate_desc'){const da=parseDateToYYYYMM(a.catalogueDate)||'',db=parseDateToYYYYMM(b.catalogueDate)||'';return db.localeCompare(da);}
@@ -2176,12 +2211,13 @@ function showDashboard() {
     renderTable();
     if(document.getElementById('tab-overview').classList.contains('active'))renderOverview();
     if(document.getElementById('tab-trends')?.classList.contains('active'))renderTrends();
+    if(document.getElementById('tab-summary')?.classList.contains('active'))renderSummary();
     if(document.getElementById('tab-listings')?.classList.contains('active')){
       if(document.getElementById('listingHealthPanel').style.display!=='none'&&S.hasListingHealth)renderListingHealth();
       if(document.getElementById('listingStatusPanel').style.display!=='none'&&S.hasListingStatus)renderListingStatus();
     }
   });
-  renderTierPills('tierPills', S.activeTiers, ()=>{renderTable();if(document.getElementById('tab-overview').classList.contains('active'))renderOverview();if(document.getElementById('tab-trends')?.classList.contains('active'))renderTrends();});
+  renderTierPills('tierPills', S.activeTiers, ()=>{renderTable();if(document.getElementById('tab-overview').classList.contains('active'))renderOverview();if(document.getElementById('tab-trends')?.classList.contains('active'))renderTrends();if(document.getElementById('tab-summary')?.classList.contains('active'))renderSummary();});
   renderCatalogueFilter();
   document.getElementById('sortGroup').style.display='none';
   document.getElementById('sortSep').style.display='none';
@@ -3895,6 +3931,7 @@ document.querySelectorAll('.mtab').forEach(btn=>btn.addEventListener('click',()=
   document.getElementById('sortSep').style.display=isStyles?'':'none';
   if(tab==='overview') renderOverview('onetimeview');
   if(tab==='trends') renderTrends();
+  if(tab==='summary') renderSummary();
   if(tab==='listings'){
     if(S.hasListingHealth) renderListingHealth();
     if(S.hasListingStatus&&!S.hasListingHealth) renderListingStatus();
@@ -4121,6 +4158,7 @@ document.getElementById('retModeToggle').addEventListener('change',function(){
   if(activeTab==='overview') renderOverview();
   else if(activeTab==='styles') renderTable();
   else if(activeTab==='trends') renderTrends();
+  else if(activeTab==='summary') renderSummary();
 });
 
 // SKU modal
@@ -4326,23 +4364,39 @@ function renderTrends(){
     artRetMap[art]=(artRetMap[art]||0)+s.rets;
   });
 
-  const PALETTE=['#818cf8','#34d399','#fb923c','#f472b6','#60a5fa','#a78bfa','#fbbf24','#4ade80','#f87171','#2dd4bf','#e879f9','#38bdf8'];
-
   // Sales pies
   const bLabels=Object.keys(brandMap).sort((a,b)=>brandMap[b]-brandMap[a]);
   destroyChart('chartTrendsBrand');
   makeChart('chartTrendsBrand','doughnut',bLabels,
-    [{data:bLabels.map(l=>brandMap[l]),backgroundColor:PALETTE.slice(0,bLabels.length),borderWidth:2,borderColor:'#fff'}],
+    [{data:bLabels.map(l=>brandMap[l]),backgroundColor:bLabels.map(l=>S.brandColorMap[l]||GLOBAL_PALETTE[0]),borderWidth:2,borderColor:'#fff'}],
     {legend:true});
 
   const aLabels=Object.keys(artMap).sort((a,b)=>artMap[b]-artMap[a]);
   destroyChart('chartTrendsArt');
   makeChart('chartTrendsArt','doughnut',aLabels,
-    [{data:aLabels.map(l=>artMap[l]),backgroundColor:PALETTE.slice(0,aLabels.length),borderWidth:2,borderColor:'#fff'}],
+    [{data:aLabels.map(l=>artMap[l]),backgroundColor:aLabels.map(l=>S.artTypeColorMap[l]||GLOBAL_PALETTE[0]),borderWidth:2,borderColor:'#fff'}],
     {legend:true,extra:{onClick:(_e,els,chart)=>{
       if(!els||!els.length)return;
       showSizeDrillDown(chart.data.labels[els[0].index],filteredIds);
     }}});
+
+  // Inventory doughnut
+  const artInvMap={}, brandInvMap={};
+  filtered.forEach(s=>{if(s.inv===null||s.inv===undefined)return;const at=s.articleType||'Unknown';artInvMap[at]=(artInvMap[at]||0)+s.inv;const br=s.brand||'Unknown';brandInvMap[br]=(brandInvMap[br]||0)+s.inv;});
+  const hasInvData=S.hasInventory&&Object.keys(artInvMap).length>0;
+  document.getElementById('trendsInvGrid').style.display=hasInvData?'':'none';
+  if(hasInvData){
+    const biLabels=Object.keys(brandInvMap).sort((a,b)=>brandInvMap[b]-brandInvMap[a]);
+    destroyChart('chartTrendsBrandInv');
+    makeChart('chartTrendsBrandInv','doughnut',biLabels,
+      [{data:biLabels.map(l=>brandInvMap[l]),backgroundColor:biLabels.map(l=>S.brandColorMap[l]||GLOBAL_PALETTE[0]),borderWidth:2,borderColor:'#fff'}],
+      {legend:true});
+    const aiLabels=Object.keys(artInvMap).sort((a,b)=>artInvMap[b]-artInvMap[a]);
+    destroyChart('chartTrendsArtInv');
+    makeChart('chartTrendsArtInv','doughnut',aiLabels,
+      [{data:aiLabels.map(l=>artInvMap[l]),backgroundColor:aiLabels.map(l=>S.artTypeColorMap[l]||GLOBAL_PALETTE[0]),borderWidth:2,borderColor:'#fff'}],
+      {legend:true});
+  }
 
   // Returns pies
   const hasRets=S.hasReturns&&filtered.some(s=>s.rets>0);
@@ -4351,7 +4405,7 @@ function renderTrends(){
     const brLabels=Object.keys(brandRetMap).filter(k=>brandRetMap[k]>0).sort((a,b)=>brandRetMap[b]-brandRetMap[a]);
     destroyChart('chartTrendsBrandRet');
     makeChart('chartTrendsBrandRet','doughnut',brLabels,
-      [{data:brLabels.map(l=>brandRetMap[l]),backgroundColor:PALETTE.slice(0,brLabels.length),borderWidth:2,borderColor:'#fff'}],
+      [{data:brLabels.map(l=>brandRetMap[l]),backgroundColor:brLabels.map(l=>S.brandColorMap[l]||GLOBAL_PALETTE[0]),borderWidth:2,borderColor:'#fff'}],
       {legend:true,extra:{onClick:(_e,els,chart)=>{
         if(!els||!els.length)return;
         showBrandRetReasons(chart.data.labels[els[0].index],filteredIds);
@@ -4360,12 +4414,63 @@ function renderTrends(){
     const arLabels=Object.keys(artRetMap).filter(k=>artRetMap[k]>0).sort((a,b)=>artRetMap[b]-artRetMap[a]);
     destroyChart('chartTrendsArtRet');
     makeChart('chartTrendsArtRet','doughnut',arLabels,
-      [{data:arLabels.map(l=>artRetMap[l]),backgroundColor:PALETTE.slice(0,arLabels.length),borderWidth:2,borderColor:'#fff'}],
+      [{data:arLabels.map(l=>artRetMap[l]),backgroundColor:arLabels.map(l=>S.artTypeColorMap[l]||GLOBAL_PALETTE[0]),borderWidth:2,borderColor:'#fff'}],
       {legend:true,extra:{onClick:(_e,els,chart)=>{
         if(!els||!els.length)return;
         showArtRetDrill(chart.data.labels[els[0].index],filteredIds);
       }}});
   }
+}
+
+// ─── SUMMARY TAB ─────────────────────────────────────────
+function renderSummary(){
+  if(!S.data)return;
+  const filtered=getFilteredStyles();
+  const days=S.days||1;
+  const rowMap={};
+  filtered.forEach(s=>{
+    const key=s.brand||'—';
+    if(!rowMap[key]) rowMap[key]={brand:s.brand||'—',units:0,rets:0,inv:0,hasInv:false};
+    const r=rowMap[key];
+    r.units+=s.units;
+    r.rets+=s.rets;
+    if(s.inv!==null&&s.inv!==undefined){r.inv+=s.inv;r.hasInv=true;}
+  });
+  const rows=Object.values(rowMap).sort((a,b)=>b.units-a.units);
+  const showRet=S.hasReturns;
+  const showInv=S.hasInventory;
+  let hCols=['Brand','Sales'];
+  if(showRet) hCols.push('Returns','Return %');
+  if(showInv) hCols.push(`Inventory (${S.invDateLabel})`,'Days on Hand');
+  document.getElementById('summaryHead').innerHTML=`<tr>${hCols.map(h=>`<th>${h}</th>`).join('')}</tr>`;
+  document.getElementById('summaryCount').textContent=`${rows.length} combination${rows.length!==1?'s':''}`;
+  if(!rows.length){
+    document.getElementById('summaryBody').innerHTML=`<tr><td colspan="${hCols.length}" style="text-align:center;padding:32px;color:#aaa;">No data</td></tr>`;
+    return;
+  }
+  const frag=document.createDocumentFragment();
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    const retPct=r.units>0?(r.rets/r.units*100):null;
+    const ros=days>0?r.units/days:null;
+    const doh=(r.hasInv&&ros&&ros>0)?r.inv/ros:null;
+    let cells=[
+      `<td><span class="brand-tag bt-${(r.brand||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,6)}">${r.brand}</span></td>`,
+      `<td class="mono">${r.units>0?r.units.toLocaleString('en-IN'):'<span class="zero">0</span>'}</td>`,
+    ];
+    if(showRet){
+      cells.push(`<td class="mono">${r.rets>0?r.rets:'<span class="zero">0</span>'}</td>`);
+      cells.push(`<td class="mono">${retPct!==null?retPct.toFixed(1)+'%':'<span class="na">—</span>'}</td>`);
+    }
+    if(showInv){
+      cells.push(`<td class="mono">${r.hasInv?r.inv.toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);
+      cells.push(`<td class="mono">${doh!==null?Math.round(doh).toLocaleString('en-IN'):'<span class="na">—</span>'}</td>`);
+    }
+    tr.innerHTML=cells.join('');
+    frag.appendChild(tr);
+  });
+  document.getElementById('summaryBody').innerHTML='';
+  document.getElementById('summaryBody').appendChild(frag);
 }
 
 function _sizeDrillOpen(artType, subtitle, sizeMap){
