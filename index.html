@@ -1819,8 +1819,8 @@ function renderOverview(mode='onetimeview') {
     });
     const mos=Object.keys(mMap).sort();
     const lbl=mos.map(m=>{const[y,mo]=m.split('-');return `${_MO[+mo-1]} ${y}`;});
-    makeChart('chartUnits','bar',lbl,[{data:mos.map(m=>mMap[m].units),backgroundColor:'#818cf8',borderRadius:4}]);
-    makeChart('chartRevenue','bar',lbl,[{data:mos.map(m=>Math.round(mMap[m].revenue)),backgroundColor:'#34d399',borderRadius:4}]);
+    makeChart('chartUnits','line',lbl,[{data:mos.map(m=>mMap[m].units),borderColor:'#818cf8',backgroundColor:'rgba(129,140,248,0.1)',tension:0.3,fill:true,pointRadius:2}]);
+    makeChart('chartRevenue','line',lbl,[{data:mos.map(m=>Math.round(mMap[m].revenue)),borderColor:'#34d399',backgroundColor:'rgba(52,211,153,0.1)',tension:0.3,fill:true,pointRadius:2}]);
   } else {
     const _fd=new Date(allDates[0]+'T00:00:00Z');
     const wMap={};
@@ -4406,7 +4406,7 @@ function showStyleChart(sid){
     const mos=Object.keys(mMap).sort();
     labels=mos.map(m=>{const[y,mo]=m.split('-');return `${_MOS[+mo-1]} ${y}`;});
     data=mos.map(m=>mMap[m]);
-    chartType='bar';
+    chartType='line';
   } else {
     const _fd=new Date(allDates[0]+'T00:00:00Z');
     const wMap={};
