@@ -2216,7 +2216,8 @@ function showSkuModal(sid, dbSkus) {
     }).join('');
   }
   const chartBtn=document.getElementById('skuChartBtn');
-  if(!isDB&&S.data.sales.length>0){chartBtn.style.display='block';chartBtn.dataset.sid=sid;}
+  if(isDB){chartBtn.style.display='block';chartBtn.dataset.sid=sid;chartBtn.dataset.mode='db';}
+  else if(S.data.sales.length>0){chartBtn.style.display='block';chartBtn.dataset.sid=sid;chartBtn.dataset.mode='';}
   else{chartBtn.style.display='none';}
   document.getElementById('skuOverlay').classList.add('open');
 }
@@ -4259,7 +4260,7 @@ document.getElementById('dbRetModeToggle').addEventListener('change',function(){
 // SKU modal
 document.getElementById('skuModalClose').addEventListener('click',()=>document.getElementById('skuOverlay').classList.remove('open'));
 document.getElementById('skuOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('skuOverlay'))document.getElementById('skuOverlay').classList.remove('open');});
-document.getElementById('skuChartBtn').addEventListener('click',()=>showStyleChart(document.getElementById('skuChartBtn').dataset.sid));
+document.getElementById('skuChartBtn').addEventListener('click',()=>{const btn=document.getElementById('skuChartBtn');if(btn.dataset.mode==='db')showDBStyleChart(btn.dataset.sid);else showStyleChart(btn.dataset.sid);});
 document.getElementById('styleChartClose').addEventListener('click',()=>{document.getElementById('styleChartOverlay').classList.remove('open');if(S.charts['styleChart']){S.charts['styleChart'].destroy();delete S.charts['styleChart'];}});
 document.getElementById('styleChartOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('styleChartOverlay')){document.getElementById('styleChartOverlay').classList.remove('open');if(S.charts['styleChart']){S.charts['styleChart'].destroy();delete S.charts['styleChart'];}}});
 // Size drill-down modal
@@ -4441,6 +4442,26 @@ function showStyleChart(sid){
       pointRadius:chartType==='line'?2:undefined
     }]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}
+  });
+  document.getElementById('styleChartOverlay').classList.add('open');
+}
+
+function showDBStyleChart(sid) {
+  const style = DB.dbStyles.find(s => s.styleId === sid);
+  if (!style) return;
+  document.getElementById('styleChartSid').textContent = `Style ID: ${sid}`;
+  document.getElementById('styleChartName').textContent = style.styleName || sid;
+  const selMonths = (DB.fyMonths[DB.activeFY] || []).filter(m => DB.selectedMonths.has(m));
+  const sorted = [...selMonths].sort();
+  const _MOS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const labels = sorted.map(m => { const [y,mo] = m.split('-'); return `${_MOS[+mo-1]} ${y}`; });
+  const data = sorted.map(m => DB.salesMonths[m]?.styles?.[sid]?.units || 0);
+  if (S.charts['styleChart']) { S.charts['styleChart'].destroy(); delete S.charts['styleChart']; }
+  const ctx = document.getElementById('styleChartCanvas').getContext('2d');
+  S.charts['styleChart'] = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ data, borderColor: '#818cf8', backgroundColor: 'rgba(129,140,248,0.1)', tension: 0.3, fill: true, pointRadius: 4, pointHoverRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
   });
   document.getElementById('styleChartOverlay').classList.add('open');
 }
