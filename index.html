@@ -781,6 +781,7 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <div class="search-wrap" style="padding:12px 32px 0;">
       <input class="search-input" id="otSearchInput" type="text" placeholder="Search style ID, SKU code, article type…">
       <button id="repeatDownloadBtn" style="display:none;margin-left:10px;padding:7px 16px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;letter-spacing:0.03em;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Repeat Plan</button>
+      <button id="repeatCriteriaBtn" title="Edit repeat criteria" style="display:none;margin-left:6px;padding:7px 10px;background:#f3f0ff;color:#7c3aed;border:1px solid #ddd6fe;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
     </div>
     <div style="padding:6px 32px 0;display:flex;align-items:center;gap:12px;">
       <div class="row-count" id="rowCount"></div>
@@ -976,6 +977,54 @@ tbody td{padding:8px 12px;font-size:12px;vertical-align:middle;}
     <div class="sku-modal-body">
       <div class="sku-modal-section-title" id="smTableTitle"></div>
       <div class="sku-tbl-wrap"><table class="sku-tbl"><thead id="smThead"></thead><tbody id="smTbody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- REPEAT CRITERIA MODAL -->
+<div class="sku-overlay" id="repeatCriteriaOverlay" style="z-index:9000;">
+  <div class="sku-modal" style="max-width:360px;">
+    <div class="sku-modal-head" style="justify-content:space-between;">
+      <div class="sku-modal-sid" style="font-size:14px;font-weight:700;color:#111;">Edit Repeat Criteria</div>
+      <button id="repeatCriteriaClose" style="background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;line-height:1;">&times;</button>
+    </div>
+    <div style="padding:8px 24px 24px;display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <label style="font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:5px;">Min ROS (units/day)</label>
+        <input id="rcMinRos" type="number" min="0" step="0.1" style="width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+        <div style="font-size:10px;color:#aaa;margin-top:3px;">Style must sell at least this many units per day to be eligible</div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:5px;">Max DoH (days)</label>
+        <input id="rcMaxDoh" type="number" min="0" step="1" style="width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+        <div style="font-size:10px;color:#aaa;margin-top:3px;">Style must have fewer than this many days of stock remaining</div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:5px;">Target DoH (days)</label>
+        <input id="rcTargetDoh" type="number" min="1" step="1" style="width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+        <div style="font-size:10px;color:#aaa;margin-top:3px;">Fill stock up to this many days of cover</div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+        <button id="rcReset" style="padding:8px 16px;background:#f3f4f6;color:#555;border:1px solid #e5e7eb;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;">Reset to Default</button>
+        <button id="rcApply" style="padding:8px 20px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE MODE CONFIRMATION MODAL -->
+<div class="sku-overlay" id="changeModeOverlay" style="z-index:9000;">
+  <div class="sku-modal" style="max-width:400px;text-align:center;">
+    <div class="sku-modal-head" style="justify-content:center;padding-bottom:8px;">
+      <div class="sku-modal-sid" id="changeModeStep1" style="font-size:15px;font-weight:700;color:#111;">Change Mode?</div>
+      <div class="sku-modal-sid" id="changeModeStep2" style="display:none;font-size:15px;font-weight:700;color:#dc2626;">Are you sure?</div>
+    </div>
+    <div style="padding:0 24px 8px;font-size:12px;color:#666;" id="changeModeMsg1">All uploaded files and dashboard data will be cleared.</div>
+    <div style="padding:0 24px 8px;font-size:12px;color:#dc2626;display:none;" id="changeModeMsg2">This cannot be undone. All data will be lost.</div>
+    <div style="display:flex;gap:10px;justify-content:center;padding:16px 24px 24px;">
+      <button id="changeModeCancel" style="padding:8px 20px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;font-size:12px;font-weight:600;cursor:pointer;">Cancel</button>
+      <button id="changeModeConfirm1" style="padding:8px 20px;border-radius:8px;border:none;background:#ef4444;color:#fff;font-size:12px;font-weight:600;cursor:pointer;">Yes, change mode</button>
+      <button id="changeModeConfirm2" style="display:none;padding:8px 20px;border-radius:8px;border:none;background:#dc2626;color:#fff;font-size:12px;font-weight:600;cursor:pointer;">Yes, I'm sure</button>
     </div>
   </div>
 </div>
@@ -1264,7 +1313,8 @@ const S = {
   invDateLabel: '',
   charts: {},
   tierThresholds: { VF:1.5, F:0.7, M:0.3, S:0.001 },
-  costMap: {}, catalogueMap: {}, catalogueMonths: []
+  costMap: {}, catalogueMap: {}, catalogueMonths: [],
+  repeatCriteria: { minRos: 2, maxDoh: 30, targetDoh: 60 }
 };
 
 function getTier(ros) {
@@ -1560,13 +1610,20 @@ function processData() {
     if(!salesMap[sid]) salesMap[sid]={styleId:sid,brand:(r['brand']||'').trim(),styleName:(r['style name']||'').trim(),articleType:(r['article type']||'').trim(),firstSku:resolvedSku,units:0,revenue:0};
     salesMap[sid].units++; salesMap[sid].revenue+=parseFloat(r['seller price'])||0;
   });
+  // Filter returns by order_line_id — only count returns whose order line exists in the sales file
+  const _salesLineIds=new Set(salesRows.map(r=>String(r['order line id']||'').trim()).filter(Boolean));
+  const validReturnRow=r=>{
+    const lid=String(r['order_line_id']||'').trim();
+    return lid&&_salesLineIds.has(lid);
+  };
   const retMap={};
-  returnRows.forEach(r=>{const sid=String(r['style_id']||'').trim();if(!sid)return;retMap[sid]=(retMap[sid]||0)+1;});
+  returnRows.forEach(r=>{if(!validReturnRow(r))return;const sid=String(r['style_id']||'').trim();if(!sid)return;retMap[sid]=(retMap[sid]||0)+1;});
   const retSkuMap={};
-  returnRows.forEach(r=>{const sku=(r['seller_sku_code']||r['sku_code']||r['seller sku code']||'').trim();if(sku)retSkuMap[sku]=(retSkuMap[sku]||0)+1;});
+  returnRows.forEach(r=>{if(!validReturnRow(r))return;const sku=(r['seller_sku_code']||r['sku_code']||r['seller sku code']||'').trim();if(sku)retSkuMap[sku]=(retSkuMap[sku]||0)+1;});
   S.retReasonsByStyle={};
   S.retReasonsBySku={};
   returnRows.forEach(r=>{
+    if(!validReturnRow(r)) return;
     const sid=String(r['style_id']||'').trim(); if(!sid) return;
     const reason=(String(r['return_reason']||r['Return Reason']||r['returnReason']||'').trim())||'RTO';
     const sku=(r['seller_sku_code']||r['sku_code']||r['seller sku code']||'').trim();
@@ -1646,6 +1703,7 @@ function processData() {
   S.styles.forEach(st=>{
     st.grossUnits=st.units;
     st.grossRets=st.rets;
+    st.grossRevenue=st.revenue;
     st.rtoRets=S.retReasonsByStyle[st.styleId]?.['RTO']||0;
   });
   // Store gross baseline on SKUs
@@ -1671,7 +1729,9 @@ function applyReturnMode() {
   const isCust=S.customerReturns;
   S.styles.forEach(st=>{
     const rto=isCust?(st.rtoRets||0):0;
+    const avgPrice=st.grossUnits>0?st.grossRevenue/st.grossUnits:0;
     st.units=Math.max(0,st.grossUnits-rto);
+    st.revenue=Math.max(0,st.grossRevenue-rto*avgPrice);
     st.rets=Math.max(0,st.grossRets-rto);
     st.retPct=st.units>0?(st.rets/st.units*100):null;
     const ed=st.effectiveDays||S.days||1;
@@ -1788,19 +1848,22 @@ function renderOverview(mode='onetimeview') {
       cataloguedCount=filtered.filter(r=>r.catalogueDate).length;
     }
   }
+  const asp=totalUnits>0?totalRev/totalUnits:0;
   let kh=`
     <div class="kpi-card c-indigo"><div class="kpi-val">${totalUnits.toLocaleString('en-IN')}</div><div class="kpi-lbl">Total Units</div></div>
-    <div class="kpi-card c-green"><div class="kpi-val">₹${Math.round(totalRev).toLocaleString('en-IN')}</div><div class="kpi-lbl">Total Revenue</div></div>
-    <div class="kpi-card"><div class="kpi-val">${filtered.length}</div><div class="kpi-lbl">Styles</div></div>
-    <div class="kpi-card c-purple"><div class="kpi-val">${S.days}</div><div class="kpi-lbl">Days${S.daysManual?'':' (auto)'}</div></div>`;
-  if(totalInv!==null) kh+=`<div class="kpi-card c-teal"><div class="kpi-val">${totalInv.toLocaleString('en-IN')}</div><div class="kpi-lbl">Total Inventory</div></div>`;
-  if(S.hasReturns) kh+=`
-    <div class="kpi-card c-amber"><div class="kpi-val">${totalRets.toLocaleString('en-IN')}</div><div class="kpi-lbl">Total Returns</div></div>
-    <div class="kpi-card c-rose"><div class="kpi-val">${retPct.toFixed(1)}%</div><div class="kpi-lbl">Return %</div></div>`;
+    <div class="kpi-card c-green"><div class="kpi-val">₹${Math.round(totalRev).toLocaleString('en-IN')}</div><div class="kpi-lbl">Total Revenue</div></div>`;
+  if(S.hasReturns){
+    const totalNetRev=filtered.reduce((a,r)=>a+r.revenue-(r.rets*(r.grossUnits>0?r.grossRevenue/r.grossUnits:0)),0);
+    kh+=`
+    <div class="kpi-card c-amber"><div class="kpi-val">${totalRets.toLocaleString('en-IN')}</div><div class="kpi-lbl">Return Units</div></div>
+    <div class="kpi-card c-rose"><div class="kpi-val">${retPct.toFixed(1)}%</div><div class="kpi-lbl">Return %</div></div>
+    <div class="kpi-card c-blue"><div class="kpi-val">₹${Math.round(totalNetRev).toLocaleString('en-IN')}</div><div class="kpi-lbl">Net Revenue</div></div>`;
+  }
+  kh+=`<div class="kpi-card c-purple"><div class="kpi-val">₹${Math.round(asp).toLocaleString('en-IN')}</div><div class="kpi-lbl">ASP</div></div>`;
   if(S.hasCost&&totalCOGS!==null) kh+=`
-    <div class="kpi-card c-orange"><div class="kpi-val">₹${Math.round(totalCOGS).toLocaleString('en-IN')}</div><div class="kpi-lbl">Working Capital</div></div>
-    ${grossMargin!==null?`<div class="kpi-card c-blue"><div class="kpi-val">${grossMargin.toFixed(1)}%</div><div class="kpi-lbl">Gross Margin</div></div>`:''}`;
-  if(S.hasCatalogue&&cataloguedCount!==null) kh+=`<div class="kpi-card c-teal"><div class="kpi-val">${cataloguedCount.toLocaleString('en-IN')}</div><div class="kpi-lbl">${catKpiLabel}</div></div>`;
+    <div class="kpi-card c-orange"><div class="kpi-val">₹${Math.round(totalCOGS).toLocaleString('en-IN')}</div><div class="kpi-lbl">Working Capital</div></div>`;
+  if(totalInv!==null) kh+=`<div class="kpi-card c-teal"><div class="kpi-val">${totalInv.toLocaleString('en-IN')}</div><div class="kpi-lbl">Total Inventory</div></div>`;
+  kh+=`<div class="kpi-card"><div class="kpi-val">${filtered.length}</div><div class="kpi-lbl">Styles</div></div>`;
   document.getElementById('kpiStrip').innerHTML=kh;
 
   renderPieCharts(filtered, mode);
@@ -1921,7 +1984,7 @@ function renderTable(tbodyId='tableBody', theadId='tableHead', rows=null, opts={
   const isDB = opts.isDB || false;
   let hCols=['Style ID'];
   if(showSku) hCols.push('SKU Code');
-  hCols.push('Brand','Article Type','Units','Avg Seller Price','Revenue');
+  hCols.push('Brand','Article Type','Units','ASP','Revenue');
   if(S.hasCost) hCols.push('Unit Cost');
   hCols.push('ROS/day','Tier');
   if(S.hasReturns){hCols.push('Returns','Return%','Top Return Reason');}
@@ -2160,7 +2223,7 @@ function showSkuModal(sid, dbSkus) {
   const hasCost = S.hasCost && style.unitCost !== null;
   const days = S.days || 1;
   const hasSize = !isDB;
-  const hasRepeat = !isDB && S.hasInventory && style.ros !== null && style.ros >= 2 && style.doh !== null && style.doh <= 30;
+  const hasRepeat = !isDB && S.hasInventory && style.ros !== null && style.ros >= S.repeatCriteria.minRos && style.doh !== null && style.doh <= S.repeatCriteria.maxDoh;
 
   const hasSkuReasons = S.hasReturns;
   const thCols = ['Seller SKU Code'];
@@ -2231,6 +2294,7 @@ function showDashboard() {
   document.getElementById('topStatus').textContent=`${sc.toLocaleString('en-IN')} sales rows loaded`;
   document.getElementById('topStatus').classList.add('loaded');
   document.getElementById('repeatDownloadBtn').style.display=S.hasInventory?'inline-block':'none';
+  document.getElementById('repeatCriteriaBtn').style.display=S.hasInventory?'inline-block':'none';
   S.styleSubTab='all';
   const _stBar=document.getElementById('styleSubTabBar');
   _stBar.style.display=S.hasCatalogue?'flex':'none';
@@ -3936,7 +4000,7 @@ document.getElementById('modeDatabase').addEventListener('click', () => {
   document.getElementById('topStatus').textContent='Database Mode — Firebase connected';
   loadFirestoreData();
 });
-document.getElementById('backToModeBtn').addEventListener('click', () => {
+function doChangeMode() {
   document.getElementById('modeScreen').style.display='block';
   document.getElementById('uploadScreen').style.display='none';
   document.getElementById('dashboard').style.display='none';
@@ -3955,6 +4019,30 @@ document.getElementById('backToModeBtn').addEventListener('click', () => {
   document.getElementById('fileList').innerHTML='';
   document.getElementById('errorBox').style.display='none';
   document.getElementById('goBtn').disabled=true;
+}
+
+function openChangeModeModal() {
+  document.getElementById('changeModeStep1').style.display='';
+  document.getElementById('changeModeStep2').style.display='none';
+  document.getElementById('changeModeMsg1').style.display='';
+  document.getElementById('changeModeMsg2').style.display='none';
+  document.getElementById('changeModeConfirm1').style.display='';
+  document.getElementById('changeModeConfirm2').style.display='none';
+  document.getElementById('changeModeOverlay').classList.add('open');
+}
+document.getElementById('backToModeBtn').addEventListener('click', openChangeModeModal);
+document.getElementById('changeModeCancel').addEventListener('click', () => document.getElementById('changeModeOverlay').classList.remove('open'));
+document.getElementById('changeModeConfirm1').addEventListener('click', () => {
+  document.getElementById('changeModeStep1').style.display='none';
+  document.getElementById('changeModeStep2').style.display='';
+  document.getElementById('changeModeMsg1').style.display='none';
+  document.getElementById('changeModeMsg2').style.display='';
+  document.getElementById('changeModeConfirm1').style.display='none';
+  document.getElementById('changeModeConfirm2').style.display='';
+});
+document.getElementById('changeModeConfirm2').addEventListener('click', () => {
+  document.getElementById('changeModeOverlay').classList.remove('open');
+  doChangeMode();
 });
 
 // One-time drag-drop + file input
@@ -4377,6 +4465,29 @@ dbupDz.addEventListener('dragleave',()=>dbupDz.classList.remove('drag-over'));
 dbupDz.addEventListener('drop',e=>{e.preventDefault();dbupDz.classList.remove('drag-over');if(e.dataTransfer.files[0])handleDBUploadFile(e.dataTransfer.files[0]);});
 document.getElementById('dbupFileInput').addEventListener('change',e=>{if(e.target.files[0])handleDBUploadFile(e.target.files[0]);e.target.value='';});
 document.getElementById('repeatDownloadBtn').addEventListener('click',downloadRepeatPlan);
+document.getElementById('repeatCriteriaBtn').addEventListener('click',()=>{
+  const rc=S.repeatCriteria;
+  document.getElementById('rcMinRos').value=rc.minRos;
+  document.getElementById('rcMaxDoh').value=rc.maxDoh;
+  document.getElementById('rcTargetDoh').value=rc.targetDoh;
+  document.getElementById('repeatCriteriaOverlay').classList.add('open');
+});
+document.getElementById('repeatCriteriaClose').addEventListener('click',()=>document.getElementById('repeatCriteriaOverlay').classList.remove('open'));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('repeatCriteriaOverlay').classList.remove('open');});
+document.getElementById('rcReset').addEventListener('click',()=>{
+  document.getElementById('rcMinRos').value=2;
+  document.getElementById('rcMaxDoh').value=30;
+  document.getElementById('rcTargetDoh').value=60;
+});
+document.getElementById('rcApply').addEventListener('click',()=>{
+  const minRos=parseFloat(document.getElementById('rcMinRos').value);
+  const maxDoh=parseFloat(document.getElementById('rcMaxDoh').value);
+  const targetDoh=parseFloat(document.getElementById('rcTargetDoh').value);
+  if(isNaN(minRos)||isNaN(maxDoh)||isNaN(targetDoh)||targetDoh<1){alert('Please enter valid values for all fields.');return;}
+  S.repeatCriteria={minRos,maxDoh,targetDoh};
+  document.getElementById('repeatCriteriaOverlay').classList.remove('open');
+  renderTable();
+});
 document.getElementById('styleSubTabBar').querySelectorAll('.style-subtab').forEach(btn=>btn.addEventListener('click',()=>{
   document.getElementById('styleSubTabBar').querySelectorAll('.style-subtab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -4557,7 +4668,7 @@ function renderSummary(){
   const showRet=S.hasReturns;
   const showInv=S.hasInventory;
   let hCols=['Brand','Sales'];
-  if(showRet) hCols.push('Returns','Return %');
+  if(showRet) hCols.push('Returns','Net Sales','Return %');
   if(showInv) hCols.push(`Inventory (${S.invDateLabel})`,'Days on Hand');
   document.getElementById('summaryHead').innerHTML=`<tr>${hCols.map(h=>`<th>${h}</th>`).join('')}</tr>`;
   document.getElementById('summaryCount').textContent=`${rows.length} combination${rows.length!==1?'s':''}`;
@@ -4568,15 +4679,17 @@ function renderSummary(){
   const frag=document.createDocumentFragment();
   rows.forEach(r=>{
     const tr=document.createElement('tr');
+    const netUnits=r.units-r.rets;
     const retPct=r.units>0?(r.rets/r.units*100):null;
-    const ros=days>0?r.units/days:null;
+    const ros=days>0?(showRet?netUnits:r.units)/days:null;
     const doh=(r.hasInv&&ros&&ros>0)?r.inv/ros:null;
     let cells=[
       `<td>${r.brand}</td>`,
       `<td class="mono">${r.units>0?r.units.toLocaleString('en-IN'):'<span class="zero">0</span>'}</td>`,
     ];
     if(showRet){
-      cells.push(`<td class="mono">${r.rets>0?r.rets:'<span class="zero">0</span>'}</td>`);
+      cells.push(`<td class="mono">${r.rets>0?r.rets.toLocaleString('en-IN'):'<span class="zero">0</span>'}</td>`);
+      cells.push(`<td class="mono">${netUnits.toLocaleString('en-IN')}</td>`);
       cells.push(`<td class="mono">${retPct!==null?retPct.toFixed(1)+'%':'<span class="na">—</span>'}</td>`);
     }
     if(showInv){
@@ -4588,15 +4701,17 @@ function renderSummary(){
   });
   const totUnits=rows.reduce((a,r)=>a+r.units,0);
   const totRets=rows.reduce((a,r)=>a+r.rets,0);
+  const totNetUnits=totUnits-totRets;
   const totRetPct=totUnits>0?(totRets/totUnits*100):null;
   const totInv=showInv?rows.reduce((a,r)=>a+(r.hasInv?r.inv:0),0):null;
-  const totRos=days>0?totUnits/days:null;
+  const totRos=days>0?(showRet?totNetUnits:totUnits)/days:null;
   const totDoh=(totInv!==null&&totRos&&totRos>0)?totInv/totRos:null;
   const totTr=document.createElement('tr');
   totTr.style.borderTop='2px solid #e5e7eb';
   let totCells=[`<td><strong>Total</strong></td>`,`<td class="mono"><strong>${totUnits.toLocaleString('en-IN')}</strong></td>`];
   if(showRet){
     totCells.push(`<td class="mono"><strong>${totRets.toLocaleString('en-IN')}</strong></td>`);
+    totCells.push(`<td class="mono"><strong>${totNetUnits.toLocaleString('en-IN')}</strong></td>`);
     totCells.push(`<td class="mono"><strong>${totRetPct!==null?totRetPct.toFixed(1)+'%':'—'}</strong></td>`);
   }
   if(showInv){
@@ -4662,9 +4777,9 @@ function downloadRepeatPlan(){
   const SIZE_ORDER=['XXS','XS','S','M','L','XL','XXL','XXXL','3XL','4XL'];
   const days=S.days||1;
 
-  // Eligible styles: ROS >= 2 AND DoH <= 30
-  const eligible=S.styles.filter(st=>st.ros!==null&&st.ros>=2&&st.doh!==null&&st.doh<=30);
-  if(!eligible.length){alert('No styles meet the repeat criteria (Style ROS ≥ 2 and DoH ≤ 30).');return;}
+  const rc=S.repeatCriteria;
+  const eligible=S.styles.filter(st=>st.ros!==null&&st.ros>=rc.minRos&&st.doh!==null&&st.doh<=rc.maxDoh);
+  if(!eligible.length){alert(`No styles meet the repeat criteria (ROS ≥ ${rc.minRos} and DoH ≤ ${rc.maxDoh}).`);return;}
 
   // Collect all sizes across eligible styles
   const sizeSet=new Set();
@@ -4695,7 +4810,7 @@ function downloadRepeatPlan(){
         const skuRos=days>0?sku.units/days:0;
         const inv=sku.inv!==null?sku.inv:0;
         const skuDoh=skuRos>0?inv/skuRos:0;
-        const qty=Math.max(0,Math.round(skuRos*(60-skuDoh)));
+        const qty=Math.max(0,Math.round(skuRos*(rc.targetDoh-skuDoh)));
         row[sz]=qty;
         total+=qty;
       }
