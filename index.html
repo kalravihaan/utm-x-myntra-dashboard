@@ -1905,7 +1905,7 @@ function renderOverview(mode='onetimeview') {
     makeChart('chartRevenue','line',lbl,[{data:wks.map(wi=>Math.round(wMap[wi].revenue)),borderColor:'#34d399',backgroundColor:'rgba(52,211,153,0.1)',tension:0.3,fill:true,pointRadius:2}]);
   }
   const brands=[...new Set(filtered.map(r=>r.brand).filter(Boolean))].sort();
-  const bColors=brands.map(b=>BRAND_COLORS[b]||'#94a3b8');
+  const bColors=brands.map(b=>S.brandColorMap[b]||GLOBAL_PALETTE[0]);
   makeChart('chartBrandUnits','bar',brands,[{data:brands.map(b=>filtered.filter(r=>r.brand===b).reduce((a,r)=>a+r.units,0)),backgroundColor:bColors,borderRadius:4}]);
   if(S.hasReturns){
     document.getElementById('retChartTitle').style.display='block';
@@ -3388,6 +3388,7 @@ function showDBBrandRetReasons(brand, selMonths, filtered) {
       Object.entries(rbs[sid]||{}).forEach(([r,c])=>{reasonMap[r]=(reasonMap[r]||0)+c;});
     });
   });
+  if(DB.customerReturns) delete reasonMap['RTO'];
   showReturnReasonsPopup(`Return Reasons — ${brand}`,'Brand level',reasonMap);
 }
 
@@ -4398,7 +4399,7 @@ document.getElementById('dbTableBody').addEventListener('click',e=>{
   if(rrBtn){
     const sid=rrBtn.dataset.sid;
     const style=DB.dbStyles.find(s=>s.styleId===sid);
-    showReturnReasonsPopup(`Return Reasons — ${sid}`,style?.styleName||sid,S.retReasonsByStyle[sid]||{});
+    const _dbRm=Object.assign({},S.retReasonsByStyle[sid]||{});if(DB.customerReturns)delete _dbRm['RTO'];showReturnReasonsPopup(`Return Reasons — ${sid}`,style?.styleName||sid,_dbRm);
   }
 });
 // Search bars
